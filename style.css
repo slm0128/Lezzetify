@@ -1,77 +1,106 @@
 :root {
-            --primary-color: #ff6b6b; /* Appetitliches Korallenrot */
-            --secondary-color: #feca57; /* Warmes Gelb */
-            --dark-color: #2d3436;
-            --light-bg: #f8f9fa;
-        }
+    --primary-color: #ff6b6b;
+    /* Appetitliches Korallenrot */
+    --secondary-color: #feca57;
+    /* Warmes Gelb */
+    --dark-color: #2d3436;
+    --light-bg: #f8f9fa;
+}
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            color: var(--dark-color);
-        }
+/* Sanftes Scrollen beim Klick auf Anker-Links */
+html {
+    scroll-behavior: smooth;
+}
 
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--primary-color) !important;
-        }
+/* Offset für fixierte Navigationsleisten */
+section {
+    scroll-margin-top: 70px;
+}
 
-        .hero-section {
-            background: linear-gradient(135deg, #fff0f0 0%, #fff 100%);
-            padding: 100px 0;
-            min-height: 70vh;
-            display: flex;
-            align-items: center;
-        }
+/* Styling für die Rezept-Karten */
+.recipe-card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-        .hero-title {
-            font-weight: 700;
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-        }
+.recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
 
-        .hero-title span {
-            color: var(--primary-color);
-        }
+.recipe-img {
+    height: 200px;
+    object-fit: cover;
+}
 
-        .btn-primary-custom {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-color);
+}
 
-        .btn-primary-custom:hover {
-            background-color: #ff5252;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-        }
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+}
 
-        .feature-card {
-            border: none;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            background-color: white;
-            padding: 30px 20px;
-        }
+.hero-section {
+    background: linear-gradient(135deg, #fff0f0 0%, #fff 100%);
+    padding: 100px 0;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+}
 
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-        }
+.hero-title {
+    font-weight: 700;
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+}
 
-        .feature-icon {
-            font-size: 3rem;
-            color: var(--secondary-color);
-            margin-bottom: 20px;
-        }
+.hero-title span {
+    color: var(--primary-color);
+}
 
-        footer {
-            background-color: var(--dark-color);
-            color: white;
-            padding: 30px 0;
-        }
+.btn-primary-custom {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    background-color: #ff5252;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.feature-card {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background-color: white;
+    padding: 30px 20px;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: var(--secondary-color);
+    margin-bottom: 20px;
+}
+
+footer {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 30px 0;
+}
