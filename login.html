@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Registrierung - Lezzetify</title>
+    <link href="library/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="library/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+  <!-- =========================================
+       NAVIGATION (Kopiert aus der index.html) 
+       ========================================= -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">
+        Lezzetify
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Startseite</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.html#features">Features</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.html#rezepte">Rezepte</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- =========================================
+       HAUPTBEREICH: LOGIN / REGISTRIERUNG
+       ========================================= -->
+  <!-- 'flex-grow-1' sorgt dafür, dass dieser Bereich den Platz bis zum Footer ausfüllt -->
+  <main class="flex-grow-1 d-flex align-items-center py-5" style="background-color: #fcf8f2;"> 
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 col-xl-5">
+          
+          <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="card-body p-5">
+              
+              <div class="text-center mb-4">
+                <h2 class="fw-bold text-dark">Willkommen zurück!</h2>
+                <p class="text-muted">Melde dich an, um deine Rezepte zu speichern.</p>
+              </div>
+
+              <!-- Tabs zum Umschalten (Login / Registrieren) -->
+              <ul class="nav nav-pills nav-justified mb-4" id="authTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active rounded-pill fw-bold" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-content" type="button" role="tab">Anmelden</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link rounded-pill fw-bold" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-content" type="button" role="tab">Registrieren</button>
+                </li>
+              </ul>
+
+              <div class="tab-content" id="authTabContent">
+                
+                <!-- LOGIN FORMULAR -->
+                <div class="tab-pane fade show active" id="login-content" role="tabpanel">
+                  <form>
+                    <div class="form-floating mb-3">
+                      <input type="email" class="form-control rounded-3" id="loginEmail" placeholder="name@example.com">
+                      <label for="loginEmail">E-Mail Adresse</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                      <input type="password" class="form-control rounded-3" id="loginPassword" placeholder="Passwort">
+                      <label for="loginPassword">Passwort</label>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                        <label class="form-check-label small text-muted" for="rememberMe">Eingeloggt bleiben</label>
+                      </div>
+                      <a href="#" class="small text-decoration-none text-primary-custom">Passwort vergessen?</a>
+                    </div>
+                    <button class="btn btn-primary-custom w-100 py-2 fw-bold" type="submit">Einloggen</button>
+                  </form>
+                </div>
+
+                <!-- REGISTRIEREN FORMULAR -->
+                <div class="tab-pane fade" id="register-content" role="tabpanel">
+                  <form>
+                    <div class="form-floating mb-3">
+                      <input type="text" class="form-control rounded-3" id="registerName" placeholder="Benutzername">
+                      <label for="registerName">Benutzername</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                      <input type="email" class="form-control rounded-3" id="registerEmail" placeholder="name@example.com">
+                      <label for="registerEmail">E-Mail Adresse</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                      <input type="password" class="form-control rounded-3" id="registerPassword" placeholder="Passwort">
+                      <label for="registerPassword">Passwort</label>
+                    </div>
+                    <div class="form-check mb-4">
+                      <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                      <label class="form-check-label small text-muted" for="termsCheck">
+                        Ich akzeptiere die <a href="#" class="text-primary-custom text-decoration-none">Nutzungsbedingungen</a>.
+                      </label>
+                    </div>
+                    <button class="btn btn-primary-custom w-100 py-2 fw-bold" type="submit">Konto erstellen</button>
+                  </form>
+                </div>
+
+              </div> <!-- Ende tab-content -->
+
+              <!-- Social Login Option -->
+              <div class="text-center mt-5">
+                <p class="text-muted small mb-3">Oder weiter mit</p>
+                <div class="d-flex justify-content-center gap-3">
+                  <button class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;"><i class="fab fa-google"></i></button>
+                  <button class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;"><i class="fab fa-facebook-f"></i></button>
+                  <button class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;"><i class="fab fa-apple"></i></button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- =========================================
+       FOOTER (Passend zur index.html)
+       ========================================= -->
+  <footer class="bg-dark text-white py-4 mt-auto">
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2026 Lezzetify. Alle Rechte vorbehalten.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="library/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
