@@ -5,13 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="library/css/bootstrap.min.css">
+    <link rel="stylesheet" href="library/css/all.min.css">
 
     <title>Lezzetify</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
 
 </head>
 <body>
 
+<!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">Lezzetify</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Rezepte</a>
+                    </li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <a class="btn btn-outline-dark rounded-pill px-4" href="#">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Hero Section -->
+    <section class="hero-section mt-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 text-center text-lg-start">
+                    <h1 class="hero-title">Essen planen, <br><span>Leben genießen.</span></h1>
+                    <p class="lead text-muted mb-4">Erstelle deine eigenen Rezepte, plane deine Woche und lass Lezzetify automatisch deine Einkaufsliste und Makronährstoffe berechnen. Komplett asynchron, blitzschnell und smart.</p>
+                    <a href="#" class="btn btn-primary-custom btn-lg">Jetzt starten</a>
+                </div>
+                <div class="col-lg-6 mt-5 mt-lg-0 text-center">
+                    <!-- Lokales Bild verwenden -->
+                    <img src="assets/img/hero-bild.jpg" alt="Gesundes Essen" class="img-fluid rounded-4 shadow-lg" style="object-fit: cover; height: 400px; width: 100%;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5 bg-light">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Unsere Kernfunktionen</h2>
+                <p class="text-muted">Alles was du für dein Meal-Prepping brauchst.</p>
+            </div>
+            
+            <div class="row g-4 text-center">
+                <!-- Feature 1 -->
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h4 class="card-title fw-bold">Rezept-Manager</h4>
+                            <p class="card-text text-muted">Lege deine eigenen Lieblingsrezepte an, bearbeite Zutaten und teile sie mit anderen Nutzern.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Feature 2 -->
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h4 class="card-title fw-bold">Smarter Wochenplan</h4>
+                            <p class="card-text text-muted">Weise deine Rezepte per Drag & Drop den Wochentagen zu. Verliere nie wieder den Überblick über deine Mahlzeiten.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Feature 3 -->
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h4 class="card-title fw-bold">Async Makro-Check</h4>
+                            <p class="card-text text-muted">Unser Microservice berechnet im Hintergrund blitzschnell die Nährwerte deiner Mahlzeiten.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Lezzetify - Webprog & VS Projekt.</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
     <script src="library/js/bootstrap.bundle.min.js"></script>
