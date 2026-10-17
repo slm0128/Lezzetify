@@ -7,15 +7,15 @@ if (loginForm) {
         // Standard-Neuladen der Seite durch das Formular verhindern
         event.preventDefault();
         
-        // NEU: Alte Fehlermeldungen vor dem neuen Versuch ausblenden
+        // Alte Fehlermeldungen vor dem neuen Versuch ausblenden
         if (errorMessage) {
             errorMessage.style.display = 'none';
             errorMessage.textContent = '';
         }
 
-        // Eingabewerte aus den Formularfeldern auslesen
-        const email = document.querySelector('#email').value;
-        const password = document.querySelector('#password').value;
+        // Eingabewerte über die exakten HTML-IDs auslesen
+        const email = document.querySelector('#loginEmail').value;
+        const password = document.querySelector('#loginPassword').value;
 
         try {
             // POST-Anfrage an unser Node.js-Backend senden
@@ -31,12 +31,11 @@ if (loginForm) {
                 // Bei Erfolg (Status 200): JWT-Token & User-Infos im Browser speichern
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-
+                
                 // Weiterleitung zur Hauptseite (Rezept-Manager)
                 window.location.href = 'index.html';
             } else {
                 // Bei Fehler (z. B. 401 Unauthorized): Fehlermeldung anzeigen
-                // WICHTIG: textContent statt innerHTML schützt vor XSS-Angriffen!
                 if (errorMessage) {
                     errorMessage.textContent = data.error || 'Login fehlgeschlagen';
                     errorMessage.style.display = 'block';
