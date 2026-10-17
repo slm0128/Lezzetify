@@ -40,7 +40,8 @@ app.post('/api/register', async (req, res) => {
         const newUser = {
             id: Date.now().toString(), // Erzeugt eine simple, eindeutige ID
             email: email,
-            password: hashedPassword   // Nur das verschlüsselte Passwort speichern!
+            password: hashedPassword,  // Nur das verschlüsselte Passwort speichern!
+            recipes: []
         };
 
         users.push(newUser); // In unser Array speichern
@@ -76,11 +77,63 @@ app.post('/api/login', async (req, res) => {
         // JWT Token erstellen (gültig für 1 Stunde)
         const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
-        res.json({ message: 'Erfolgreich eingeloggt!', token });
+        res.json({
+            message: 'Erfolgreich eingeloggt!',
+            token,
+            user: { id: user.id, email: user.email }
+        });
     } catch (error) {
         res.status(500).json({ error: 'Fehler beim Login.' });
     }
 
+});
+
+function authenticateToken(req, res, next) {
+    const authorization = req.headers.authorization;
+    const token = authorization && authorization.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Anmeldung erforderlich.' });
+    }
+
+    try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        const user = users.find((entry) => entry.id === payload.userId);
+        if (!user) {
+            return res.status(401).json({ error: 'Sitzung ungültig. Bitte erneut anmelden.' });
+        }
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Sitzung ungültig oder abgelaufen.' });
+    }
+}
+
+app.get('/api/recipes', authenticateToken, (req, res) => {
+    res.json(req.user.recipes);
+});
+
+app.post('/api/recipes', authenticateToken, (req, res) => {
+    const { title, description = '', ingredients, instructions = '', prepTime } = req.body;
+    const cleanIngredients = Array.isArray(ingredients)
+        ? ingredients.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
+        : [];
+
+    if (typeof title !== 'string' || !title.trim() || cleanIngredients.length === 0) {
+        return res.status(400).json({ error: 'Rezeptname und mindestens eine Zutat sind erforderlich.' });
+    }
+
+    const recipe = {
+        id: Date.now().toString(),
+        title: title.trim(),
+        description: typeof description === 'string' ? description.trim() : '',
+        ingredients: cleanIngredients,
+        instructions: typeof instructions === 'string' ? instructions.trim() : '',
+        prepTime: Number.isFinite(Number(prepTime)) && Number(prepTime) > 0 ? Number(prepTime) : null
+    };
+
+    req.user.recipes.push(recipe);
+    res.status(201).json({ message: 'Rezept gespeichert.', recipe });
 });
 
 app.get('/api/logintest', async (req, res) => {
