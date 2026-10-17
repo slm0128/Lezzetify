@@ -100,7 +100,8 @@
 
                 <!-- REGISTRIEREN FORMULAR -->
                 <div class="tab-pane fade" id="register-content" role="tabpanel">
-                  <form>
+                  <form id="register-form">
+                    <div id="register-message" class="alert py-2 small d-none" role="status"></div>
                     <div class="form-floating mb-3">
                       <input type="text" class="form-control rounded-3" id="registerName" placeholder="Benutzername">
                       <label for="registerName">Benutzername</label>
@@ -127,23 +128,6 @@
                 </div>
 
               </div> <!-- Ende tab-content -->
-
-              <!-- Social Login Option -->
-              <div class="text-center mt-5">
-                <p class="text-muted small mb-3">Oder weiter mit</p>
-                <div class="d-flex justify-content-center gap-3">
-                  <button
-                    class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 45px; height: 45px;"><i class="fab fa-google"></i></button>
-                  <button
-                    class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 45px; height: 45px;"><i class="fab fa-facebook-f"></i></button>
-                  <button
-                    class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 45px; height: 45px;"><i class="fab fa-apple"></i></button>
-                </div>
-              </div>
-
             </div>
           </div>
 
