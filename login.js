@@ -1,4 +1,5 @@
 // Elemente aus dem HTML auswählen
+const API_BASE_URL = 'http://localhost:3000';
 const loginForm = document.querySelector('#login-form');
 const errorMessage = document.querySelector('#error-message');
 
@@ -19,7 +20,7 @@ if (loginForm) {
 
         try {
             // POST-Anfrage an unser Node.js-Backend senden
-            const response = await fetch('http://localhost:3000/api/login', {
+            const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -31,9 +32,8 @@ if (loginForm) {
                 // Bei Erfolg (Status 200): JWT-Token & User-Infos im Browser speichern
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                
-                // Weiterleitung zur Hauptseite (Rezept-Manager)
-                window.location.href = 'index.html';
+                localStorage.setItem('email', data.user.email);
+                window.location.href = 'dashboard.html';
             } else {
                 // Bei Fehler (z. B. 401 Unauthorized): Fehlermeldung anzeigen
                 if (errorMessage) {
@@ -49,4 +49,36 @@ if (loginForm) {
             }
         }
     });
+}
+
+// Registrierungsformular und Statusmeldung auswählen
+const registerForm = document.getElementById('register-form');
+const registerMessage = document.getElementById('register-message');
+
+if (registerForm) {
+    registerForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const emailInput = document.getElementById('registerEmail').value;
+    const passwordInput = document.getElementById('registerPassword').value;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailInput, password: passwordInput })
+            });
+            const data = await response.json();
+
+            registerMessage.textContent = data.message || data.error || 'Registrierung fehlgeschlagen.';
+            registerMessage.className = `alert py-2 small ${response.ok ? 'alert-success' : 'alert-danger'}`;
+
+            if (response.ok) {
+                registerForm.reset();
+            }
+        } catch (error) {
+            registerMessage.textContent = 'Verbindung zum Server fehlgeschlagen.';
+            registerMessage.className = 'alert alert-danger py-2 small';
+        }
+  });
 }
