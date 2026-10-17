@@ -1,77 +1,97 @@
-require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken'); // <-- Nur jsonwebtoken oben importiert
+const bcrypt = require('bcrypt'); // Für die Passwort-Verschlüsselung
+const cors = require('cors');     // Falls dein Frontend auf einem anderen Port läuft
+const jwt = require('jsonwebtoken'); // Für das Generieren der Login-Tokens
 
 const app = express();
+app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:8000'
+}));
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret'; // <-- Backslashes entfernt
 
-// Express Middleware (vom Prof vorgegeben)
-app.use(cors());
-app.use(express.json()); // Parsed JSON-Request-Bodies
+// Geheimer Schlüssel für die Tokens (In Produktion in eine .env Datei auslagern!)
+const JWT_SECRET = 'lezzetify_super_secret_key_123'; 
 
-// Vorübergehender Speicher im RAM
+// Unsere "Datenbank" (Für Tests. In Produktion durch echte DB ersetzen!)
 const users = [];
 
-// 1. Registrierung
-app.post('/api/register', async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: 'E-Mail und Passwort sind erforderlich' });
-    }
-
-    const existingUser = users.find(u => u.email === email);
-    if (existingUser) {
-        return res.status(400).json({ error: 'Benutzer existiert bereits' });
-    }
-
-    // Passwort hashen (Salt-Runden: 10)
-    const passwordHash = await bcrypt.hash(password, 10);
-    
-    const newUser = { id: Date.now(), email, passwordHash };
-    users.push(newUser);
-
-    res.status(201).json({ message: 'Nutzer erfolgreich registriert!' });
+app.get('/', (req, res) => {
+    res.json({ message: 'Lezzetify-Backend läuft.' });
 });
 
-// 2. Login-Route
+// --- REGISTRIERUNG: Benutzer speichern ---
+app.post('/api/register', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // 1. Prüfen, ob der Benutzer schon existiert
+        const existingUser = users.find(user => user.email === email);
+        if (existingUser) {
+            return res.status(400).json({ error: 'Ein Benutzer mit dieser E-Mail existiert bereits.' });
+        }
+
+        // 2. Passwort verschlüsseln (Hashing)
+        // Die Zahl "10" ist der "Salt-Round"-Wert (bestimmt die Komplexität)
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // 3. Neuen Benutzer erstellen und speichern
+        const newUser = {
+            id: Date.now().toString(), // Erzeugt eine simple, eindeutige ID
+            email: email,
+            password: hashedPassword   // Nur das verschlüsselte Passwort speichern!
+        };
+
+        users.push(newUser); // In unser Array speichern
+
+        console.log('Aktuelle Benutzer in der DB:', users); // Zur Kontrolle in der Konsole
+
+        // 4. Erfolgsmeldung zurücksenden
+        res.status(201).json({ message: 'Benutzer erfolgreich angelegt!' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Serverfehler bei der Registrierung.' });
+    }
+});
+
+// 2. ANMELDUNG (Login)
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    // Validierung
-    if (!email || !password) {
-        return res.status(400).json({ error: 'E-Mail und Passwort eingeben' });
+        // Benutzer finden
+        const user = users.find(u => u.email === email);
+        if (!user) {
+            return res.status(400).json({ error: 'Ungültige Anmeldedaten.' });
+        }
+
+        // Passwort abgleichen
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ error: 'Ungültige Anmeldedaten.' });
+        }
+
+        // JWT Token erstellen (gültig für 1 Stunde)
+        const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
+        res.json({ message: 'Erfolgreich eingeloggt!', token });
+    } catch (error) {
+        res.status(500).json({ error: 'Fehler beim Login.' });
     }
 
-    // Nutzer suchen
-    const user = users.find(u => u.email === email);
-    if (!user) {
-        return res.status(401).json({ error: 'Ungültige Anmeldedaten' });
+});
+
+app.get('/api/logintest', async (req, res) => {
+    try {
+        res.json({ message: 'Backend erreichbar.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Fehler beim Login.' });
     }
 
-    // Passwort vergleichen
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-        return res.status(401).json({ error: 'Ungültige Anmeldedaten' });
-    }
-
-    // JWT erstellen (nutzt jetzt die jwt Variable von ganz oben)
-    const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        JWT_SECRET,
-        { expiresIn: '2h' }
-    );
-
-    res.status(200).json({ 
-        message: 'Login erfolgreich', 
-        token, 
-        user: { id: user.id, email: user.email } 
-    });
 });
 
 app.listen(PORT, () => {
-    console.log(`Lezzetify-Backend läuft auf http://localhost:${PORT}`);
+    console.log(`Server läuft auf Port ${PORT}`);
 });
