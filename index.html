@@ -96,7 +96,7 @@
         </div>
     </section>
 
-    <!-- REZEPTE ABSCHNITT -->
+<!-- REZEPTE ABSCHNITT -->
 <section id="rezepte" class="py-5 bg-light">
   <div class="container">
     <div class="text-center mb-5">
@@ -104,110 +104,135 @@
       <p class="text-muted">Lass dich von unseren gesunden & leckeren Rezeptideen inspirieren</p>
     </div>
 
-    <div class="row g-4">
-      <!-- Rezept 1 -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm recipe-card">
-          <img src="images/menemen.jpg" class="card-img-top recipe-img" alt="Menemen">
-          <div class="card-body d-flex flex-column">
-            <span class="badge bg-warning text-dark align-self-start mb-2">Vegetarisch & Klassisch</span>
-            <h5 class="card-title fw-bold">Menemen</h5>
-            <p class="card-text text-muted flex-grow-1">Saftiges Rührei mit frischen Tomaten, grünen Spitzpaprika, Olivenöl und Kräutern.</p>
-            <div class="d-flex justify-content-between text-muted small my-3">
-              <span><i class="far fa-clock me-1"></i> 25 Min.</span>
-              <span><i class="fas fa-fire me-1"></i> 380 kcal</span>
+    <!-- Bootstrap Carousel -->
+    <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+
+        <!-- ERSTE SEITE (Rezepte 1 bis 3) -->
+        <div class="carousel-item active">
+          <div class="row g-4">
+            <!-- Rezept 1 -->
+            <div class="col-md-4">
+              <div class="card h-100 border-0 shadow-sm recipe-card">
+                <img src="images/menemen.jpg" class="card-img-top recipe-img" alt="Menemen">
+                <div class="card-body d-flex flex-column">
+                  <span class="badge bg-warning text-dark align-self-start mb-2">Vegetarisch & Klassisch</span>
+                  <h5 class="card-title fw-bold">Menemen</h5>
+                  <p class="card-text text-muted flex-grow-1">Saftiges Rührei mit frischen Tomaten, grünen Spitzpaprika, Olivenöl und Kräutern.</p>
+                  <div class="d-flex justify-content-between text-muted small my-3">
+                    <span><i class="far fa-clock me-1"></i> 25 Min.</span>
+                    <span><i class="fas fa-fire me-1"></i> 380 kcal</span>
+                  </div>
+                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+                </div>
+              </div>
             </div>
-            <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+
+            <!-- Rezept 2 -->
+            <div class="col-md-4">
+              <div class="card h-100 border-0 shadow-sm recipe-card">
+                <img src="images/mercimek corbasi.jpg" class="card-img-top recipe-img" alt="Mercimek Corbasi">
+                <div class="card-body d-flex flex-column">
+                  <span class="badge bg-danger text-white align-self-start mb-2">Proteinreich</span>
+                  <h5 class="card-title fw-bold">Mercimek Çorbasi</h5>
+                  <p class="card-text text-muted flex-grow-1">Traditionelle türkische Linsensuppe mit roten Linsen, Gemüse und ausgewählten Gewürzen.</p>
+                  <div class="d-flex justify-content-between text-muted small my-3">
+                    <span><i class="far fa-clock me-1"></i> 30 Min.</span>
+                    <span><i class="fas fa-fire me-1"></i> 210 kcal</span>
+                  </div>
+                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rezept 3 -->
+            <div class="col-md-4">
+              <div class="card h-100 border-0 shadow-sm recipe-card">
+                <img src="images/coban salatasi.jpg" class="card-img-top recipe-img" alt="Coban Salatasi">
+                <div class="card-body d-flex flex-column">
+                  <span class="badge bg-success text-white align-self-start mb-2">Schnell & Leicht</span>
+                  <h5 class="card-title fw-bold">Çoban Salatasi</h5>
+                  <p class="card-text text-muted flex-grow-1">Frischer Salat aus fein gewürfelten Tomaten, Gurken, Paprika, Zwiebeln, verfeinert mit Olivenöl, Zitronensaft und frischer Petersilie.</p>
+                  <div class="d-flex justify-content-between text-muted small my-3">
+                    <span><i class="far fa-clock me-1"></i> 10 Min.</span>
+                    <span><i class="fas fa-fire me-1"></i> 120 kcal</span>
+                  </div>
+                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- ZWEITE SEITE (Rezepte 4 bis 6) -->
+        <div class="carousel-item">
+          <div class="row g-4">
+            <!-- Rezept 4 -->
+            <div class="col-md-4">
+              <div class="card h-100 border-0 shadow-sm recipe-card">
+                <img src="images/pelmeni.png" class="card-img-top recipe-img" alt="Pelmeni">
+                <div class="card-body d-flex flex-column">
+                  <span class="badge bg-warning text-dark align-self-start mb-2">Hausgemacht & Beliebt</span>
+                  <h5 class="card-title fw-bold">Pelmeni</h5>
+                  <p class="card-text text-muted flex-grow-1">Zarte Teigtaschen gefüllt mit gewürztem Hackfleisch, serviert mit Butter und frischem Dill.</p>
+                  <div class="d-flex justify-content-between text-muted small my-3">
+                    <span><i class="far fa-clock me-1"></i> 60 Min.</span>
+                    <span><i class="fas fa-fire me-1"></i> 420 kcal</span>
+                  </div>
+                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rezept 5 -->
+            <div class="col-md-4">
+              <div class="card h-100 border-0 shadow-sm recipe-card">
+                <img src="images/syrniki.png" class="card-img-top recipe-img" alt="Syrniki">
+                <div class="card-body d-flex flex-column">
+                  <span class="badge bg-danger text-white align-self-start mb-2">Süß</span>
+                  <h5 class="card-title fw-bold">Syrniki</h5>
+                  <p class="card-text text-muted flex-grow-1">Fluffige russische Quarkpfannkuchen mit Puderzucker und saurer Sahne oder Beeren.</p>
+                  <div class="d-flex justify-content-between text-muted small my-3">
+                    <span><i class="far fa-clock me-1"></i> 25 Min.</span>
+                    <span><i class="fas fa-fire me-1"></i> 320 kcal</span>
+                  </div>
+                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rezept 6 -->
+            <div class="col-md-4">
+              <div class="card h-100 border-0 shadow-sm recipe-card">
+                <img src="images/schnitzel.png" class="card-img-top recipe-img" alt="schnitzel">
+                <div class="card-body d-flex flex-column">
+                  <span class="badge bg-success text-white align-self-start mb-2">Klassisch & Knusprig</span>
+                  <h5 class="card-title fw-bold">Wiener Schnitzel vom Kalb</h5>
+                  <p class="card-text text-muted flex-grow-1">Zartes Kalbsschnitzel in einer fluffigen Panade, mit einer Scheibe Zitrone und Petersilienkartoffeln.</p>
+                  <div class="d-flex justify-content-between text-muted small my-3">
+                    <span><i class="far fa-clock me-1"></i> 40 Min.</span>
+                    <span><i class="fas fa-fire me-1"></i> 520 kcal</span>
+                  </div>
+                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+                </div>
+              </div>
+            </div> 
+          </div>
+        </div>
+
       </div>
 
-      <!-- Rezept 2 -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm recipe-card">
-          <img src="images/mercimek corbasi.jpg" class="card-img-top recipe-img" alt="Mercimek Corbasi">
-          <div class="card-body d-flex flex-column">
-            <span class="badge bg-danger text-white align-self-start mb-2">Proteinreich</span>
-            <h5 class="card-title fw-bold">Mercimek Çorbasi</h5>
-            <p class="card-text text-muted flex-grow-1">Traditionelle türkische Linsensuppe mit roten Linsen, Gemüse und ausgewählten Gewürzen.</p>
-            <div class="d-flex justify-content-between text-muted small my-3">
-              <span><i class="far fa-clock me-1"></i> 30 Min.</span>
-              <span><i class="fas fa-fire me-1"></i> 210 kcal</span>
-            </div>
-            <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rezept 3 -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm recipe-card">
-          <img src="images/coban salatasi.jpg" class="card-img-top recipe-img" alt="Coban Salatasi">
-          <div class="card-body d-flex flex-column">
-            <span class="badge bg-success text-white align-self-start mb-2">Schnell & Leicht</span>
-            <h5 class="card-title fw-bold">Çoban Salatasi</h5>
-            <p class="card-text text-muted flex-grow-1">Frischer Salat aus fein gewürfelten Tomaten, Gurken, Paprika, Zwiebeln, verfeinert mit Olivenöl, Zitronensaft und frischer Petersilie.</p>
-            <div class="d-flex justify-content-between text-muted small my-3">
-              <span><i class="far fa-clock me-1"></i> 10 Min.</span>
-              <span><i class="fas fa-fire me-1"></i> 120 kcal</span>
-            </div>
-            <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-          </div>
-        </div>
-      </div>
-
-       <!-- Rezept 4 -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm recipe-card">
-          <img src="images/pelmeni.png" class="card-img-top recipe-img" alt="Pelmeni">
-          <div class="card-body d-flex flex-column">
-            <span class="badge bg-warning text-dark align-self-start mb-2">Hausgemacht & Beliebt</span>
-            <h5 class="card-title fw-bold">Pelmeni</h5>
-            <p class="card-text text-muted flex-grow-1">Zarte Teigtaschen gefüllt mit gewürztem Hackfleisch, serviert mit Butter und frischem Dill.</p>
-            <div class="d-flex justify-content-between text-muted small my-3">
-              <span><i class="far fa-clock me-1"></i> 60 Min.</span>
-              <span><i class="fas fa-fire me-1"></i> 420 kcal</span>
-            </div>
-            <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-          </div>
-        </div>
-      </div>
-
-       <!-- Rezept 5 -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm recipe-card">
-          <img src="images/syrniki.png" class="card-img-top recipe-img" alt="Syrniki">
-          <div class="card-body d-flex flex-column">
-            <span class="badge bg-danger text-white align-self-start mb-2">Süß</span>
-            <h5 class="card-title fw-bold">Syrniki</h5>
-            <p class="card-text text-muted flex-grow-1">Fluffige russische Quarkpfannkuchen mit Puderzucker und saurer Sahne oder Beeren.</p>
-            <div class="d-flex justify-content-between text-muted small my-3">
-              <span><i class="far fa-clock me-1"></i> 25 Min.</span>
-              <span><i class="fas fa-fire me-1"></i> 320 kcal</span>
-            </div>
-            <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-          </div>
-        </div>
-      </div>
-
-       <!-- Rezept 6 -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm recipe-card">
-          <img src="images/schnitzel.png" class="card-img-top recipe-img" alt="schnitzel">
-          <div class="card-body d-flex flex-column">
-            <span class="badge bg-success text-white align-self-start mb-2">Klassisch & Knusprig</span>
-            <h5 class="card-title fw-bold">Wiener Schnitzel vom Kalb</h5>
-            <p class="card-text text-muted flex-grow-1">Zartes Kalbsschnitzel in einer fluffigen Panade, mit einer Scheibe Zitrone und Petersilienkartoffeln.</p>
-            <div class="d-flex justify-content-between text-muted small my-3">
-              <span><i class="far fa-clock me-1"></i> 40 Min.</span>
-              <span><i class="fas fa-fire me-1"></i> 520 kcal</span>
-            </div>
-            <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-          </div>
-        </div>
-      </div> 
-
+      <!-- Karussell-Pfeile -->
+      <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev" style="width: 5%; filter: invert(1);">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Zurück</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#recipeCarousel" data-bs-slide="next" style="width: 5%; filter: invert(1);">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Weiter</span>
+      </button>
     </div>
+
   </div>
 </section>
 
