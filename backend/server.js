@@ -3,6 +3,7 @@ const { randomUUID } = require('crypto');
 const bcrypt = require('bcrypt'); // Für die Passwort-Verschlüsselung
 const cors = require('cors');     // Falls dein Frontend auf einem anderen Port läuft
 const jwt = require('jsonwebtoken'); // Für das Generieren der Login-Tokens
+const defaultCommunityRecipes = require('./community-recipes');
 
 const app = express();
 app.use(express.json());
@@ -10,6 +11,16 @@ app.use(cors({
     origin: 'http://localhost:8000'
 }));
 const PORT = process.env.PORT || 3000;
+const nutritionSearchCache = new Map();
+const nutritionProducts = new Map();
+const communityRecipes = defaultCommunityRecipes.map((recipe) => ({
+    ...recipe,
+    ingredients: [...recipe.ingredients],
+    instructions: [...recipe.instructions],
+    nutritionIngredients: [...recipe.nutritionIngredients],
+    addedByName: 'Lezzetify',
+    creatorType: 'lezzetify'
+}));
 
 // Geheimer Schlüssel für die Tokens (In Produktion in eine .env Datei auslagern!)
 const JWT_SECRET = 'lezzetify_super_secret_key_123'; 
@@ -57,8 +68,17 @@ app.post('/api/register', async (req, res) => {
 
         console.log('Aktuelle Benutzer in der DB:', users); // Zur Kontrolle in der Konsole
 
-        // 4. Erfolgsmeldung zurücksenden
-        res.status(201).json({ message: 'Benutzer erfolgreich angelegt!' });
+        const token = jwt.sign(
+            { userId: newUser.id, email: newUser.email },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.status(201).json({
+            message: 'Benutzer erfolgreich angelegt!',
+            token,
+            user: { id: newUser.id, name: newUser.name, email: newUser.email }
+        });
 
     } catch (error) {
         console.error(error);
@@ -122,11 +142,45 @@ app.get('/api/recipes', authenticateToken, (req, res) => {
     res.json(req.user.recipes);
 });
 
+app.get('/api/community/recipes', authenticateToken, (req, res) => {
+    res.json(communityRecipes);
+});
+
+app.get('/api/community/recipes/:id', authenticateToken, (req, res) => {
+    const recipe = communityRecipes.find((entry) => entry.id === req.params.id);
+    if (!recipe) {
+        return res.status(404).json({ error: 'Community-Rezept wurde nicht gefunden.' });
+    }
+    res.json(recipe);
+});
+
 app.post('/api/recipes', authenticateToken, (req, res) => {
-    const { title, description = '', ingredients, instructions = '', prepTime } = req.body;
+    const { title, description = '', ingredients, instructions = '', prepTime, servings, nutritionIngredients, shareWithCommunity } = req.body;
     const cleanIngredients = Array.isArray(ingredients)
         ? ingredients.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
         : [];
+    const cleanNutritionIngredients = Array.isArray(nutritionIngredients)
+        ? nutritionIngredients.flatMap((entry) => {
+            if (!entry || typeof entry.ingredient !== 'string' || typeof entry.productName !== 'string') {
+                return [];
+            }
+            const verifiedProduct = typeof entry.productCode === 'string'
+                ? nutritionProducts.get(entry.productCode)
+                : null;
+            if (!verifiedProduct) {
+                return [];
+            }
+            const amountGrams = Number(entry.amountGrams);
+            return [{
+                ingredient: entry.ingredient.trim(),
+                amountGrams: Number.isFinite(amountGrams) && amountGrams > 0 ? amountGrams : null,
+                productName: verifiedProduct.name,
+                productCode: entry.productCode,
+                nutrients: { ...verifiedProduct.nutrients }
+            }];
+        })
+        : [];
+    const servingsCount = Number(servings);
 
     if (typeof title !== 'string' || !title.trim() || cleanIngredients.length === 0) {
         return res.status(400).json({ error: 'Rezeptname und mindestens eine Zutat sind erforderlich.' });
@@ -138,11 +192,118 @@ app.post('/api/recipes', authenticateToken, (req, res) => {
         description: typeof description === 'string' ? description.trim() : '',
         ingredients: cleanIngredients,
         instructions: typeof instructions === 'string' ? instructions.trim() : '',
-        prepTime: Number.isFinite(Number(prepTime)) && Number(prepTime) > 0 ? Number(prepTime) : null
+        prepTime: Number.isFinite(Number(prepTime)) && Number(prepTime) > 0 ? Number(prepTime) : null,
+        servings: Number.isInteger(servingsCount) && servingsCount > 0 && servingsCount <= 100 ? servingsCount : 1,
+        nutritionIngredients: cleanNutritionIngredients,
+        category: 'Community-Rezept',
+        image: null,
+        createdByName: req.user.name
     };
 
     req.user.recipes.push(recipe);
-    res.status(201).json({ message: 'Rezept gespeichert.', recipe });
+    let communityRecipe = null;
+    if (shareWithCommunity === true) {
+        communityRecipe = {
+            ...recipe,
+            id: randomUUID(),
+            ingredients: [...recipe.ingredients],
+            instructions: recipe.instructions.split('\n').map((step) => step.trim()).filter(Boolean),
+            addedByName: req.user.name,
+            creatorType: 'user'
+        };
+        communityRecipes.push(communityRecipe);
+    }
+    res.status(201).json({
+        message: shareWithCommunity === true
+            ? 'Rezept gespeichert und zur Community hinzugefügt.'
+            : 'Rezept gespeichert.',
+        recipe,
+        communityRecipe
+    });
+});
+
+app.get('/api/nutrition/search', authenticateToken, async (req, res) => {
+    const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    if (!query || query.length > 80) {
+        return res.status(400).json({ error: 'Bitte gib eine Zutat mit höchstens 80 Zeichen ein.' });
+    }
+
+    const cacheKey = query.toLocaleLowerCase('de-DE');
+    const cachedResults = nutritionSearchCache.get(cacheKey);
+    if (cachedResults && cachedResults.expiresAt > Date.now()) {
+        return res.json({ products: cachedResults.products, source: 'Open Food Facts' });
+    }
+
+    try {
+        const url = new URL('https://world.openfoodfacts.org/api/v2/search');
+        url.searchParams.set('search_terms', query);
+        url.searchParams.set('fields', 'code,product_name,product_name_de,brands,nutriments');
+        url.searchParams.set('page_size', '10');
+        url.searchParams.set('lc', 'de');
+
+        const response = await fetch(url, {
+            headers: { 'User-Agent': 'Lezzetify/1.0 (German recipe nutrition lookup)' },
+            signal: AbortSignal.timeout(8000)
+        });
+        if (!response.ok) {
+            console.error(`Open Food Facts returned HTTP ${response.status} for a nutrition search.`);
+            return res.status(502).json({ error: 'Die Nährwertsuche ist gerade nicht erreichbar.' });
+        }
+
+        const data = await response.json();
+        const products = (Array.isArray(data.products) ? data.products : [])
+            .map((product) => {
+                const nutriments = product.nutriments || {};
+                const readValue = (rawValue) => {
+                    if (rawValue === null || rawValue === undefined || rawValue === '') {
+                        return null;
+                    }
+                    const value = Number(rawValue);
+                    return Number.isFinite(value) && value >= 0 ? value : null;
+                };
+                const kcalValue = readValue(nutriments['energy-kcal_100g']);
+                const energyKj = readValue(nutriments['energy_100g']);
+                const kcal = kcalValue !== null ? kcalValue : energyKj !== null ? energyKj / 4.184 : null;
+                const readNutrient = (key) => {
+                    return readValue(nutriments[`${key}_100g`]);
+                };
+                const productName = product.product_name_de || product.product_name;
+                if (typeof productName !== 'string' || !productName.trim() || kcal === null) {
+                    return null;
+                }
+                return {
+                    code: typeof product.code === 'string' ? product.code : '',
+                    name: productName.trim(),
+                    brand: typeof product.brands === 'string' ? product.brands.trim() : '',
+                    nutrients: {
+                        kcal,
+                        protein: readNutrient('proteins'),
+                        carbohydrates: readNutrient('carbohydrates'),
+                        fat: readNutrient('fat'),
+                        fiber: readNutrient('fiber'),
+                        salt: readNutrient('salt')
+                    }
+                };
+            })
+            .filter(Boolean);
+
+        products.forEach((product) => {
+            if (product.code) {
+                if (nutritionProducts.size >= 5000 && !nutritionProducts.has(product.code)) {
+                    nutritionProducts.delete(nutritionProducts.keys().next().value);
+                }
+                nutritionProducts.set(product.code, { name: product.name, nutrients: { ...product.nutrients } });
+            }
+        });
+        if (nutritionSearchCache.size >= 500) {
+            nutritionSearchCache.delete(nutritionSearchCache.keys().next().value);
+        }
+        nutritionSearchCache.set(cacheKey, { products, expiresAt: Date.now() + 6 * 60 * 60 * 1000 });
+        res.json({ products, source: 'Open Food Facts' });
+    } catch (error) {
+        console.error('Open Food Facts nutrition search failed:', error.message);
+        res.status(502).json({ error: 'Die Nährwertsuche ist fehlgeschlagen. Bitte versuche es später erneut.' });
+    }
 });
 
 app.get('/api/plans', authenticateToken, (req, res) => {
