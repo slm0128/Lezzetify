@@ -1,4 +1,5 @@
 const express = require('express');
+const { randomUUID } = require('crypto');
 const bcrypt = require('bcrypt'); // Für die Passwort-Verschlüsselung
 const cors = require('cors');     // Falls dein Frontend auf einem anderen Port läuft
 const jwt = require('jsonwebtoken'); // Für das Generieren der Login-Tokens
@@ -23,10 +24,16 @@ app.get('/', (req, res) => {
 // --- REGISTRIERUNG: Benutzer speichern ---
 app.post('/api/register', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { name, email, password } = req.body;
+
+        if (typeof name !== 'string' || !name.trim() || name.trim().length > 40
+            || typeof email !== 'string' || !email.trim()
+            || typeof password !== 'string' || !password) {
+            return res.status(400).json({ error: 'Benutzername, E-Mail und Passwort sind erforderlich.' });
+        }
 
         // 1. Prüfen, ob der Benutzer schon existiert
-        const existingUser = users.find(user => user.email === email);
+        const existingUser = users.find(user => user.email === email.trim());
         if (existingUser) {
             return res.status(400).json({ error: 'Ein Benutzer mit dieser E-Mail existiert bereits.' });
         }
@@ -39,9 +46,11 @@ app.post('/api/register', async (req, res) => {
         // 3. Neuen Benutzer erstellen und speichern
         const newUser = {
             id: Date.now().toString(), // Erzeugt eine simple, eindeutige ID
-            email: email,
+            name: name.trim(),
+            email: email.trim(),
             password: hashedPassword,  // Nur das verschlüsselte Passwort speichern!
-            recipes: []
+            recipes: [],
+            mealPlans: []
         };
 
         users.push(newUser); // In unser Array speichern
@@ -80,7 +89,7 @@ app.post('/api/login', async (req, res) => {
         res.json({
             message: 'Erfolgreich eingeloggt!',
             token,
-            user: { id: user.id, email: user.email }
+            user: { id: user.id, name: user.name, email: user.email }
         });
     } catch (error) {
         res.status(500).json({ error: 'Fehler beim Login.' });
@@ -134,6 +143,37 @@ app.post('/api/recipes', authenticateToken, (req, res) => {
 
     req.user.recipes.push(recipe);
     res.status(201).json({ message: 'Rezept gespeichert.', recipe });
+});
+
+app.get('/api/plans', authenticateToken, (req, res) => {
+    res.json(req.user.mealPlans);
+});
+
+app.post('/api/plans', authenticateToken, (req, res) => {
+    const { recipeId, date } = req.body;
+    const recipe = req.user.recipes.find((entry) => entry.id === recipeId);
+
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)
+        || Number.isNaN(Date.parse(`${date}T00:00:00Z`))
+        || new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date) {
+        return res.status(400).json({ error: 'Bitte wähle ein gültiges Datum.' });
+    }
+    if (!recipe) {
+        return res.status(400).json({ error: 'Bitte wähle ein gültiges Rezept.' });
+    }
+
+    const plan = { id: randomUUID(), recipeId, date };
+    req.user.mealPlans.push(plan);
+    res.status(201).json({ message: 'Gericht eingeplant.', plan });
+});
+
+app.delete('/api/plans/:id', authenticateToken, (req, res) => {
+    const planIndex = req.user.mealPlans.findIndex((plan) => plan.id === req.params.id);
+    if (planIndex === -1) {
+        return res.status(404).json({ error: 'Geplanter Eintrag wurde nicht gefunden.' });
+    }
+    req.user.mealPlans.splice(planIndex, 1);
+    res.status(204).end();
 });
 
 app.get('/api/logintest', async (req, res) => {

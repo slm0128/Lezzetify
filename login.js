@@ -59,6 +59,7 @@ if (registerForm) {
     registerForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
+    const nameInput = document.getElementById('registerName').value.trim();
     const emailInput = document.getElementById('registerEmail').value;
     const passwordInput = document.getElementById('registerPassword').value;
 
@@ -66,7 +67,7 @@ if (registerForm) {
             const response = await fetch(`${API_BASE_URL}/api/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailInput, password: passwordInput })
+                body: JSON.stringify({ name: nameInput, email: emailInput, password: passwordInput })
             });
             const data = await response.json();
 
