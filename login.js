@@ -75,7 +75,10 @@ if (registerForm) {
             registerMessage.className = `alert py-2 small ${response.ok ? 'alert-success' : 'alert-danger'}`;
 
             if (response.ok) {
-                registerForm.reset();
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('email', data.user.email);
+                window.location.href = 'dashboard.html';
             }
         } catch (error) {
             registerMessage.textContent = 'Verbindung zum Server fehlgeschlagen.';
