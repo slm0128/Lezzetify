@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken'); // Für das Generieren der Login-Tokens
 const defaultCommunityRecipes = require('./community-recipes');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use(cors({
     origin: 'http://localhost:8000'
 }));
@@ -61,7 +61,8 @@ app.post('/api/register', async (req, res) => {
             email: email.trim(),
             password: hashedPassword,  // Nur das verschlüsselte Passwort speichern!
             recipes: [],
-            mealPlans: []
+            mealPlans: [],
+            favorites: { recipes: [], community: [] }
         };
 
         users.push(newUser); // In unser Array speichern
@@ -154,8 +155,83 @@ app.get('/api/community/recipes/:id', authenticateToken, (req, res) => {
     res.json(recipe);
 });
 
+app.get('/api/favorites', authenticateToken, (req, res) => {
+    req.user.favorites = req.user.favorites || { recipes: [], community: [] };
+    res.json(req.user.favorites);
+});
+
+app.post('/api/favorites', authenticateToken, (req, res) => {
+    const { type, recipeId } = req.body;
+    if (!['recipes', 'community'].includes(type) || typeof recipeId !== 'string') {
+        return res.status(400).json({ error: 'Ungültiges Rezept für Favoriten.' });
+    }
+    const recipeExists = type === 'recipes'
+        ? req.user.recipes.some((recipe) => recipe.id === recipeId)
+        : communityRecipes.some((recipe) => recipe.id === recipeId);
+    if (!recipeExists) {
+        return res.status(404).json({ error: 'Rezept wurde nicht gefunden.' });
+    }
+
+    req.user.favorites = req.user.favorites || { recipes: [], community: [] };
+    const favorites = req.user.favorites[type];
+    const favoriteIndex = favorites.indexOf(recipeId);
+    const favorited = favoriteIndex === -1;
+    if (favorited) {
+        favorites.push(recipeId);
+    } else {
+        favorites.splice(favoriteIndex, 1);
+    }
+    res.json({ favorited, favorites: req.user.favorites });
+});
+
+app.post('/api/recipes/from-community/:id', authenticateToken, (req, res) => {
+    const communityRecipe = communityRecipes.find((recipe) => recipe.id === req.params.id);
+    if (!communityRecipe) {
+        return res.status(404).json({ error: 'Community-Rezept wurde nicht gefunden.' });
+    }
+    const savedRecipe = req.user.recipes.find((recipe) => recipe.sourceCommunityId === communityRecipe.id);
+    if (savedRecipe) {
+        return res.json({ message: 'Rezept ist bereits in deiner Sammlung.', recipe: savedRecipe });
+    }
+
+    const selectedNutrition = Array.isArray(req.body.nutritionIngredients)
+        ? req.body.nutritionIngredients.flatMap((entry) => {
+            if (!entry || typeof entry.ingredient !== 'string' || typeof entry.productCode !== 'string') {
+                return [];
+            }
+            const verifiedProduct = nutritionProducts.get(entry.productCode);
+            if (!verifiedProduct) {
+                return [];
+            }
+            const amountGrams = Number(entry.amountGrams);
+            return [{
+                ingredient: entry.ingredient.trim(),
+                amountGrams: Number.isFinite(amountGrams) && amountGrams > 0 ? amountGrams : null,
+                productName: verifiedProduct.name,
+                productCode: entry.productCode,
+                nutrients: { ...verifiedProduct.nutrients }
+            }];
+        })
+        : [];
+    const recipe = {
+        ...communityRecipe,
+        id: randomUUID(),
+        ingredients: [...communityRecipe.ingredients],
+        instructions: Array.isArray(communityRecipe.instructions)
+            ? communityRecipe.instructions.join('\n')
+            : communityRecipe.instructions,
+        nutritionIngredients: selectedNutrition.length
+            ? selectedNutrition
+            : [...(communityRecipe.nutritionIngredients || [])],
+        createdByName: req.user.name,
+        sourceCommunityId: communityRecipe.id
+    };
+    req.user.recipes.push(recipe);
+    res.status(201).json({ message: 'Rezept wurde zu deiner Sammlung hinzugefügt.', recipe });
+});
+
 app.post('/api/recipes', authenticateToken, (req, res) => {
-    const { title, description = '', ingredients, instructions = '', prepTime, servings, nutritionIngredients, shareWithCommunity } = req.body;
+    const { title, description = '', ingredients, instructions = '', prepTime, servings, nutritionIngredients, shareWithCommunity, image = null } = req.body;
     const cleanIngredients = Array.isArray(ingredients)
         ? ingredients.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())
         : [];
@@ -185,6 +261,11 @@ app.post('/api/recipes', authenticateToken, (req, res) => {
     if (typeof title !== 'string' || !title.trim() || cleanIngredients.length === 0) {
         return res.status(400).json({ error: 'Rezeptname und mindestens eine Zutat sind erforderlich.' });
     }
+    if (image !== null && (typeof image !== 'string'
+        || !/^data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+=*$/.test(image)
+        || Buffer.from(image.slice(image.indexOf(',') + 1), 'base64').length > 3 * 1024 * 1024)) {
+        return res.status(400).json({ error: 'Das Cover muss ein gültiges Bild mit höchstens 3 MB sein.' });
+    }
 
     const recipe = {
         id: Date.now().toString(),
@@ -196,7 +277,7 @@ app.post('/api/recipes', authenticateToken, (req, res) => {
         servings: Number.isInteger(servingsCount) && servingsCount > 0 && servingsCount <= 100 ? servingsCount : 1,
         nutritionIngredients: cleanNutritionIngredients,
         category: 'Community-Rezept',
-        image: null,
+        image,
         createdByName: req.user.name
     };
 
