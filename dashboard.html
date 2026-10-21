@@ -9,8 +9,9 @@
     <link rel="stylesheet" href="library/css/bootstrap.min.css">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="library/css/all.min.css">
-    <!-- Eigene Styles -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Gemeinsame Basisstile zuerst, danach die Dashboardregeln. -->
+    <link rel="stylesheet" href="library/css/global.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
@@ -197,7 +198,7 @@
                 <!-- Rezept-Grid (Liste für eigene Rezepte) -->
                 <div id="recipe-list" class="row g-4">
                     <div class="col-12 text-center py-5" id="empty-state">
-                        <img src="images/logo.png" alt="Lezzetify" style="width: 70px; opacity: 0.4;" class="mb-3">
+                        <img src="images/logo.png" alt="Lezzetify" class="recipe-empty-logo mb-3">
                         <h5 class="fw-bold text-dark">Deine Sammlung ist noch leer</h5>
                         <p class="text-muted small">Klicke oben auf "Neues Rezept", um dein erstes Gericht hinzuzufügen.</p>
                     </div>
