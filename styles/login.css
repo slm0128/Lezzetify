@@ -1,0 +1,12 @@
+/* Nur für den Login- und Registrierungsbildschirm. */
+.auth-main {
+    background-color: #fcf8f2;
+}
+
+.auth-card {
+    border-radius: 20px;
+}
+
+.auth-error {
+    display: none;
+}
