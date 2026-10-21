@@ -15,7 +15,7 @@
 <body class="bg-light d-flex flex-column min-vh-100">
 
     <!-- =========================================
-         NAVIGATION (Angepasst an Startseite)
+         NAVIGATION
          ========================================= -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
@@ -43,31 +43,33 @@
     <!-- =========================================
          HAUPTBEREICH DASHBOARD
          ========================================= -->
-    <main class="flex-grow-1 py-5">
+    <main class="flex-grow-1 py-4">
         <div class="container">
             
-            <!-- Header-Bereich mit Begrüßung und Call-to-Action -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+            <!-- Header-Bereich mit Begrüßung -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                 <div>
-                    <span class="badge bg-warning text-dark mb-2">Dein Rezeptmanager</span>
-                    <h2 class="fw-bold text-dark mb-0">Willkommen in deiner Küche, <span class="text-primary-custom" id="user-name">Chefkoch</span>! 👩‍🍳</h2>
+                    <span class="badge bg-warning text-dark mb-1">Dein Rezeptmanager</span>
+                    <h2 class="fw-bold text-dark mb-0">Willkommen, <span class="text-primary-custom" id="user-name">Chefkoch</span>! 👩‍🍳</h2>
                 </div>
-                <!-- Button öffnet das Modal -->
                 <button class="btn btn-primary-custom btn-lg rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#createRecipeModal">
                     <i class="fas fa-plus me-2"></i>Neues Rezept
                 </button>
             </div>
 
-            <!-- Statistik & Übersicht (Neue Funktion) -->
-            <div class="row g-4 mb-4">
+            <!-- Benachrichtigungs-Box -->
+            <div id="dashboard-message" class="alert d-none" role="status"></div>
+
+            <!-- Statistik & Übersicht -->
+            <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body d-flex align-items-center">
+                        <div class="card-body d-flex align-items-center p-3">
                             <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3 text-primary-custom">
-                                <i class="fas fa-book-open fa-2x"></i>
+                                <i class="fas fa-book-open fa-lg"></i>
                             </div>
                             <div>
-                                <h6 class="text-muted mb-0">Meine Rezepte</h6>
+                                <h6 class="text-muted mb-0 small">Meine Rezepte</h6>
                                 <h3 class="fw-bold mb-0" id="recipe-count">0</h3>
                             </div>
                         </div>
@@ -75,25 +77,25 @@
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body d-flex align-items-center">
+                        <div class="card-body d-flex align-items-center p-3">
                             <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3 text-danger">
-                                <i class="fas fa-heart fa-2x"></i>
+                                <i class="fas fa-heart fa-lg"></i>
                             </div>
                             <div>
-                                <h6 class="text-muted mb-0">Favoriten</h6>
-                                <h3 class="fw-bold mb-0">0</h3>
+                                <h6 class="text-muted mb-0 small">Favoriten</h6>
+                                <h3 class="fw-bold mb-0" id="favorite-count">0</h3>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body d-flex align-items-center">
+                        <div class="card-body d-flex align-items-center p-3">
                             <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3 text-success">
-                                <i class="fas fa-calendar-alt fa-2x"></i>
+                                <i class="fas fa-calendar-alt fa-lg"></i>
                             </div>
                             <div>
-                                <h6 class="text-muted mb-0">Für diese Woche</h6>
+                                <h6 class="text-muted mb-0 small">Geplant für diese Woche</h6>
                                 <h3 class="fw-bold mb-0" id="planned-count">0</h3>
                             </div>
                         </div>
@@ -101,118 +103,133 @@
                 </div>
             </div>
 
-            <!-- Such- und Filterleiste (Neue Funktion) -->
-            <div class="card border-0 shadow-sm rounded-4 mb-5">
-                <div class="card-body p-3">
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-0" placeholder="Rezepte durchsuchen...">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select">
-                                <option selected>Kategorie...</option>
-                                <option>Frühstück</option>
-                                <option>Hauptgericht</option>
-                                <option>Dessert</option>
-                                <option>Vegan</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select">
-                                <option selected>Sortieren nach...</option>
-                                <option>Neueste zuerst</option>
-                                <option>A-Z</option>
-                                <option>Schnellste Zubereitung</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Benachrichtigung -->
-            <div id="dashboard-message" class="alert d-none" role="status"></div>
-
-            <section class="community-section mb-5" aria-labelledby="community-heading">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-3">
-                    <div>
-                        <span class="badge bg-warning text-dark mb-2">Gemeinsam kochen</span>
-                        <h2 class="h3 fw-bold mb-1" id="community-heading">Rezepte aus der Community</h2>
-                        <p class="text-muted mb-0">Entdecke Rezepte von Lezzetify und anderen Nutzerinnen und Nutzern.</p>
-                    </div>
-                    <div class="input-group community-search">
-                        <span class="input-group-text bg-white"><i class="fas fa-search text-muted" aria-hidden="true"></i></span>
-                        <input class="form-control" id="community-search" type="search" placeholder="Community-Rezepte suchen..." aria-label="Community-Rezepte suchen">
-                    </div>
-                </div>
-                <div class="row g-4" id="community-recipe-list"></div>
-                <p class="text-muted text-center py-4" id="community-empty-state" hidden>Keine Community-Rezepte gefunden.</p>
-            </section>
-
+            <!-- WOCHENPLANER & EINKAUFSLISTE -->
             <section class="meal-planner card border-0 shadow-sm rounded-4 mb-5" aria-labelledby="meal-planner-heading">
                 <div class="card-body p-4">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                         <div>
-                            <h2 class="h4 fw-bold mb-1" id="meal-planner-heading"><i class="fas fa-calendar-alt text-primary-custom me-2"></i>Wochenplan & Einkaufsliste</h2>
-                            <p class="text-muted mb-0">Plane deine Gerichte und lass dir die Zutaten für den Tag oder die Woche anzeigen.</p>
+                            <h2 class="h5 fw-bold mb-1" id="meal-planner-heading">
+                                <i class="fas fa-calendar-alt text-primary-custom me-2"></i>Wochenplan & Einkaufsliste
+                            </h2>
+                            <p class="text-muted small mb-0">Plane deine Gerichte und erstelle automatisch deine Zutatenliste.</p>
                         </div>
                         <div class="d-flex flex-column flex-sm-row gap-2">
-                            <select class="form-select" id="plan-period" aria-label="Zeitraum für Plan und Einkaufsliste">
+                            <select class="form-select form-select-sm" id="plan-period" aria-label="Zeitraum für Plan">
                                 <option value="week">Woche</option>
                                 <option value="day">Tag</option>
                             </select>
-                            <input class="form-control" type="date" id="plan-view-date" aria-label="Datum für Plan und Einkaufsliste">
+                            <input class="form-control form-select-sm" type="date" id="plan-view-date" aria-label="Datum für Plan">
                         </div>
                     </div>
+
                     <div class="row g-4">
                         <div class="col-lg-7">
-                            <h3 class="h6 fw-bold">Gericht einplanen</h3>
+                            <h3 class="h6 fw-bold mb-3">Gericht einplanen</h3>
                             <form id="plan-form" class="row g-2 align-items-end mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-bold" for="plan-recipe">Rezept</label>
+                                    <label class="form-label small text-muted fw-bold" for="plan-recipe">Rezept auswählen</label>
                                     <select class="form-select" id="plan-recipe" required>
                                         <option value="">Zuerst ein Rezept wählen</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-bold" for="plan-date">Kochtag</label>
+                                    <label class="form-label small text-muted fw-bold" for="plan-date">Kochtag</label>
                                     <input class="form-control" type="date" id="plan-date" required>
                                 </div>
                                 <div class="col-md-2 d-grid">
                                     <button class="btn btn-primary-custom" id="save-plan-button" type="submit" disabled>Planen</button>
                                 </div>
                             </form>
-                            <h3 class="h6 fw-bold">Geplante Gerichte <span class="text-muted fw-normal" id="plan-range-label"></span></h3>
-                            <ul class="list-group meal-plan-list" id="meal-plan-list"></ul>
+
+                            <h3 class="h6 fw-bold mb-2">Geplante Gerichte <span class="text-muted fw-normal" id="plan-range-label"></span></h3>
+                            <div class="meal-plan-calendar is-week" id="meal-plan-calendar" role="list" aria-live="polite"></div>
                             <p class="text-muted small mb-0 mt-2" id="plan-empty-state">Für diesen Zeitraum ist noch kein Gericht eingeplant.</p>
                         </div>
+
                         <div class="col-lg-5">
-                            <div class="shopping-list-panel rounded-4 p-3 h-100">
-                                <h3 class="h6 fw-bold"><i class="fas fa-shopping-basket text-primary-custom me-2"></i>Einkaufsliste</h3>
+                            <div class="shopping-list-panel rounded-4 p-3 bg-light border h-100">
+                                <h3 class="h6 fw-bold mb-3"><i class="fas fa-shopping-basket text-primary-custom me-2"></i>Einkaufsliste</h3>
                                 <ul class="shopping-list mb-2" id="shopping-list"></ul>
                                 <p class="text-muted small mb-0" id="shopping-empty-state">Plane Gerichte ein, um Zutaten hier zu sammeln.</p>
-                                <p class="text-muted small mb-0 mt-2">Gleiche Zutaten werden nach geplanten Gerichten zusammengefasst; Mengen werden nicht automatisch umgerechnet.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Rezept-Grid (Liste) -->
-            <div id="recipe-list" class="row g-4">
-                
-                <!-- Leerer Zustand (Wird angezeigt, wenn noch keine Rezepte da sind) -->
-                <div class="col-12 text-center py-5" id="empty-state">
-                    <img src="images/logo.png" alt="Lezzetify" style="width: 80px; opacity: 0.5;" class="mb-3">
-                    <h4 class="fw-bold text-dark">Deine Sammlung ist noch leer</h4>
-                    <p class="text-muted">Klicke oben auf "Neues Rezept", um dein erstes Gericht hinzuzufügen.</p>
+            <!-- MEINE REZEPTE (HAUPTSEKTION MIT SUCHE & FILTER) -->
+            <section class="mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                    <h2 class="h4 fw-bold text-dark mb-0"><i class="fas fa-utensils text-warning me-2"></i>Rezeptsammlung</h2>
                 </div>
-                
-                <!-- Hier werden später durch JavaScript die Rezept-Karten eingefügt (wie auf der Startseite) -->
-                
-            </div>
+
+                <!-- Such- und Filterleiste für eigene Rezepte -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-3">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Eigene Rezepte durchsuchen...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select">
+                                    <option selected>Kategorie...</option>
+                                    <option>Frühstück</option>
+                                    <option>Hauptgericht</option>
+                                    <option>Dessert</option>
+                                    <option>Vegan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select">
+                                    <option selected>Sortieren nach...</option>
+                                    <option>Neueste zuerst</option>
+                                    <option>A-Z</option>
+                                    <option>Schnellste Zubereitung</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rezept-Grid (Liste für eigene Rezepte) -->
+                <div id="recipe-list" class="row g-4">
+                    <div class="col-12 text-center py-5" id="empty-state">
+                        <img src="images/logo.png" alt="Lezzetify" style="width: 70px; opacity: 0.4;" class="mb-3">
+                        <h5 class="fw-bold text-dark">Deine Sammlung ist noch leer</h5>
+                        <p class="text-muted small">Klicke oben auf "Neues Rezept", um dein erstes Gericht hinzuzufügen.</p>
+                    </div>
+                </div>
+
+                <!-- COMMUNITY REZEPTE -->
+                <div class="card border-0 shadow-sm rounded-4 mt-4 mb-4 overflow-hidden">
+                    <div class="card-header bg-white border-0 p-3 d-flex justify-content-between align-items-center"
+                         role="button" data-bs-toggle="collapse" data-bs-target="#communityCollapse" aria-expanded="false" aria-controls="communityCollapse">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-warning text-dark"><i class="fas fa-users me-1"></i> Community</span>
+                            <h3 class="fw-bold mb-0 text-dark h6" id="community-heading">Community-Rezepte entdecken</h3>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small">
+                            <span>Ausklappen / Durchsuchen</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="collapse" id="communityCollapse">
+                        <div class="card-body bg-light border-top p-4">
+                            <p class="text-muted small mb-3">Entdecke Inspirationen und Rezepte von Lezzetify und anderen Kochbegeisterten.</p>
+                            <div class="input-group community-search mb-4">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input class="form-control border-start-0 ps-0 bg-white" id="community-search" type="search" placeholder="Community-Rezepte suchen..." aria-label="Community-Rezepte suchen">
+                            </div>
+                            <div class="row g-3" id="community-recipe-list"></div>
+                            <p class="text-muted text-center py-3 mb-0 small" id="community-empty-state" hidden>Keine Community-Rezepte gefunden.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </main>
 
@@ -253,10 +270,16 @@
                                     <label for="recipe-description">Kurzbeschreibung (z.B. Herzhaftes Abendessen)</label>
                                 </div>
                             </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted small fw-bold" for="recipe-image">Rezept-Cover</label>
+                                <input class="form-control" type="file" id="recipe-image" accept="image/png,image/jpeg,image/webp,image/gif">
+                                <div class="form-text">Optional, PNG/JPG/WebP/GIF, maximal 3 MB.</div>
+                                <img class="recipe-upload-preview mt-2" id="recipe-image-preview" alt="Vorschau des Rezept-Covers" hidden>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold" for="recipe-ingredients">Zutaten</label>
                                 <textarea class="form-control rounded-3" id="recipe-ingredients" name="ingredients" rows="5" placeholder="200 g Mehl&#10;150 g Tomaten&#10;2 Eier" required></textarea>
-                                <div class="form-text mb-2">Eine Zutat pro Zeile, z. B. „200 g Mehl“. Für die Rezeptberechnung Gramm verwenden; andere Einheiten werden nur je 100 g angezeigt.</div>
+                                <div class="form-text mb-2">Eine Zutat pro Zeile, z. B. „200 g Mehl“. Für die Rezeptberechnung Gramm verwenden.</div>
                                 <button class="btn btn-outline-secondary btn-sm" id="search-nutrition-button" type="button">
                                     <i class="fas fa-search me-1"></i>Nährwerte suchen
                                 </button>
@@ -270,7 +293,6 @@
                         <div class="nutrition-results mt-3" id="nutrition-results"></div>
                         <p class="text-muted small mb-0 mt-2">
                             Produktdaten: <a href="https://world.openfoodfacts.org/" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (Open Database License).
-                            Die Angaben sind Näherungswerte und hängen vom gewählten Produkt ab.
                         </p>
                         <div class="form-check mt-3">
                             <input class="form-check-input" type="checkbox" id="share-recipe-with-community" name="shareWithCommunity">
@@ -290,6 +312,7 @@
         </div>
     </div>
 
+    <!-- MODAL: COMMUNITY REZEPT DETAILS -->
     <div class="modal fade" id="communityRecipeModal" tabindex="-1" aria-labelledby="community-recipe-title" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4">

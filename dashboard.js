@@ -13,7 +13,7 @@ if (!token) {
     const planForm = document.querySelector('#plan-form');
     const planRecipe = document.querySelector('#plan-recipe');
     const planDate = document.querySelector('#plan-date');
-    const planList = document.querySelector('#meal-plan-list');
+    const planCalendar = document.querySelector('#meal-plan-calendar');
     const planEmptyState = document.querySelector('#plan-empty-state');
     const planViewDate = document.querySelector('#plan-view-date');
     const planPeriod = document.querySelector('#plan-period');
@@ -26,11 +26,15 @@ if (!token) {
     const communitySearch = document.querySelector('#community-search');
     const communityEmptyState = document.querySelector('#community-empty-state');
     const communityRecipeDetails = document.querySelector('#community-recipe-details');
+    const recipeImageInput = document.querySelector('#recipe-image');
+    const recipeImagePreview = document.querySelector('#recipe-image-preview');
     const recipes = [];
     let communityRecipes = [];
     let mealPlans = [];
     let nutritionSearchItems = [];
     let activeCommunityRecipe = null;
+    let favorites = { recipes: [], community: [] };
+    let recipeImageData = null;
     const communityNutritionSelections = new Map();
 
     let savedUser = {};
@@ -45,6 +49,10 @@ if (!token) {
     function showMessage(message, isSuccess = false) {
         dashboardMessage.textContent = message;
         dashboardMessage.className = `alert ${isSuccess ? 'alert-success' : 'alert-danger'}`;
+    }
+
+    function updateFavoriteCount() {
+        document.querySelector('#favorite-count').textContent = String(favorites.recipes.length + favorites.community.length);
     }
 
     function getLocalDateString(date = new Date()) {
@@ -176,36 +184,48 @@ if (!token) {
 
     function createRecipeCard(recipe) {
         const column = document.createElement('div');
-        column.className = 'col-12';
+        column.className = 'col-12 col-md-6 col-xl-4';
         const card = document.createElement('article');
-        card.className = 'card recipe-dashboard-card border-0 shadow-sm';
+        card.className = 'card h-100 border-0 shadow-sm recipe-card recipe-dashboard-card';
+        const image = document.createElement('img');
+        image.className = 'card-img-top recipe-img';
+        image.src = recipe.image || 'images/essen.jpg';
+        image.alt = recipe.title;
+        image.loading = 'lazy';
         const body = document.createElement('div');
-        body.className = 'card-body';
-        const header = document.createElement('div');
-        header.className = 'd-flex justify-content-between align-items-start gap-3 mb-2';
+        body.className = 'card-body d-flex flex-column';
+        const category = document.createElement('span');
+        category.className = 'badge bg-warning text-dark align-self-start mb-2';
+        category.textContent = 'Mein Rezept';
+        const favoriteButton = createFavoriteButton('recipes', recipe.id);
         const title = document.createElement('h3');
-        title.className = 'card-title';
+        title.className = 'card-title fw-bold';
         title.textContent = recipe.title;
-        header.append(title);
-
-        if (recipe.prepTime) {
-            const time = document.createElement('span');
-            time.className = 'recipe-time';
-            time.innerHTML = '<i class="far fa-clock" aria-hidden="true"></i>';
-            time.append(` ${recipe.prepTime} Min.`);
-            header.append(time);
-        }
-        body.append(header);
+        body.append(category, favoriteButton, title);
 
         if (recipe.description) {
             const description = document.createElement('p');
-            description.className = 'recipe-description';
+            description.className = 'card-text text-muted';
             description.textContent = recipe.description;
             body.append(description);
         }
 
+        const metadata = document.createElement('div');
+        metadata.className = 'd-flex justify-content-between text-muted small my-2 gap-2';
+        const time = document.createElement('span');
+        time.innerHTML = '<i class="far fa-clock me-1" aria-hidden="true"></i>';
+        time.append(recipe.prepTime ? `${recipe.prepTime} Min.` : 'Zeit offen');
+        const calories = document.createElement('span');
+        calories.innerHTML = '<i class="fas fa-fire me-1" aria-hidden="true"></i>';
+        const kcal = getRecipeCalories(recipe);
+        calories.append(kcal === null
+            ? 'Nährwerte offen'
+            : ` ${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal / Portion`);
+        metadata.append(time, calories);
+        body.append(metadata);
+
         const ingredients = document.createElement('p');
-        ingredients.className = 'recipe-ingredients';
+        ingredients.className = 'recipe-ingredients small';
         ingredients.textContent = `Zutaten: ${recipe.ingredients.join(', ')}`;
         body.append(ingredients);
 
@@ -220,7 +240,7 @@ if (!token) {
 
         if (recipe.instructions) {
             const instructions = document.createElement('details');
-            instructions.className = 'recipe-instructions';
+            instructions.className = 'recipe-instructions mt-3';
             const summary = document.createElement('summary');
             summary.textContent = 'Zubereitung anzeigen';
             const text = document.createElement('p');
@@ -229,7 +249,7 @@ if (!token) {
             body.append(instructions);
         }
 
-        card.append(body);
+        card.append(image, body);
         column.append(card);
         return column;
     }
@@ -241,6 +261,18 @@ if (!token) {
         }
         const { totals } = getNutritionSummary(entries, recipe.servings || 1);
         return totals.kcal;
+    }
+
+    function createFavoriteButton(type, recipeId) {
+        const isFavorite = (favorites[type] || []).includes(recipeId);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `btn btn-sm ${isFavorite ? 'btn-danger' : 'btn-outline-danger'} recipe-favorite-button align-self-start mb-2`;
+        button.dataset.favoriteType = type;
+        button.dataset.favoriteId = recipeId;
+        button.setAttribute('aria-pressed', String(isFavorite));
+        button.textContent = isFavorite ? '♥ Favorit' : '♡ Als Favorit';
+        return button;
     }
 
     function createCommunityRecipeCard(recipe) {
@@ -291,7 +323,16 @@ if (!token) {
         detailsButton.dataset.communityRecipeId = recipe.id;
         detailsButton.textContent = 'Rezept ansehen';
 
-        body.append(category, title, description, metadata, author, detailsButton);
+        const favoriteButton = createFavoriteButton('community', recipe.id);
+        favoriteButton.classList.add('w-100');
+        const saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.className = 'btn btn-outline-primary w-100 mt-2';
+        saveButton.dataset.saveCommunityRecipeId = recipe.id;
+        const alreadySaved = recipes.some((entry) => entry.sourceCommunityId === recipe.id);
+        saveButton.textContent = alreadySaved ? 'Bereits in meinen Rezepten' : 'Zu meinen Rezepten hinzufügen';
+        saveButton.disabled = alreadySaved;
+        body.append(category, title, description, metadata, author, favoriteButton, detailsButton, saveButton);
         card.append(image, body);
         column.append(card);
         return column;
@@ -315,6 +356,63 @@ if (!token) {
             renderCommunityRecipes();
         } catch (error) {
             showMessage(error.message || 'Community-Rezepte konnten nicht geladen werden.');
+        }
+    }
+
+    async function loadFavorites() {
+        try {
+            const response = await apiRequest('/api/favorites');
+            favorites = await readResponse(response, 'Favoriten konnten nicht geladen werden.');
+            updateFavoriteCount();
+            recipeList.replaceChildren(...recipes.map(createRecipeCard));
+            renderCommunityRecipes();
+        } catch (error) {
+            showMessage(error.message || 'Favoriten konnten nicht geladen werden.');
+        }
+    }
+
+    async function toggleFavorite(type, recipeId, button) {
+        button.disabled = true;
+        try {
+            const response = await apiRequest('/api/favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, recipeId })
+            });
+            const data = await readResponse(response, 'Favorit konnte nicht gespeichert werden.');
+            favorites = data.favorites;
+            updateFavoriteCount();
+            recipeList.replaceChildren(...recipes.map(createRecipeCard));
+            renderCommunityRecipes();
+            communityRecipeDetails.querySelectorAll('[data-favorite-type]').forEach((favoriteButton) => {
+                if (favoriteButton.dataset.favoriteId === recipeId) {
+                    favoriteButton.replaceWith(createFavoriteButton(type, recipeId));
+                }
+            });
+            showMessage(data.favorited ? 'Rezept wurde zu deinen Favoriten hinzugefügt.' : 'Rezept wurde aus deinen Favoriten entfernt.', true);
+        } catch (error) {
+            showMessage(error.message || 'Favorit konnte nicht gespeichert werden.');
+            button.disabled = false;
+        }
+    }
+
+    async function saveCommunityRecipe(recipeId, button) {
+        button.disabled = true;
+        try {
+            const response = await apiRequest(`/api/recipes/from-community/${encodeURIComponent(recipeId)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nutritionIngredients: communityRecipes.find((recipe) => recipe.id === recipeId)?.nutritionIngredients || []
+                })
+            });
+            const data = await readResponse(response, 'Community-Rezept konnte nicht gespeichert werden.');
+            showMessage(data.message || 'Rezept wurde zu deiner Sammlung hinzugefügt.', true);
+            await loadRecipes();
+            renderCommunityRecipes();
+        } catch (error) {
+            showMessage(error.message || 'Community-Rezept konnte nicht gespeichert werden.');
+            button.disabled = false;
         }
     }
 
@@ -537,6 +635,19 @@ if (!token) {
             metadata.className = 'small text-muted';
             metadata.textContent = `${recipe.prepTime ? `${recipe.prepTime} Min.` : 'Zubereitungszeit nicht angegeben'} · ${recipe.servings || 1} Portionen`;
             communityRecipeDetails.append(category, title, description, author, metadata);
+            const actionBar = document.createElement('div');
+            actionBar.className = 'd-flex flex-column flex-sm-row gap-2 mt-3';
+            const favoriteButton = createFavoriteButton('community', recipe.id);
+            favoriteButton.classList.remove('align-self-start', 'mb-2');
+            const saveButton = document.createElement('button');
+            saveButton.type = 'button';
+            saveButton.className = 'btn btn-outline-primary';
+            saveButton.dataset.saveCommunityRecipeId = recipe.id;
+            const alreadySaved = recipes.some((entry) => entry.sourceCommunityId === recipe.id);
+            saveButton.textContent = alreadySaved ? 'Bereits in meinen Rezepten' : 'Zu meinen Rezepten hinzufügen';
+            saveButton.disabled = alreadySaved;
+            actionBar.append(favoriteButton, saveButton);
+            communityRecipeDetails.append(actionBar);
             communityRecipeDetails.append(...createCommunityIngredients(recipe));
 
             const instructionsHeading = document.createElement('h3');
@@ -744,6 +855,7 @@ if (!token) {
             recipeCount.textContent = `${data.length} ${data.length === 1 ? 'Rezept' : 'Rezepte'}`;
             updateRecipeOptions();
             renderPlanView();
+            renderCommunityRecipes();
         } catch (error) {
             showMessage(error.message || 'Verbindung zum Server fehlgeschlagen.');
         }
@@ -769,32 +881,77 @@ if (!token) {
             .filter((plan) => plan.date >= range.start && plan.date <= range.end)
             .sort((first, second) => first.date.localeCompare(second.date));
         const dateFormatter = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const weekdayFormatter = new Intl.DateTimeFormat('de-DE', { weekday: 'long' });
         const rangeLabel = range.start === range.end
             ? dateFormatter.format(new Date(`${range.start}T00:00:00`))
             : `${dateFormatter.format(new Date(`${range.start}T00:00:00`))} – ${dateFormatter.format(new Date(`${range.end}T00:00:00`))}`;
         document.querySelector('#plan-range-label').textContent = `(${rangeLabel})`;
 
-        const planItems = selectedPlans.map((plan) => {
-            const recipe = recipes.find((entry) => entry.id === plan.recipeId);
-            const item = document.createElement('li');
-            item.className = 'list-group-item';
-            const details = document.createElement('div');
-            const title = document.createElement('strong');
-            title.textContent = recipe ? recipe.title : 'Rezept nicht mehr verfügbar';
-            const date = document.createElement('span');
-            date.className = 'plan-date';
-            date.textContent = dateFormatter.format(new Date(`${plan.date}T00:00:00`));
-            details.append(title, date);
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.className = 'btn btn-sm btn-outline-danger';
-            removeButton.dataset.planId = plan.id;
-            removeButton.setAttribute('aria-label', `${recipe ? recipe.title : 'Gericht'} aus dem Plan entfernen`);
-            removeButton.textContent = 'Entfernen';
-            item.append(details, removeButton);
-            return item;
-        });
-        planList.replaceChildren(...planItems);
+        const calendarDays = [];
+        const currentDate = new Date(`${range.start}T00:00:00`);
+        const endDate = new Date(`${range.end}T00:00:00`);
+        while (currentDate <= endDate) {
+            const dateString = getLocalDateString(currentDate);
+            const day = document.createElement('section');
+            day.className = `meal-calendar-day${dateString === getLocalDateString() ? ' is-today' : ''}`;
+            day.setAttribute('role', 'listitem');
+
+            const heading = document.createElement('h4');
+            heading.className = 'meal-calendar-heading';
+            const weekday = document.createElement('span');
+            weekday.textContent = weekdayFormatter.format(currentDate);
+            const date = document.createElement('time');
+            date.dateTime = dateString;
+            date.textContent = dateFormatter.format(currentDate);
+            heading.append(weekday, date);
+
+            const dayPlans = selectedPlans.filter((plan) => plan.date === dateString);
+            const meals = dayPlans.map((plan) => {
+                const recipe = recipes.find((entry) => entry.id === plan.recipeId);
+                const meal = document.createElement('article');
+                meal.className = 'meal-calendar-event';
+                const title = document.createElement('strong');
+                title.className = 'd-block';
+                title.textContent = recipe ? recipe.title : 'Rezept nicht mehr verfügbar';
+                meal.append(title);
+
+                if (recipe && Array.isArray(recipe.nutritionIngredients) && recipe.nutritionIngredients.length > 0) {
+                    meal.append(createNutritionSummary(
+                        recipe.nutritionIngredients,
+                        recipe.ingredients.length,
+                        recipe.servings || 1,
+                        'plan-nutrition'
+                    ));
+                } else {
+                    const nutritionNote = document.createElement('p');
+                    nutritionNote.className = 'plan-nutrition mb-0';
+                    nutritionNote.textContent = 'Nährwerte nicht verfügbar.';
+                    meal.append(nutritionNote);
+                }
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'btn btn-sm btn-outline-danger mt-2';
+                removeButton.dataset.planId = plan.id;
+                removeButton.setAttribute('aria-label', `${recipe ? recipe.title : 'Gericht'} aus dem Plan entfernen`);
+                removeButton.textContent = 'Entfernen';
+                meal.append(removeButton);
+                return meal;
+            });
+
+            if (meals.length === 0) {
+                const emptyDay = document.createElement('p');
+                emptyDay.className = 'meal-calendar-empty';
+                emptyDay.textContent = 'Kein Gericht geplant';
+                meals.push(emptyDay);
+            }
+            day.append(heading, ...meals);
+            calendarDays.push(day);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        planCalendar.classList.toggle('is-week', planPeriod.value === 'week');
+        planCalendar.classList.toggle('is-day', planPeriod.value === 'day');
+        planCalendar.replaceChildren(...calendarDays);
         planEmptyState.hidden = selectedPlans.length > 0;
 
         const ingredients = new Map();
@@ -867,6 +1024,7 @@ if (!token) {
                     instructions: formData.get('instructions').trim(),
                     prepTime: Number(formData.get('prepTime')) || null,
                     servings: Number(formData.get('servings')) || 1,
+                    image: recipeImageData,
                     nutritionIngredients: nutritionSearchItems.flatMap((item) => {
                         if (item.selectedProductIndex === null) {
                             return [];
@@ -886,6 +1044,9 @@ if (!token) {
             const data = await readResponse(response, 'Rezept konnte nicht gespeichert werden.');
 
             recipeForm.reset();
+            recipeImageData = null;
+            recipeImagePreview.removeAttribute('src');
+            recipeImagePreview.hidden = true;
             nutritionSearchItems = [];
             nutritionStatus.textContent = '';
             nutritionResults.replaceChildren();
@@ -903,6 +1064,32 @@ if (!token) {
     });
 
     document.querySelector('#search-nutrition-button').addEventListener('click', searchIngredientNutrition);
+    recipeImageInput.addEventListener('change', () => {
+        const [file] = recipeImageInput.files;
+        recipeImageData = null;
+        recipeImagePreview.hidden = true;
+        recipeImagePreview.removeAttribute('src');
+        if (!file) {
+            return;
+        }
+        if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type) || file.size > 3 * 1024 * 1024) {
+            recipeImageInput.value = '';
+            showMessage('Bitte wähle ein PNG-, JPG-, WebP- oder GIF-Bild mit höchstens 3 MB.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            if (typeof reader.result !== 'string') {
+                showMessage('Das Rezept-Cover konnte nicht gelesen werden.');
+                return;
+            }
+            recipeImageData = reader.result;
+            recipeImagePreview.src = reader.result;
+            recipeImagePreview.hidden = false;
+        });
+        reader.addEventListener('error', () => showMessage('Das Rezept-Cover konnte nicht gelesen werden.'));
+        reader.readAsDataURL(file);
+    });
     ingredientsInput.addEventListener('input', () => {
         nutritionSearchItems = [];
         nutritionStatus.textContent = '';
@@ -911,9 +1098,36 @@ if (!token) {
     document.querySelector('#recipe-servings').addEventListener('input', updateNutritionPreview);
     communitySearch.addEventListener('input', renderCommunityRecipes);
     communityRecipeList.addEventListener('click', (event) => {
+        const favoriteButton = event.target.closest('[data-favorite-type]');
+        if (favoriteButton) {
+            toggleFavorite(favoriteButton.dataset.favoriteType, favoriteButton.dataset.favoriteId, favoriteButton);
+            return;
+        }
+        const saveButton = event.target.closest('[data-save-community-recipe-id]');
+        if (saveButton) {
+            saveCommunityRecipe(saveButton.dataset.saveCommunityRecipeId, saveButton);
+            return;
+        }
         const recipeButton = event.target.closest('[data-community-recipe-id]');
         if (recipeButton) {
             openCommunityRecipe(recipeButton.dataset.communityRecipeId);
+        }
+    });
+    recipeList.addEventListener('click', (event) => {
+        const favoriteButton = event.target.closest('[data-favorite-type]');
+        if (favoriteButton) {
+            toggleFavorite(favoriteButton.dataset.favoriteType, favoriteButton.dataset.favoriteId, favoriteButton);
+        }
+    });
+    communityRecipeDetails.addEventListener('click', (event) => {
+        const favoriteButton = event.target.closest('[data-favorite-type]');
+        if (favoriteButton) {
+            toggleFavorite(favoriteButton.dataset.favoriteType, favoriteButton.dataset.favoriteId, favoriteButton);
+            return;
+        }
+        const saveButton = event.target.closest('[data-save-community-recipe-id]');
+        if (saveButton) {
+            saveCommunityRecipe(saveButton.dataset.saveCommunityRecipeId, saveButton);
         }
     });
 
@@ -938,7 +1152,7 @@ if (!token) {
         }
     });
 
-    planList.addEventListener('click', async (event) => {
+    planCalendar.addEventListener('click', async (event) => {
         const removeButton = event.target.closest('[data-plan-id]');
         if (!removeButton) {
             return;
@@ -978,4 +1192,5 @@ if (!token) {
     loadRecipes();
     loadPlans();
     loadCommunityRecipes();
+    loadFavorites();
 }
