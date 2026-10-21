@@ -17,7 +17,7 @@
 
 Die Anwendung wird nach einer Microservice-Architektur aufgebaut:
 
-* **Frontend:** HTML, CSS und Vanilla JavaScript
+* **Frontend:** HTML, CSS und Vanilla JavaScript. Gemeinsame Styles liegen in `library/css/global.css`; seitenbezogene Styles sind nach Seite in `styles/` getrennt. Die HTML-Seiten laden zuerst Bootstrap und die globalen Styles, danach ihre jeweilige Seiten-Datei.
 * **Backend:** Node.js/Express-API für Authentifizierung, Rezepte und Essenspläne
 * **Message Queue:** Asynchrone Kommunikation zwischen den Services via **RabbitMQ** (oder Kafka).
 * **Datenbank:** Eigenständige Datenbank-Container (z.B. PostgreSQL oder MongoDB).
