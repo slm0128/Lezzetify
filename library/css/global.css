@@ -1,0 +1,86 @@
+/* Gemeinsame Designwerte und wiederverwendbare Komponenten aller Seiten. */
+:root {
+    --primary-color: #e76f51;
+    --primary-hover: #d15b40;
+    --secondary-color: #feca57;
+    --dark-color: #2d3436;
+    --light-bg: #f8f9fa;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+section {
+    scroll-margin-top: 70px;
+}
+
+body {
+    color: var(--dark-color);
+    font-family: 'Poppins', sans-serif;
+}
+
+.navbar-brand {
+    color: var(--primary-color) !important;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.recipe-card {
+    overflow: hidden;
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.recipe-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.btn-primary-custom {
+    padding: 12px 30px;
+    border: 0;
+    border-radius: 50px;
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    background-color: var(--primary-hover);
+    box-shadow: 0 5px 15px rgba(231, 111, 81, 0.4);
+    color: #fff;
+}
+
+.text-primary-custom {
+    color: var(--primary-color) !important;
+}
+
+.text-primary-custom:hover {
+    color: var(--primary-hover) !important;
+    text-decoration: underline !important;
+}
+
+.nav-pills .nav-link {
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+footer {
+    padding: 30px 0;
+    background-color: var(--dark-color);
+    color: #fff;
+}
