@@ -110,13 +110,14 @@
                       <label for="registerName">Benutzername</label>
                     </div>
                     <div class="form-floating mb-3">
-                      <input type="email" class="form-control rounded-3" id="registerEmail"
+                      <input type="email" class="form-control rounded-3" id="registerEmail" required
                         placeholder="name@example.com">
                       <label for="registerEmail">E-Mail Adresse</label>
                     </div>
                     <div class="form-floating mb-3">
-                      <input type="password" class="form-control rounded-3" id="registerPassword"
+                      <input type="password" class="form-control rounded-3" id="registerPassword" minlength="12" maxlength="72" required
                         placeholder="Passwort">
+                      <div class="form-text">Mindestens 12 Zeichen, höchstens 72 Bytes.</div>
                       <label for="registerPassword">Passwort</label>
                     </div>
                     <div class="form-check mb-4">
