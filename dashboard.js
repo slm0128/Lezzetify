@@ -35,6 +35,7 @@ if (!token) {
     let activeCommunityRecipe = null;
     let favorites = { recipes: [], community: [] };
     let recipeImageData = null;
+    let editingRecipeId = null;
     const communityNutritionSelections = new Map();
 
     let savedUser = {};
@@ -249,9 +250,92 @@ if (!token) {
             body.append(instructions);
         }
 
+        const actions = document.createElement('div');
+        actions.className = 'd-flex gap-2 mt-auto pt-3';
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn btn-outline-primary btn-sm';
+        editButton.textContent = 'Bearbeiten';
+        editButton.addEventListener('click', () => editRecipe(recipe));
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-outline-danger btn-sm';
+        deleteButton.textContent = 'Löschen';
+        deleteButton.addEventListener('click', () => deleteRecipe(recipe, deleteButton));
+        actions.append(editButton, deleteButton);
+        body.append(actions);
+
         card.append(image, body);
         column.append(card);
         return column;
+    }
+
+    function editRecipe(recipe) {
+        editingRecipeId = recipe.id;
+        recipeForm.elements.title.value = recipe.title;
+        recipeForm.elements.description.value = recipe.description || '';
+        recipeForm.elements.ingredients.value = recipe.ingredients.join('\n');
+        recipeForm.elements.instructions.value = recipe.instructions || '';
+        recipeForm.elements.prepTime.value = recipe.prepTime || '';
+        recipeForm.elements.servings.value = recipe.servings || 1;
+        document.querySelector('#share-recipe-with-community').checked = recipe.shareWithCommunity === true;
+        recipeImageData = null;
+        recipeImageInput.value = '';
+        if (recipe.image) {
+            recipeImagePreview.src = recipe.image;
+            recipeImagePreview.hidden = false;
+        } else {
+            recipeImagePreview.removeAttribute('src');
+            recipeImagePreview.hidden = true;
+        }
+
+        nutritionSearchItems = recipe.ingredients.map((original) => {
+            const entry = (recipe.nutritionIngredients || []).find((item) => item.ingredient === original);
+            const parsed = parseIngredientForNutrition(original);
+            const product = entry ? {
+                code: entry.productCode,
+                name: entry.productName,
+                brand: '',
+                nutrients: entry.nutrients
+            } : null;
+            return {
+                original,
+                ...parsed,
+                amountGrams: entry?.amountGrams || parsed.amountGrams,
+                products: product ? [product] : [],
+                selectedProductIndex: product ? 0 : null
+            };
+        });
+        renderNutritionSearchResults();
+        nutritionStatus.textContent = 'Gespeicherte Nährwerttreffer bleiben erhalten. Du kannst sie neu suchen.';
+        document.querySelector('#createRecipeModalLabel').lastChild.textContent = 'Rezept bearbeiten';
+        document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2"></i>Änderungen speichern';
+        bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
+    }
+
+    async function deleteRecipe(recipe, button) {
+        if (!window.confirm(`Möchtest du „${recipe.title}“ wirklich löschen? Zugehörige Planeinträge werden ebenfalls entfernt.`)) {
+            return;
+        }
+
+        button.disabled = true;
+        try {
+            const response = await apiRequest(`/api/recipes/${encodeURIComponent(recipe.id)}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Rezept konnte nicht gelöscht werden.');
+            }
+            showMessage('Rezept wurde gelöscht.', true);
+            await Promise.all([loadRecipes(), loadPlans(), loadFavorites()]);
+            if (recipe.shareWithCommunity) {
+                await loadCommunityRecipes();
+            }
+        } catch (error) {
+            showMessage(error.message || 'Verbindung zum Server fehlgeschlagen.');
+            button.disabled = false;
+        }
     }
 
     function getRecipeCalories(recipe) {
@@ -1006,6 +1090,20 @@ if (!token) {
         }
     }
 
+    document.querySelector('#new-recipe-button').addEventListener('click', () => {
+        recipeForm.reset();
+        editingRecipeId = null;
+        recipeImageData = null;
+        recipeImagePreview.removeAttribute('src');
+        recipeImagePreview.hidden = true;
+        nutritionSearchItems = [];
+        nutritionStatus.textContent = '';
+        nutritionResults.replaceChildren();
+        document.querySelector('#createRecipeModalLabel').lastChild.textContent = 'Neues Rezept';
+        document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2"></i>Speichern';
+        bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
+    });
+
     recipeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const saveButton = document.querySelector('#save-recipe-button');
@@ -1014,8 +1112,10 @@ if (!token) {
         saveButton.disabled = true;
 
         try {
-            const response = await apiRequest('/api/recipes', {
-                method: 'POST',
+            const response = await apiRequest(editingRecipeId
+                ? `/api/recipes/${encodeURIComponent(editingRecipeId)}`
+                : '/api/recipes', {
+                method: editingRecipeId ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: formData.get('title').trim(),
@@ -1044,6 +1144,7 @@ if (!token) {
             const data = await readResponse(response, 'Rezept konnte nicht gespeichert werden.');
 
             recipeForm.reset();
+            editingRecipeId = null;
             recipeImageData = null;
             recipeImagePreview.removeAttribute('src');
             recipeImagePreview.hidden = true;
@@ -1053,9 +1154,7 @@ if (!token) {
             bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).hide();
             showMessage(data.message || 'Rezept wurde gespeichert.', true);
             await loadRecipes();
-            if (data.communityRecipe) {
-                await loadCommunityRecipes();
-            }
+            await loadCommunityRecipes();
         } catch (error) {
             showMessage(error.message || 'Verbindung zum Server fehlgeschlagen.');
         } finally {
