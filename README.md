@@ -1,32 +1,48 @@
-# 🍲 Lezzetify (Work in Progress)
+# Lezzetify
 
-> Ein moderner Rezept-Manager mit integriertem Wochenplaner und asynchroner Nährwertberechnung. 
-> *Dieses Projekt befindet sich aktuell in der Entwicklung für das Modul Webprogrammierung & Verteilte Systeme.*
+Ein Rezept-Manager mit Nutzerkonten, Wochenplanung, Einkaufsliste, Community-Rezepten und Nährwertsuche.
 
-## 🎯 Kernfunktionen
+## Funktionen
 
-* **Nutzerverwaltung:** Registrierung und Anmeldung mit Benutzername; Rezepte und Essenspläne sind benutzerspezifisch.
-* **Rezeptverwaltung:** Eigene Rezepte mit Zutaten, Beschreibung und Zubereitung speichern und ansehen.
-* **Wochenplaner:** Rezepte einem Kochtag zuweisen und den Plan tage- oder wochenweise ansehen.
-* **Einkaufsliste:** Zutaten der geplanten Gerichte für den ausgewählten Tag oder die Woche sammeln. Gleiche Zutaten werden zusammengefasst; Mengen werden nicht automatisch umgerechnet.
-* **Nährwerte:** Deutsche Zutatenbegriffe können über Open Food Facts gesucht werden. Für belastbare Mengenberechnungen Zutaten mit Grammangabe eintragen und den passenden Produkttreffer auswählen. Die Datenbank ist gemeinschaftlich gepflegt; Werte können fehlen oder abweichen.
-* **Community-Rezepte:** Vorgegebene Lezzetify-Rezepte und freiwillig geteilte Nutzerrezepte sind im Dashboard für alle angemeldeten Nutzer sichtbar. Rezeptdetails enthalten Zutaten, Zubereitung und Nährwerte aus bestätigten Open-Food-Facts-Treffern.
-* **Geplant:** Asynchrone Nährwertberechnung über einen isolierten Node.js-Worker-Service.
+* Registrierung und Anmeldung; Passwörter werden mit bcrypt gehasht.
+* Eigene Rezepte anlegen, bearbeiten und löschen.
+* Rezepte für bestimmte Tage einplanen und Zutaten als Einkaufsliste ansehen.
+* Rezepte und Favoriten pro Nutzer dauerhaft speichern.
+* Rezepte freiwillig mit der Community teilen.
+* Open-Food-Facts-Suche für Nährwerte. Die Produktdaten sind gemeinschaftlich gepflegt; Werte können fehlen oder abweichen.
 
-## 🏗 Architektur-Konzept & Tech-Stack
+## Architektur
 
-Die Anwendung wird nach einer Microservice-Architektur aufgebaut:
+* **Frontend:** HTML, CSS, Bootstrap und Vanilla JavaScript; wird von einem eigenen Nginx-Container ausgeliefert.
+* **API-Service:** Node.js/Express für Authentifizierung, Rezepte, Favoriten und Essenspläne.
+* **Nährwert-Service:** separater Node.js-Worker; die API sendet Suchanfragen über RabbitMQ und erhält Antworten über eine temporäre Reply-Queue.
+* **Datenbank:** PostgreSQL in einem eigenen Container. Nutzer, Rezepte, Favoriten, Nährwert-Produkte und Essenspläne bleiben über Neustarts hinweg erhalten.
+* **Message Broker:** RabbitMQ.
 
-* **Frontend:** HTML, CSS und Vanilla JavaScript. Gemeinsame Styles liegen in `library/css/global.css`; seitenbezogene Styles sind nach Seite in `styles/` getrennt. Die HTML-Seiten laden zuerst Bootstrap und die globalen Styles, danach ihre jeweilige Seiten-Datei.
-* **Backend:** Node.js/Express-API für Authentifizierung, Rezepte und Essenspläne
-* **Message Queue:** Asynchrone Kommunikation zwischen den Services via **RabbitMQ** (oder Kafka).
-* **Datenbank:** Eigenständige Datenbank-Container (z.B. PostgreSQL oder MongoDB).
-* **Infrastruktur:** Lokales Setup vollständig über Docker (`docker-compose`).
+## Mit Docker Compose starten
 
-## 🚀 Aktueller Stand
+Voraussetzungen: Docker Desktop mit laufender Docker Engine und Docker Compose.
 
-Die Anwendung enthält aktuell eine einfache Frontend- und Backend-Implementierung. Nutzer, Rezepte und Essenspläne werden derzeit nur im Arbeitsspeicher gehalten und gehen beim Neustart des Backends verloren. Datenbank und weitere Services sind Teil des geplanten Ausbaus.
+1. `.env.example` nach `.env` kopieren.
+2. `POSTGRES_PASSWORD`, `RABBITMQ_DEFAULT_PASS` und `JWT_SECRET` in `.env` durch eigene Werte ersetzen. Für die Passwörter im Compose-URL-Format nur URL-sichere Zeichen verwenden. Der JWT-Schlüssel muss mindestens 32 zufällige Bytes enthalten; erzeugen lässt er sich zum Beispiel mit `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`.
+3. Im Projektverzeichnis starten:
 
-Die Nährwertsuche nutzt die Open Food Facts API ohne API-Schlüssel. Produktdaten werden gemäß Open Database License (ODbL) mit Quellenangabe angezeigt. Open Food Facts enthält vor allem verpackte Produkte; bei unverarbeiteten Zutaten kann es weniger oder keinen passenden Treffer geben.
+   ```powershell
+   docker compose up --build
+   ```
 
-Community-Rezepte, Nutzer, eigene Rezepte und Essenspläne werden aktuell nur im Arbeitsspeicher des Backend-Prozesses gehalten. Geteilte Rezepte sind deshalb für alle angemeldeten Konten auf demselben laufenden Server sichtbar, gehen aber beim Neustart des Backends verloren.
+4. Die Anwendung unter <http://localhost:8000> öffnen. Die API ist unter <http://localhost:3000> erreichbar. RabbitMQ Management ist unter <http://localhost:15672> verfügbar; dort gelten die Zugangsdaten aus `.env`.
+
+Compose wartet auf die Healthchecks von PostgreSQL und RabbitMQ, bevor die API beziehungsweise der Worker starten. Die API und der Nährwert-Worker besitzen eigene Healthchecks. PostgreSQL- und RabbitMQ-Daten liegen in benannten Docker-Volumes.
+
+Zum Stoppen `Ctrl+C`, danach `docker compose down`. Die Datenvolumes bleiben dabei erhalten. Ein bewusstes `docker compose down -v` löscht die gespeicherten Daten.
+
+## Entwicklung ohne Container
+
+Das Backend setzt eine erreichbare PostgreSQL- und RabbitMQ-Instanz sowie dieselben Umgebungsvariablen wie oben voraus. Mit `npm ci` im Ordner `backend` werden die Abhängigkeiten installiert; `npm start` startet die API, `node nutrition-worker.js` separat den Worker. `.env` wird aus dem Projektstamm geladen und gehört nicht ins Git-Repository.
+
+## Authentifizierung und Konfiguration
+
+JWTs sind auf den Algorithmus HS256 festgelegt, laufen nach einer Stunde ab und werden mit einem verpflichtenden Umgebungsvariablen-Schlüssel signiert. Der API-Start schlägt fehl, wenn `JWT_SECRET` fehlt oder weniger als 32 Bytes hat. Passwörter müssen mindestens 12 Zeichen und höchstens 72 Bytes umfassen; Registrierungs- und Login-Versuche sind begrenzt. Zugangsdaten und Schlüssel gehören ausschließlich in die ignorierte `.env`-Datei, nicht in den Quellcode.
+
+Die Nährwertsuche nutzt Open Food Facts ohne API-Schlüssel. Produktdaten werden mit Quellenangabe angezeigt und unterliegen der Open Database License (ODbL). Open Food Facts enthält vor allem verpackte Produkte.
