@@ -367,6 +367,58 @@
     box-shadow: 0 24px 70px rgba(45, 52, 54, 0.18) !important;
 }
 
+.confirmation-modal-dialog {
+    max-width: 430px;
+    padding: 0 0.5rem;
+}
+
+.confirmation-modal-content {
+    border-radius: 1.5rem !important;
+}
+
+.confirmation-modal-content .modal-body {
+    padding: 2rem;
+}
+
+.confirmation-modal-icon {
+    display: grid;
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto;
+    place-items: center;
+    border-radius: 1.25rem;
+    background: #fff0e9;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.confirmation-modal-icon.is-warning {
+    background: #fff4dc;
+    color: #a76b13;
+}
+
+.confirmation-modal-accept.is-danger {
+    background: #bd5548;
+    color: #fff;
+}
+
+.confirmation-modal-accept.is-danger:hover,
+.confirmation-modal-accept.is-danger:focus-visible {
+    background: #a94438;
+    color: #fff;
+}
+
+.confirmation-modal-accept.is-warning {
+    background: #b87920;
+    color: #fff;
+}
+
+.confirmation-modal-accept.is-warning:hover,
+.confirmation-modal-accept.is-warning:focus-visible {
+    background: #986117;
+    color: #fff;
+}
+
 .recipe-modal-dialog {
     max-width: 820px;
 }

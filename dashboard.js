@@ -60,6 +60,40 @@ if (!token) {
         dashboardMessage.className = `alert ${isSuccess ? 'alert-success' : 'alert-danger'}`;
     }
 
+    function requestConfirmation({ title, message, confirmLabel, tone = 'danger', icon = 'fa-trash-alt' }) {
+        const modalElement = document.querySelector('#confirmationModal');
+        const titleElement = document.querySelector('#confirmation-modal-title');
+        const messageElement = document.querySelector('#confirmation-modal-message');
+        const iconElement = document.querySelector('#confirmation-modal-icon');
+        const confirmButton = document.querySelector('#confirmation-accept-button');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+        titleElement.textContent = title;
+        messageElement.textContent = message;
+        iconElement.className = `confirmation-modal-icon${tone === 'warning' ? ' is-warning' : ''}`;
+        iconElement.querySelector('i').className = `fas ${icon}`;
+        confirmButton.textContent = confirmLabel;
+        confirmButton.className = `btn rounded-pill px-4 confirmation-modal-accept is-${tone}`;
+
+        return new Promise((resolve) => {
+            let confirmed = false;
+            const finish = () => {
+                confirmButton.removeEventListener('click', accept);
+                confirmButton.disabled = false;
+                resolve(confirmed);
+            };
+            const accept = () => {
+                confirmed = true;
+                confirmButton.disabled = true;
+                modal.hide();
+            };
+
+            confirmButton.addEventListener('click', accept);
+            modalElement.addEventListener('hidden.bs.modal', finish, { once: true });
+            modal.show();
+        });
+    }
+
     function updateFavoriteCount() {
         document.querySelector('#favorite-count').textContent = String(favorites.recipes.length + favorites.community.length);
     }
@@ -405,7 +439,12 @@ if (!token) {
     }
 
     async function deleteRecipe(recipe, button) {
-        if (!window.confirm(`Möchtest du „${recipe.title}“ wirklich löschen? Zugehörige Planeinträge werden ebenfalls entfernt.`)) {
+        const confirmed = await requestConfirmation({
+            title: 'Rezept wirklich löschen?',
+            message: `„${recipe.title}“ und alle dazugehörigen Einträge im Wochenplan werden gelöscht. Diese Aktion lässt sich nicht rückgängig machen.`,
+            confirmLabel: 'Rezept löschen'
+        });
+        if (!confirmed) {
             return;
         }
 
@@ -919,7 +958,14 @@ if (!token) {
     });
 
     document.querySelector('#rotate-calendar-link').addEventListener('click', async (event) => {
-        if (!window.confirm('Den Kalender-Link erneuern? Der bisherige Link funktioniert danach nicht mehr.')) {
+        const confirmed = await requestConfirmation({
+            title: 'Kalender-Link erneuern?',
+            message: 'Der aktuelle Link wird ungültig. Kalender-Apps, die ihn bereits verwenden, können danach nicht mehr synchronisieren.',
+            confirmLabel: 'Link erneuern',
+            tone: 'warning',
+            icon: 'fa-sync-alt'
+        });
+        if (!confirmed) {
             return;
         }
         const button = event.currentTarget;
@@ -1083,6 +1129,15 @@ if (!token) {
         if (!removeButton) {
             return;
         }
+        const confirmed = await requestConfirmation({
+            title: 'Gericht aus dem Plan entfernen?',
+            message: 'Das Gericht wird aus deinem Wochenplan und der dazugehörigen Einkaufsliste entfernt. Dein Rezept bleibt gespeichert.',
+            confirmLabel: 'Gericht entfernen'
+        });
+        if (!confirmed) {
+            return;
+        }
+
         removeButton.disabled = true;
         try {
             const response = await apiRequest(`/api/plans/${encodeURIComponent(removeButton.dataset.planId)}`, {
@@ -1120,11 +1175,22 @@ if (!token) {
         renderPlanView();
     });
 
-    document.querySelector('#logout-button').addEventListener('click', () => {
+    document.querySelector('#logout-button').addEventListener('click', async () => {
+        const confirmed = await requestConfirmation({
+            title: 'Möchtest du dich abmelden?',
+            message: 'Bist du sicher, dass du Lezzetify jetzt verlassen möchtest?',
+            confirmLabel: 'Abmelden',
+            tone: 'warning',
+            icon: 'fa-sign-out-alt'
+        });
+        if (!confirmed) {
+            return;
+        }
+
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('email');
-        window.location.replace('login.html');
+        window.location.replace('index.html');
     });
 
     const today = getLocalDateString();

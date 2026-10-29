@@ -484,6 +484,28 @@
         </div>
     </div>
 
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmation-modal-title"
+        aria-describedby="confirmation-modal-message" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered confirmation-modal-dialog">
+            <div class="modal-content confirmation-modal-content">
+                <div class="modal-body text-center">
+                    <span class="confirmation-modal-icon" id="confirmation-modal-icon" aria-hidden="true">
+                        <i class="fas fa-trash-alt"></i>
+                    </span>
+                    <h2 class="h4 fw-bold mt-3 mb-2" id="confirmation-modal-title">Aktion bestätigen</h2>
+                    <p class="text-muted mb-4" id="confirmation-modal-message"></p>
+                    <div class="d-flex flex-column-reverse flex-sm-row justify-content-center gap-2">
+                        <button class="btn btn-light rounded-pill px-4" id="confirmation-cancel-button"
+                            type="button" data-bs-dismiss="modal">Abbrechen</button>
+                        <button class="btn rounded-pill px-4" id="confirmation-accept-button" type="button">
+                            Bestätigen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: COMMUNITY REZEPT DETAILS -->
     <div class="modal fade" id="communityRecipeModal" tabindex="-1" aria-labelledby="community-recipe-title"
         aria-hidden="true">
