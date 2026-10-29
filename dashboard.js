@@ -19,9 +19,6 @@ if (!token) {
     const planPeriod = document.querySelector('#plan-period');
     const shoppingList = document.querySelector('#shopping-list');
     const shoppingEmptyState = document.querySelector('#shopping-empty-state');
-    const ingredientsInput = document.querySelector('#recipe-ingredients');
-    const nutritionStatus = document.querySelector('#nutrition-status');
-    const nutritionResults = document.querySelector('#nutrition-results');
     const communityRecipeList = document.querySelector('#community-recipe-list');
     const communitySearch = document.querySelector('#community-search');
     const communityEmptyState = document.querySelector('#community-empty-state');
@@ -31,12 +28,13 @@ if (!token) {
     const recipes = [];
     let communityRecipes = [];
     let mealPlans = [];
-    let nutritionSearchItems = [];
     let activeCommunityRecipe = null;
     let favorites = { recipes: [], community: [] };
     let recipeImageData = null;
     let editingRecipeId = null;
-    const communityNutritionSelections = new Map();
+    const nutritionEstimates = new Map();
+    const pendingNutritionEstimates = new Map();
+    let nutritionFailureMessageShown = false;
 
     let savedUser = {};
     try {
@@ -89,22 +87,6 @@ if (!token) {
         return data;
     }
 
-    function getNutritionSummary(entries, servings = 1) {
-        const measurableEntries = entries.filter((entry) => Number(entry.amountGrams) > 0);
-        const nutrients = ['kcal', 'protein', 'carbohydrates', 'fat', 'fiber', 'salt'];
-        const totals = Object.fromEntries(nutrients.map((nutrient) => {
-            const hasAllValues = measurableEntries.length > 0
-                && measurableEntries.every((entry) => entry.nutrients[nutrient] !== null
-                    && entry.nutrients[nutrient] !== undefined
-                    && Number.isFinite(Number(entry.nutrients[nutrient])));
-            const total = hasAllValues
-                ? measurableEntries.reduce((sum, entry) => sum + entry.amountGrams * entry.nutrients[nutrient] / 100, 0)
-                : null;
-            return [nutrient, total === null ? null : total / servings];
-        }));
-        return { totals, measurableCount: measurableEntries.length };
-    }
-
     function formatNutritionValue(value, suffix = 'g') {
         if (value === null) {
             return 'nicht verfügbar';
@@ -112,75 +94,139 @@ if (!token) {
         return `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(value)} ${suffix}`;
     }
 
-    function createNutritionSummary(entries, totalIngredients, servings, className = '') {
-        const container = document.createElement('div');
-        container.className = className;
-        const { totals, measurableCount } = getNutritionSummary(entries, servings);
-        if (measurableCount === 0) {
-            if (entries.length === 0) {
-                container.textContent = 'Für eine Berechnung fehlen bestätigte Produkte mit Mengenangaben in g.';
-                return container;
-            }
-            const heading = document.createElement('strong');
-            heading.textContent = 'Nährwerte je 100 g (Mengenangabe in g fehlt für die Rezeptberechnung):';
-            const productList = createNutritionProductList(entries);
-            container.append(heading, productList);
-            appendNutritionAttribution(container);
-            return container;
-        }
+    function getNutritionEstimateKey(recipe) {
+        return JSON.stringify({
+            title: recipe.title.trim(),
+            ingredients: recipe.ingredients,
+            servings: recipe.servings || 1
+        }).toLocaleLowerCase('de-DE');
+    }
+
+    function createRecipeNutritionDisplay(recipe) {
+        const key = getNutritionEstimateKey(recipe);
+        const estimate = nutritionEstimates.get(key);
+        const section = document.createElement('section');
+        section.className = 'recipe-nutrition mt-3';
+        section.dataset.recipeNutritionKey = key;
         const heading = document.createElement('strong');
-        heading.textContent = `Geschätzte Nährwerte pro Portion (${measurableCount} von ${totalIngredients} Zutaten mit Mengenangabe):`;
-        const values = document.createElement('p');
-        values.className = 'mb-0';
-        values.textContent = [
-            `Energie: ${formatNutritionValue(totals.kcal, 'kcal')}`,
-            `Eiweiß: ${formatNutritionValue(totals.protein)}`,
-            `Kohlenhydrate: ${formatNutritionValue(totals.carbohydrates)}`,
-            `Fett: ${formatNutritionValue(totals.fat)}`,
-            `Ballaststoffe: ${formatNutritionValue(totals.fiber)}`,
-            `Salz: ${formatNutritionValue(totals.salt)}`
-        ].join(' · ');
-        container.append(heading, values);
-        if (measurableCount < totalIngredients) {
-            const note = document.createElement('small');
-            note.className = 'd-block text-muted mt-1';
-            note.textContent = 'Zutaten ohne bestätigte Mengenangabe in g sind nicht in der Berechnung enthalten.';
-            container.append(note);
+        heading.textContent = 'Geschätzte Nährwerte pro Portion';
+        section.append(heading);
+
+        if (estimate?.nutrition) {
+            const values = document.createElement('div');
+            values.className = 'recipe-nutrition-grid mt-2';
+            [
+                ['Energie', estimate.nutrition.kcal, 'kcal'],
+                ['Eiweiß', estimate.nutrition.protein, 'g'],
+                ['Kohlenhydrate', estimate.nutrition.carbohydrates, 'g'],
+                ['Fett', estimate.nutrition.fat, 'g'],
+                ['Ballaststoffe', estimate.nutrition.fiber, 'g'],
+                ['Salz', estimate.nutrition.salt, 'g']
+            ].forEach(([label, value, unit]) => {
+                const item = document.createElement('div');
+                const name = document.createElement('small');
+                name.textContent = label;
+                const amount = document.createElement('strong');
+                amount.textContent = formatNutritionValue(value, unit);
+                item.append(name, amount);
+                values.append(item);
+            });
+            const source = document.createElement('small');
+            source.className = 'd-block text-muted mt-1';
+            source.textContent = 'KI-Schätzung via OpenRouter; Werte können abweichen.';
+            section.append(values, source);
+        } else {
+            const status = document.createElement('p');
+            status.className = `small mb-0 mt-1 ${estimate?.error ? 'text-danger' : 'text-muted'}`;
+            status.textContent = estimate?.error || 'Wird automatisch berechnet …';
+            section.append(status);
         }
-        const unmeasuredEntries = entries.filter((entry) => !(Number(entry.amountGrams) > 0));
-        if (unmeasuredEntries.length > 0) {
-            const unmeasuredHeading = document.createElement('strong');
-            unmeasuredHeading.className = 'd-block mt-2';
-            unmeasuredHeading.textContent = 'Weitere bestätigte Zutaten je 100 g:';
-            container.append(unmeasuredHeading, createNutritionProductList(unmeasuredEntries));
-        }
-        appendNutritionAttribution(container);
-        return container;
+        return section;
     }
 
-    function createNutritionProductList(entries) {
-        const productList = document.createElement('ul');
-        productList.className = 'mb-1';
-        entries.forEach((entry) => {
-            const item = document.createElement('li');
-            const nutrients = entry.nutrients;
-            item.textContent = `${entry.productName}: ${formatNutritionValue(nutrients.kcal, 'kcal')}, Eiweiß ${formatNutritionValue(nutrients.protein)}, Kohlenhydrate ${formatNutritionValue(nutrients.carbohydrates)}, Fett ${formatNutritionValue(nutrients.fat)}, Ballaststoffe ${formatNutritionValue(nutrients.fiber)}, Salz ${formatNutritionValue(nutrients.salt)}`;
-            productList.append(item);
-        });
-        return productList;
+    function refreshRecipeNutritionDisplays() {
+        renderRecipeList();
+        renderCommunityRecipes();
+        if (activeCommunityRecipe) {
+            const existing = communityRecipeDetails.querySelector('[data-recipe-nutrition-key]');
+            if (existing) {
+                existing.replaceWith(createRecipeNutritionDisplay(activeCommunityRecipe));
+            }
+        }
     }
 
-    function appendNutritionAttribution(container) {
-        const attribution = document.createElement('small');
-        attribution.className = 'd-block text-muted mt-1';
-        attribution.append('Produktdaten: ');
-        const sourceLink = document.createElement('a');
-        sourceLink.href = 'https://world.openfoodfacts.org/';
-        sourceLink.target = '_blank';
-        sourceLink.rel = 'noopener noreferrer';
-        sourceLink.textContent = 'Open Food Facts';
-        attribution.append(sourceLink, ' (ODbL)');
-        container.append(attribution);
+    function renderRecipeList() {
+        recipeList.replaceChildren(...recipes.map(createRecipeCard));
+        if (recipes.length === 0) {
+            recipeList.append(emptyState);
+        }
+        emptyState.hidden = recipes.length > 0;
+    }
+
+    async function requestNutritionEstimate(recipe) {
+        const key = getNutritionEstimateKey(recipe);
+        if (nutritionEstimates.has(key)) {
+            return nutritionEstimates.get(key);
+        }
+        if (pendingNutritionEstimates.has(key)) {
+            return pendingNutritionEstimates.get(key);
+        }
+
+        const request = (async () => {
+            try {
+                const response = await apiRequest('/api/nutrition/recipe-estimate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: recipe.title,
+                        ingredients: recipe.ingredients,
+                        servings: recipe.servings || 1
+                    })
+                });
+                const data = await readResponse(response, 'Nährwerte konnten nicht berechnet werden.');
+                const estimate = { nutrition: data.nutrition };
+                nutritionEstimates.set(key, estimate);
+                return estimate;
+            } catch (error) {
+                const estimate = { error: error.message || 'Nährwerte konnten nicht berechnet werden.' };
+                nutritionEstimates.set(key, estimate);
+                if (!nutritionFailureMessageShown) {
+                    nutritionFailureMessageShown = true;
+                    showMessage(`Automatische Nährwertschätzung fehlgeschlagen: ${estimate.error}`);
+                }
+                return estimate;
+            } finally {
+                pendingNutritionEstimates.delete(key);
+                refreshRecipeNutritionDisplays();
+            }
+        })();
+        pendingNutritionEstimates.set(key, request);
+        return request;
+    }
+
+    async function requestNutritionEstimates(recipeListToEstimate) {
+        const uniqueRecipes = [...new Map(recipeListToEstimate.map((recipe) => [
+            getNutritionEstimateKey(recipe),
+            recipe
+        ])).values()].filter((recipe) => (
+            !nutritionEstimates.has(getNutritionEstimateKey(recipe))
+        ));
+        for (let index = 0; index < uniqueRecipes.length; index += 2) {
+            const batch = uniqueRecipes.slice(index, index + 2);
+            const estimates = await Promise.all(batch.map(requestNutritionEstimate));
+            const providerLimitError = estimates.find((estimate) => (
+                estimate.error?.includes('HTTP 402')
+                || estimate.error?.includes('HTTP 429')
+                || estimate.error?.includes('Zu viele Nährwertanfragen')
+            ));
+            if (providerLimitError) {
+                uniqueRecipes.slice(index + batch.length).forEach((recipe) => {
+                    nutritionEstimates.set(getNutritionEstimateKey(recipe), { error: providerLimitError.error });
+                });
+                refreshRecipeNutritionDisplays();
+                return;
+            }
+        }
     }
 
     function createRecipeCard(recipe) {
@@ -230,14 +276,7 @@ if (!token) {
         ingredients.textContent = `Zutaten: ${recipe.ingredients.join(', ')}`;
         body.append(ingredients);
 
-        if (Array.isArray(recipe.nutritionIngredients) && recipe.nutritionIngredients.length > 0) {
-            body.append(createNutritionSummary(
-                recipe.nutritionIngredients,
-                recipe.ingredients.length,
-                recipe.servings || 1,
-                'recipe-nutrition'
-            ));
-        }
+        body.append(createRecipeNutritionDisplay(recipe));
 
         if (recipe.instructions) {
             const instructions = document.createElement('details');
@@ -289,25 +328,6 @@ if (!token) {
             recipeImagePreview.hidden = true;
         }
 
-        nutritionSearchItems = recipe.ingredients.map((original) => {
-            const entry = (recipe.nutritionIngredients || []).find((item) => item.ingredient === original);
-            const parsed = parseIngredientForNutrition(original);
-            const product = entry ? {
-                code: entry.productCode,
-                name: entry.productName,
-                brand: '',
-                nutrients: entry.nutrients
-            } : null;
-            return {
-                original,
-                ...parsed,
-                amountGrams: entry?.amountGrams || parsed.amountGrams,
-                products: product ? [product] : [],
-                selectedProductIndex: product ? 0 : null
-            };
-        });
-        renderNutritionSearchResults();
-        nutritionStatus.textContent = 'Gespeicherte Nährwerttreffer bleiben erhalten. Du kannst sie neu suchen.';
         document.querySelector('#createRecipeModalLabel').lastChild.textContent = 'Rezept bearbeiten';
         document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2"></i>Änderungen speichern';
         bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
@@ -339,12 +359,8 @@ if (!token) {
     }
 
     function getRecipeCalories(recipe) {
-        const entries = recipe.nutritionIngredients || [];
-        if (entries.length < recipe.ingredients.length || entries.some((entry) => !(Number(entry.amountGrams) > 0))) {
-            return null;
-        }
-        const { totals } = getNutritionSummary(entries, recipe.servings || 1);
-        return totals.kcal;
+        const estimate = nutritionEstimates.get(getNutritionEstimateKey(recipe));
+        return estimate?.nutrition?.kcal ?? null;
     }
 
     function createFavoriteButton(type, recipeId) {
@@ -392,7 +408,7 @@ if (!token) {
         calories.innerHTML = '<i class="fas fa-fire me-1" aria-hidden="true"></i>';
         const kcal = getRecipeCalories(recipe);
         calories.append(kcal === null
-            ? ' Nährwerte via Open Food Facts'
+            ? ' Nährwerte werden geladen'
             : ` ${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal / Portion`);
         metadata.append(time, calories);
 
@@ -416,7 +432,7 @@ if (!token) {
         const alreadySaved = recipes.some((entry) => entry.sourceCommunityId === recipe.id);
         saveButton.textContent = alreadySaved ? 'Bereits in meinen Rezepten' : 'Zu meinen Rezepten hinzufügen';
         saveButton.disabled = alreadySaved;
-        body.append(category, title, description, metadata, author, favoriteButton, detailsButton, saveButton);
+        body.append(category, title, description, metadata, createRecipeNutritionDisplay(recipe), author, favoriteButton, detailsButton, saveButton);
         card.append(image, body);
         column.append(card);
         return column;
@@ -438,6 +454,7 @@ if (!token) {
             const response = await apiRequest('/api/community/recipes');
             communityRecipes = await readResponse(response, 'Community-Rezepte konnten nicht geladen werden.');
             renderCommunityRecipes();
+            void requestNutritionEstimates(communityRecipes);
         } catch (error) {
             showMessage(error.message || 'Community-Rezepte konnten nicht geladen werden.');
         }
@@ -448,7 +465,7 @@ if (!token) {
             const response = await apiRequest('/api/favorites');
             favorites = await readResponse(response, 'Favoriten konnten nicht geladen werden.');
             updateFavoriteCount();
-            recipeList.replaceChildren(...recipes.map(createRecipeCard));
+            renderRecipeList();
             renderCommunityRecipes();
         } catch (error) {
             showMessage(error.message || 'Favoriten konnten nicht geladen werden.');
@@ -466,7 +483,7 @@ if (!token) {
             const data = await readResponse(response, 'Favorit konnte nicht gespeichert werden.');
             favorites = data.favorites;
             updateFavoriteCount();
-            recipeList.replaceChildren(...recipes.map(createRecipeCard));
+            renderRecipeList();
             renderCommunityRecipes();
             communityRecipeDetails.querySelectorAll('[data-favorite-type]').forEach((favoriteButton) => {
                 if (favoriteButton.dataset.favoriteId === recipeId) {
@@ -486,9 +503,7 @@ if (!token) {
             const response = await apiRequest(`/api/recipes/from-community/${encodeURIComponent(recipeId)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nutritionIngredients: communityRecipes.find((recipe) => recipe.id === recipeId)?.nutritionIngredients || []
-                })
+                body: JSON.stringify({})
             });
             const data = await readResponse(response, 'Community-Rezept konnte nicht gespeichert werden.');
             showMessage(data.message || 'Rezept wurde zu deiner Sammlung hinzugefügt.', true);
@@ -512,171 +527,6 @@ if (!token) {
             list.append(item);
         });
         return [heading, list];
-    }
-
-    function renderCommunityNutrition(recipe, selections, statusText = '') {
-        const section = document.createElement('section');
-        section.className = 'community-nutrition';
-        const heading = document.createElement('h3');
-        heading.className = 'h5 fw-bold mt-4';
-        heading.textContent = 'Nährwerte von Open Food Facts';
-        const help = document.createElement('p');
-        help.className = 'text-muted small';
-        help.textContent = 'Prüfe den passenden Treffer für jede Zutat. Mengen werden nur bei Angaben in g in die Nährwerte pro Portion eingerechnet.';
-        const searchButton = document.createElement('button');
-        searchButton.type = 'button';
-        searchButton.className = 'btn btn-outline-secondary btn-sm mb-2';
-        searchButton.textContent = 'Nährwerte suchen';
-        searchButton.addEventListener('click', () => searchCommunityNutrition(recipe, section, searchButton));
-        const status = document.createElement('p');
-        status.className = 'small text-muted mb-2';
-        status.setAttribute('role', 'status');
-        status.textContent = statusText;
-        const results = document.createElement('div');
-        results.className = 'community-nutrition-results';
-        const hasSelection = selections.some((item) => item.selectedProductIndex !== null);
-        if (hasSelection) {
-            results.append(createNutritionSummary(
-                getSelectedNutritionEntries(selections),
-                recipe.ingredients.length,
-                recipe.servings || 1,
-                'nutrition-summary-content'
-            ));
-        }
-        selections.forEach((item, itemIndex) => {
-            const group = document.createElement('div');
-            group.className = 'nutrition-search-result';
-            const label = document.createElement('label');
-            label.className = 'form-label fw-bold mb-1';
-            label.htmlFor = `community-nutrition-${itemIndex}`;
-            label.textContent = item.original;
-            const select = document.createElement('select');
-            select.className = 'form-select form-select-sm';
-            select.id = label.htmlFor;
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = item.products.length
-                ? 'Passendes Produkt auswählen'
-                : item.productsLoaded ? 'Keine passenden Produkte mit Nährwerten gefunden' : 'Nährwerte noch nicht gesucht';
-            select.append(placeholder);
-            item.products.forEach((product, productIndex) => {
-                const option = document.createElement('option');
-                option.value = String(productIndex);
-                option.textContent = `${product.name}${product.brand ? ` – ${product.brand}` : ''} (${formatNutritionValue(product.nutrients.kcal, 'kcal / 100 g')})`;
-                select.append(option);
-            });
-            select.value = item.selectedProductIndex === null ? '' : String(item.selectedProductIndex);
-            select.addEventListener('change', () => {
-                item.selectedProductIndex = select.value === '' ? null : Number(select.value);
-                const updatedEntries = getSelectedNutritionEntries(selections);
-                recipe.nutritionIngredients = updatedEntries;
-                const communityCardRecipe = communityRecipes.find((entry) => entry.id === recipe.id);
-                if (communityCardRecipe) {
-                    communityCardRecipe.nutritionIngredients = updatedEntries;
-                }
-                renderCommunityRecipes();
-                const summary = createNutritionSummary(
-                    updatedEntries,
-                    recipe.ingredients.length,
-                    recipe.servings || 1,
-                    'nutrition-summary-content'
-                );
-                const existingSummary = results.querySelector('.nutrition-summary-content');
-                if (existingSummary) {
-                    existingSummary.replaceWith(summary);
-                } else if (updatedEntries.length > 0) {
-                    results.prepend(summary);
-                }
-            });
-            group.append(label, select);
-            results.append(group);
-        });
-        if (!hasSelection && selections.length === 0) {
-            const empty = document.createElement('p');
-            empty.className = 'small text-muted';
-            empty.textContent = 'Nährwerte für dieses Rezept wurden noch nicht gesucht.';
-            results.append(empty);
-        }
-        section.append(heading, help, searchButton, status, results);
-        return section;
-    }
-
-    function getSelectedNutritionEntries(selections) {
-        return selections.flatMap((item) => {
-            if (item.selectedProductIndex === null) {
-                return [];
-            }
-            const product = item.products[item.selectedProductIndex];
-            return product ? [{
-                ingredient: item.original,
-                amountGrams: item.amountGrams,
-                productName: product.name,
-                productCode: product.code,
-                nutrients: product.nutrients
-            }] : [];
-        });
-    }
-
-    async function searchCommunityNutrition(recipe, section, button) {
-        const status = section.querySelector('[role="status"]');
-        button.disabled = true;
-        status.textContent = 'Suche passende deutsche Produktdaten bei Open Food Facts …';
-        const selections = recipe.ingredients.slice(0, 20).map((original) => ({
-            original,
-            ...parseIngredientForNutrition(original),
-            products: [],
-            productsLoaded: false,
-            selectedProductIndex: null
-        }));
-        const failedSearches = [];
-        let nextIndex = 0;
-        async function searchNextIngredient() {
-            while (nextIndex < selections.length) {
-                const index = nextIndex;
-                nextIndex += 1;
-                const item = selections[index];
-                try {
-                    const response = await apiRequest(`/api/nutrition/search?q=${encodeURIComponent(item.name)}`);
-                    const data = await readResponse(response, `Nährwerte für „${item.name}“ konnten nicht gesucht werden.`);
-                    item.products = data.products;
-                    item.productsLoaded = true;
-                } catch (error) {
-                    failedSearches.push(`${item.name}: ${error.message}`);
-                }
-            }
-        }
-        try {
-            await Promise.all(Array.from({ length: Math.min(3, selections.length) }, searchNextIngredient));
-            if (activeCommunityRecipe?.id !== recipe.id) {
-                return;
-            }
-            const savedSelections = communityNutritionSelections.get(recipe.id) || new Map();
-            selections.forEach((item) => {
-                const saved = Array.isArray(savedSelections)
-                    ? savedSelections.find((entry) => entry.original === item.original)
-                    : null;
-                const savedProduct = saved && saved.selectedProductIndex !== null
-                    ? saved.products[saved.selectedProductIndex]
-                    : null;
-                const savedIndex = savedProduct
-                    ? item.products.findIndex((product) => product.code === savedProduct.code)
-                    : -1;
-                item.selectedProductIndex = savedIndex >= 0 ? savedIndex : null;
-            });
-            communityNutritionSelections.set(recipe.id, selections);
-            section.replaceWith(renderCommunityNutrition(
-                recipe,
-                selections,
-                failedSearches.length
-                    ? `${failedSearches.length} Zutat(en) konnten nicht gesucht werden. Bitte versuche es erneut.`
-                    : 'Treffer auswählen, um die Nährwerte zu berechnen.'
-            ));
-            if (failedSearches.length) {
-                showMessage(`Nährwertsuche teilweise fehlgeschlagen: ${failedSearches.join('; ')}`);
-            }
-        } finally {
-            button.disabled = false;
-        }
     }
 
     async function openCommunityRecipe(recipeId) {
@@ -748,170 +598,14 @@ if (!token) {
             });
             communityRecipeDetails.append(instructionsHeading, instructionsList);
 
-            let savedSelections = communityNutritionSelections.get(recipe.id);
-            if (!savedSelections) {
-                savedSelections = (recipe.nutritionIngredients || []).map((entry) => ({
-                    original: entry.ingredient,
-                    name: parseIngredientForNutrition(entry.ingredient).name,
-                    amountGrams: entry.amountGrams,
-                    products: [{
-                        name: entry.productName,
-                        brand: '',
-                        code: entry.productCode,
-                        nutrients: entry.nutrients
-                    }],
-                    productsLoaded: true,
-                    selectedProductIndex: 0
-                }));
-                communityNutritionSelections.set(recipe.id, savedSelections);
-            }
-            communityRecipeDetails.append(renderCommunityNutrition(recipe, savedSelections));
+            communityRecipeDetails.append(createRecipeNutritionDisplay(recipe));
+            void requestNutritionEstimate(recipe);
         } catch (error) {
             communityRecipeDetails.replaceChildren();
             const message = document.createElement('p');
             message.className = 'alert alert-danger';
             message.textContent = error.message || 'Community-Rezept konnte nicht geladen werden.';
             communityRecipeDetails.append(message);
-        }
-    }
-
-    function parseIngredientForNutrition(line) {
-        const cleanLine = line
-            .replace(/\([^)]*\)/g, ' ')
-            .replace(/\boptional\b/gi, '')
-            .replace(/\s+oder\s+.+$/i, '')
-            .replace(/^saft\s+(?:einer?\s+)?/i, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-        const amountPattern = '(\\d+(?:[.,]\\d+)?|1\\/2|½)';
-        const massMatch = cleanLine.match(new RegExp(`^${amountPattern}\\s*(kg|g|gramm|mg)\\s+(.+)$`, 'i'));
-        if (massMatch) {
-            const amount = massMatch[1] === '½' || massMatch[1] === '1/2'
-                ? 0.5
-                : Number(massMatch[1].replace(',', '.'));
-            const unit = massMatch[2].toLocaleLowerCase('de-DE');
-            const amountGrams = unit === 'kg' ? amount * 1000 : unit === 'mg' ? amount / 1000 : amount;
-            return { name: normalizeNutritionSearchTerm(massMatch[3]), amountGrams: amountGrams > 0 ? amountGrams : null };
-        }
-        const quantityMatch = cleanLine.match(new RegExp(`^${amountPattern}\\s*(?:ml|l|liter|el|esslöffel|tl|teelöffel|stk|stück|stücke|tasse|tassen|bund|prise|päckchen|packung)?\\s+(.+)$`, 'i'));
-        return {
-            name: normalizeNutritionSearchTerm(quantityMatch ? quantityMatch[1] : cleanLine),
-            amountGrams: null
-        };
-    }
-
-    function normalizeNutritionSearchTerm(value) {
-        return value
-            .replace(/^(?:kleine|kleiner|kleinen|reife|reifer|reife[nr]?|feste|fester|festen|grüne|grüner|grünen|rote|roter|roten|frische|frischer|frischen|glatte|glatter|glatten|getrocknete|getrockneter|gemischtes|gutes|guter|schwarzer|schwarzen|gut abgetropfter)\s+/i, '')
-            .replace(/\s+(?:zum servieren|zum garnieren)$/i, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    function updateNutritionPreview() {
-        if (nutritionSearchItems.length === 0) {
-            return;
-        }
-        const selectedEntries = nutritionSearchItems.flatMap((item) => {
-            if (item.selectedProductIndex === null) {
-                return [];
-            }
-            const product = item.products[item.selectedProductIndex];
-            if (!product) {
-                return [];
-            }
-            return [{
-                ingredient: item.original,
-                amountGrams: item.amountGrams,
-                productName: product.name,
-                productCode: product.code,
-                nutrients: product.nutrients
-            }];
-        });
-        let summary = nutritionResults.querySelector('#nutrition-summary');
-        if (!summary) {
-            summary = document.createElement('div');
-            summary.id = 'nutrition-summary';
-            nutritionResults.append(summary);
-        }
-        summary.replaceChildren(createNutritionSummary(
-            selectedEntries,
-            nutritionSearchItems.length,
-            Number(document.querySelector('#recipe-servings').value) || 1,
-            'nutrition-summary-content'
-        ));
-    }
-
-    function renderNutritionSearchResults() {
-        nutritionResults.replaceChildren();
-        nutritionSearchItems.forEach((item, itemIndex) => {
-            const group = document.createElement('div');
-            group.className = 'nutrition-search-result';
-            const label = document.createElement('label');
-            label.className = 'form-label fw-bold mb-1';
-            label.htmlFor = `nutrition-product-${itemIndex}`;
-            label.textContent = item.original;
-            const select = document.createElement('select');
-            select.className = 'form-select form-select-sm';
-            select.id = label.htmlFor;
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = item.products.length ? 'Passendes Produkt auswählen' : 'Keine passenden Produkte gefunden';
-            select.append(placeholder);
-            item.products.forEach((product, productIndex) => {
-                const option = document.createElement('option');
-                option.value = String(productIndex);
-                const brand = product.brand ? ` – ${product.brand}` : '';
-                option.textContent = `${product.name}${brand} (${formatNutritionValue(product.nutrients.kcal, 'kcal / 100 g')})`;
-                select.append(option);
-            });
-            select.disabled = item.products.length === 0;
-            select.addEventListener('change', () => {
-                item.selectedProductIndex = select.value === '' ? null : Number(select.value);
-                updateNutritionPreview();
-            });
-            group.append(label, select);
-            nutritionResults.append(group);
-        });
-        updateNutritionPreview();
-    }
-
-    async function searchIngredientNutrition() {
-        const lines = ingredientsInput.value.split('\n').map((line) => line.trim()).filter(Boolean);
-        if (lines.length === 0) {
-            nutritionStatus.textContent = 'Trage zuerst Zutaten ein.';
-            nutritionResults.replaceChildren();
-            nutritionSearchItems = [];
-            return;
-        }
-        if (lines.length > 20) {
-            nutritionStatus.textContent = 'Bitte suche höchstens 20 Zutaten gleichzeitig.';
-            return;
-        }
-
-        const searchButton = document.querySelector('#search-nutrition-button');
-        searchButton.disabled = true;
-        nutritionResults.replaceChildren();
-        nutritionSearchItems = lines.map((original) => ({
-            original,
-            ...parseIngredientForNutrition(original),
-            products: [],
-            selectedProductIndex: null
-        }));
-        try {
-            for (let index = 0; index < nutritionSearchItems.length; index += 1) {
-                const item = nutritionSearchItems[index];
-                nutritionStatus.textContent = `Suche Zutat ${index + 1} von ${nutritionSearchItems.length}: ${item.name}`;
-                const response = await apiRequest(`/api/nutrition/search?q=${encodeURIComponent(item.name)}`);
-                const data = await readResponse(response, `Nährwerte für „${item.name}“ konnten nicht gesucht werden.`);
-                item.products = data.products;
-            }
-            renderNutritionSearchResults();
-            nutritionStatus.textContent = 'Wähle für jede Zutat den passenden Treffer aus. Für die Berechnung wird die Menge in g benötigt.';
-        } catch (error) {
-            nutritionStatus.textContent = error.message || 'Nährwertsuche fehlgeschlagen.';
-        } finally {
-            searchButton.disabled = false;
         }
     }
 
@@ -934,12 +628,12 @@ if (!token) {
             const response = await apiRequest('/api/recipes');
             const data = await readResponse(response, 'Rezepte konnten nicht geladen werden.');
             recipes.splice(0, recipes.length, ...data);
-            recipeList.replaceChildren(...data.map(createRecipeCard));
-            emptyState.hidden = data.length > 0;
+            renderRecipeList();
             recipeCount.textContent = `${data.length} ${data.length === 1 ? 'Rezept' : 'Rezepte'}`;
             updateRecipeOptions();
             renderPlanView();
             renderCommunityRecipes();
+            void requestNutritionEstimates(data);
         } catch (error) {
             showMessage(error.message || 'Verbindung zum Server fehlgeschlagen.');
         }
@@ -999,18 +693,8 @@ if (!token) {
                 title.textContent = recipe ? recipe.title : 'Rezept nicht mehr verfügbar';
                 meal.append(title);
 
-                if (recipe && Array.isArray(recipe.nutritionIngredients) && recipe.nutritionIngredients.length > 0) {
-                    meal.append(createNutritionSummary(
-                        recipe.nutritionIngredients,
-                        recipe.ingredients.length,
-                        recipe.servings || 1,
-                        'plan-nutrition'
-                    ));
-                } else {
-                    const nutritionNote = document.createElement('p');
-                    nutritionNote.className = 'plan-nutrition mb-0';
-                    nutritionNote.textContent = 'Nährwerte nicht verfügbar.';
-                    meal.append(nutritionNote);
+                if (recipe) {
+                    meal.append(createRecipeNutritionDisplay(recipe));
                 }
 
                 const removeButton = document.createElement('button');
@@ -1096,9 +780,6 @@ if (!token) {
         recipeImageData = null;
         recipeImagePreview.removeAttribute('src');
         recipeImagePreview.hidden = true;
-        nutritionSearchItems = [];
-        nutritionStatus.textContent = '';
-        nutritionResults.replaceChildren();
         document.querySelector('#createRecipeModalLabel').lastChild.textContent = 'Neues Rezept';
         document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2"></i>Speichern';
         bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
@@ -1125,19 +806,6 @@ if (!token) {
                     prepTime: Number(formData.get('prepTime')) || null,
                     servings: Number(formData.get('servings')) || 1,
                     image: recipeImageData,
-                    nutritionIngredients: nutritionSearchItems.flatMap((item) => {
-                        if (item.selectedProductIndex === null) {
-                            return [];
-                        }
-                        const product = item.products[item.selectedProductIndex];
-                        return product ? [{
-                            ingredient: item.original,
-                            amountGrams: item.amountGrams,
-                            productName: product.name,
-                            productCode: product.code,
-                            nutrients: product.nutrients
-                        }] : [];
-                    }),
                     shareWithCommunity: document.querySelector('#share-recipe-with-community').checked
                 })
             });
@@ -1148,9 +816,6 @@ if (!token) {
             recipeImageData = null;
             recipeImagePreview.removeAttribute('src');
             recipeImagePreview.hidden = true;
-            nutritionSearchItems = [];
-            nutritionStatus.textContent = '';
-            nutritionResults.replaceChildren();
             bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).hide();
             showMessage(data.message || 'Rezept wurde gespeichert.', true);
             await loadRecipes();
@@ -1162,7 +827,6 @@ if (!token) {
         }
     });
 
-    document.querySelector('#search-nutrition-button').addEventListener('click', searchIngredientNutrition);
     recipeImageInput.addEventListener('change', () => {
         const [file] = recipeImageInput.files;
         recipeImageData = null;
@@ -1189,12 +853,6 @@ if (!token) {
         reader.addEventListener('error', () => showMessage('Das Rezept-Cover konnte nicht gelesen werden.'));
         reader.readAsDataURL(file);
     });
-    ingredientsInput.addEventListener('input', () => {
-        nutritionSearchItems = [];
-        nutritionStatus.textContent = '';
-        nutritionResults.replaceChildren();
-    });
-    document.querySelector('#recipe-servings').addEventListener('input', updateNutritionPreview);
     communitySearch.addEventListener('input', renderCommunityRecipes);
     communityRecipeList.addEventListener('click', (event) => {
         const favoriteButton = event.target.closest('[data-favorite-type]');

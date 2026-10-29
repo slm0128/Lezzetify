@@ -280,20 +280,15 @@
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold" for="recipe-ingredients">Zutaten</label>
                                 <textarea class="form-control rounded-3" id="recipe-ingredients" name="ingredients" rows="5" placeholder="200 g Mehl&#10;150 g Tomaten&#10;2 Eier" required></textarea>
-                                <div class="form-text mb-2">Eine Zutat pro Zeile, z. B. „200 g Mehl“. Für die Rezeptberechnung Gramm verwenden.</div>
-                                <button class="btn btn-outline-secondary btn-sm" id="search-nutrition-button" type="button">
-                                    <i class="fas fa-search me-1"></i>Nährwerte suchen
-                                </button>
-                                <div id="nutrition-status" class="small mt-2" role="status" aria-live="polite"></div>
+                                <div class="form-text mb-2">Eine Zutat pro Zeile, z. B. „200 g Mehl“. Die Nährwerte pro Portion werden nach dem Speichern automatisch geschätzt.</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold" for="recipe-instructions">Zubereitung</label>
                                 <textarea class="form-control rounded-3" id="recipe-instructions" name="instructions" rows="5" placeholder="1. Eier aufschlagen...&#10;2. Mit Mehl vermengen..."></textarea>
                             </div>
                         </div>
-                        <div class="nutrition-results mt-3" id="nutrition-results"></div>
                         <p class="text-muted small mb-0 mt-2">
-                            Produktdaten: <a href="https://world.openfoodfacts.org/" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (Open Database License).
+                            Nährwerte sind KI-Schätzungen und können von den tatsächlichen Werten abweichen.
                         </p>
                         <div class="form-check mt-3">
                             <input class="form-check-input" type="checkbox" id="share-recipe-with-community" name="shareWithCommunity">
