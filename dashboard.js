@@ -12,6 +12,11 @@ if (!token) {
     const recipeNoResults = document.querySelector('#recipe-no-results');
     const recipeCount = document.querySelector('#recipe-count');
     const dashboardMessage = document.querySelector('#dashboard-message');
+    const dashboardToast = document.querySelector('#dashboard-toast');
+    const dashboardToastIcon = document.querySelector('#dashboard-toast-icon');
+    const dashboardToastTitle = document.querySelector('#dashboard-toast-title');
+    const dashboardToastMessage = document.querySelector('#dashboard-toast-message');
+    const dashboardToastProgress = document.querySelector('.dashboard-toast-progress');
     const userName = document.querySelector('#user-name');
     const planForm = document.querySelector('#plan-form');
     const planRecipe = document.querySelector('#plan-recipe');
@@ -45,6 +50,8 @@ if (!token) {
     const pendingNutritionEstimates = new Map();
     let nutritionRequestQueue = Promise.resolve();
     let nutritionFailureMessageShown = false;
+    let dashboardToastTimeout;
+    let dashboardToastHideTimeout;
 
     let savedUser = {};
     try {
@@ -58,6 +65,30 @@ if (!token) {
     function showMessage(message, isSuccess = false) {
         dashboardMessage.textContent = message;
         dashboardMessage.className = `alert ${isSuccess ? 'alert-success' : 'alert-danger'}`;
+    }
+
+    function dismissDashboardToast() {
+        window.clearTimeout(dashboardToastTimeout);
+        window.clearTimeout(dashboardToastHideTimeout);
+        dashboardToast.classList.remove('is-visible');
+        dashboardToastHideTimeout = window.setTimeout(() => {
+            dashboardToast.hidden = true;
+        }, 220);
+    }
+
+    function showToast(message, { title = 'Gespeichert', icon = 'fa-check' } = {}) {
+        window.clearTimeout(dashboardToastTimeout);
+        window.clearTimeout(dashboardToastHideTimeout);
+        dashboardToastTitle.textContent = title;
+        dashboardToastMessage.textContent = message;
+        dashboardToastIcon.querySelector('i').className = `fas ${icon}`;
+        dashboardToast.hidden = false;
+        dashboardToast.classList.remove('is-visible');
+        dashboardToastProgress.style.animation = 'none';
+        void dashboardToastProgress.offsetWidth;
+        dashboardToastProgress.style.animation = '';
+        window.requestAnimationFrame(() => dashboardToast.classList.add('is-visible'));
+        dashboardToastTimeout = window.setTimeout(dismissDashboardToast, 4800);
     }
 
     function requestConfirmation({ title, message, confirmLabel, tone = 'danger', icon = 'fa-trash-alt' }) {
@@ -206,6 +237,13 @@ if (!token) {
             const existing = communityRecipeDetails.querySelector('[data-recipe-nutrition-key]');
             if (existing) {
                 existing.replaceWith(createRecipeNutritionDisplay(activeCommunityRecipe));
+            }
+            const calories = communityRecipeDetails.querySelector('[data-community-nutrition-kcal]');
+            if (calories) {
+                const kcal = getRecipeCalories(activeCommunityRecipe);
+                calories.textContent = kcal === null
+                    ? 'Wird berechnet'
+                    : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal`;
             }
         }
     }
@@ -485,61 +523,115 @@ if (!token) {
         return button;
     }
 
+    function createCommunityDetailFavoriteButton(recipeId) {
+        const isFavorite = favorites.community.includes(recipeId);
+        const button = createFavoriteButton('community', recipeId);
+        button.className = 'btn btn-outline-danger community-detail-favorite';
+        button.setAttribute('aria-pressed', String(isFavorite));
+        button.replaceChildren();
+        const icon = document.createElement('i');
+        icon.className = isFavorite ? 'fas fa-heart' : 'far fa-heart';
+        icon.setAttribute('aria-hidden', 'true');
+        button.append(icon, document.createTextNode(isFavorite ? ' In Favoriten' : ' Zu Favoriten'));
+        return button;
+    }
+
     function createCommunityRecipeCard(recipe) {
         const column = document.createElement('div');
         column.className = 'col-12 col-md-6 col-xl-4';
         const card = document.createElement('article');
         card.className = 'card h-100 border-0 shadow-sm recipe-card community-recipe-card';
 
+        const cover = document.createElement('div');
+        cover.className = 'community-card-cover';
         const image = createRecipeCardCover(recipe);
+        cover.append(image);
+        const category = document.createElement('span');
+        category.className = 'community-card-category';
+        category.textContent = recipe.category || 'Community-Rezept';
+        cover.append(category);
+        const favoriteButton = createFavoriteButton('community', recipe.id);
+        favoriteButton.className = 'community-card-favorite';
+        favoriteButton.setAttribute('aria-label', favorites.community.includes(recipe.id)
+            ? 'Aus Favoriten entfernen'
+            : 'Zu Favoriten hinzufügen');
+        favoriteButton.title = favoriteButton.getAttribute('aria-label');
+        favoriteButton.replaceChildren();
+        const heart = document.createElement('i');
+        heart.className = favorites.community.includes(recipe.id) ? 'fas fa-heart' : 'far fa-heart';
+        heart.setAttribute('aria-hidden', 'true');
+        const favoriteLabel = document.createElement('span');
+        favoriteLabel.className = 'visually-hidden';
+        favoriteLabel.textContent = favoriteButton.getAttribute('aria-label');
+        favoriteButton.append(heart, favoriteLabel);
+        cover.append(favoriteButton);
 
         const body = document.createElement('div');
-        body.className = 'card-body d-flex flex-column';
-        const category = document.createElement('span');
-        category.className = 'badge bg-warning text-dark align-self-start mb-2';
-        category.textContent = recipe.category || 'Community-Rezept';
+        body.className = 'card-body community-card-body d-flex flex-column';
         const title = document.createElement('h3');
-        title.className = 'card-title fw-bold';
+        title.className = 'card-title community-card-title fw-bold';
         title.textContent = recipe.title;
         const description = document.createElement('p');
-        description.className = 'card-text text-muted flex-grow-1';
+        description.className = 'card-text community-card-description text-muted flex-grow-1';
         description.textContent = recipe.description || 'Ein Rezept aus der Lezzetify-Community.';
         const metadata = document.createElement('div');
-        metadata.className = 'd-flex justify-content-between text-muted small my-3 gap-2';
+        metadata.className = 'community-card-meta';
 
         const time = document.createElement('span');
-        time.innerHTML = '<i class="far fa-clock me-1" aria-hidden="true"></i>';
-        time.append(recipe.prepTime ? ` ${recipe.prepTime} Min.` : ' Zeit offen');
+        time.className = 'community-card-stat';
+        const timeIcon = document.createElement('i');
+        timeIcon.className = 'far fa-clock';
+        timeIcon.setAttribute('aria-hidden', 'true');
+        time.append(timeIcon, recipe.prepTime ? `${recipe.prepTime} Min.` : 'Zeit offen');
         const calories = document.createElement('span');
-        calories.innerHTML = '<i class="fas fa-fire me-1" aria-hidden="true"></i>';
+        calories.className = 'community-card-stat';
+        const caloriesIcon = document.createElement('i');
+        caloriesIcon.className = 'fas fa-fire';
+        caloriesIcon.setAttribute('aria-hidden', 'true');
         const kcal = getRecipeCalories(recipe);
-        calories.append(kcal === null
-            ? ' Nährwerte werden geladen'
-            : ` ${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal / Portion`);
+        calories.append(caloriesIcon, kcal === null
+            ? 'Nährwerte folgen'
+            : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal`);
         metadata.append(time, calories);
 
         const author = document.createElement('p');
-        author.className = 'small text-muted mb-3';
-        author.textContent = recipe.creatorType === 'user'
-            ? `Hinzugefügt von ${recipe.addedByName}`
-            : `Erstellt von ${recipe.addedByName || 'Lezzetify'}`;
+        author.className = 'community-card-author small text-muted';
+        const authorIcon = document.createElement('i');
+        authorIcon.className = 'fas fa-user-circle';
+        authorIcon.setAttribute('aria-hidden', 'true');
+        author.append(authorIcon, document.createTextNode(recipe.creatorType === 'user'
+            ? ` ${recipe.addedByName}`
+            : ` ${recipe.addedByName || 'Lezzetify'}`));
         const detailsButton = document.createElement('button');
         detailsButton.type = 'button';
-        detailsButton.className = 'btn btn-primary-custom w-100 mt-auto';
+        detailsButton.className = 'btn btn-primary-custom community-card-open-button mt-auto';
         detailsButton.dataset.communityRecipeId = recipe.id;
-        detailsButton.textContent = 'Rezept ansehen';
-
-        const favoriteButton = createFavoriteButton('community', recipe.id);
-        favoriteButton.classList.add('w-100');
+        const detailsIcon = document.createElement('i');
+        detailsIcon.className = 'fas fa-book-open';
+        detailsIcon.setAttribute('aria-hidden', 'true');
+        const detailsLabel = document.createElement('span');
+        detailsLabel.textContent = 'Rezept ansehen';
+        const detailsArrow = document.createElement('i');
+        detailsArrow.className = 'fas fa-arrow-right';
+        detailsArrow.setAttribute('aria-hidden', 'true');
+        detailsButton.append(detailsIcon, detailsLabel, detailsArrow);
         const saveButton = document.createElement('button');
         saveButton.type = 'button';
-        saveButton.className = 'btn btn-outline-primary w-100 mt-2';
+        saveButton.className = 'btn btn-outline-primary community-card-save-button';
         saveButton.dataset.saveCommunityRecipeId = recipe.id;
         const alreadySaved = recipes.some((entry) => entry.sourceCommunityId === recipe.id);
-        saveButton.textContent = alreadySaved ? 'Bereits in meinen Rezepten' : 'Zu meinen Rezepten hinzufügen';
+        const saveIcon = document.createElement('i');
+        saveIcon.className = alreadySaved ? 'fas fa-check' : 'far fa-bookmark';
+        saveIcon.setAttribute('aria-hidden', 'true');
+        saveButton.append(saveIcon, document.createTextNode(
+            alreadySaved ? ' In deiner Sammlung' : ' Merken'
+        ));
         saveButton.disabled = alreadySaved;
-        body.append(category, title, description, metadata, createRecipeNutritionDisplay(recipe), author, favoriteButton, detailsButton, saveButton);
-        card.append(image, body);
+        const actions = document.createElement('div');
+        actions.className = 'community-card-actions';
+        actions.append(detailsButton, saveButton);
+        body.append(title, description, metadata, author, actions);
+        card.append(cover, body);
         column.append(card);
         return column;
     }
@@ -593,10 +685,23 @@ if (!token) {
             renderCommunityRecipes();
             communityRecipeDetails.querySelectorAll('[data-favorite-type]').forEach((favoriteButton) => {
                 if (favoriteButton.dataset.favoriteId === recipeId) {
-                    favoriteButton.replaceWith(createFavoriteButton(type, recipeId));
+                    favoriteButton.replaceWith(type === 'community'
+                        ? createCommunityDetailFavoriteButton(recipeId)
+                        : createFavoriteButton(type, recipeId));
                 }
             });
-            showMessage(data.favorited ? 'Rezept wurde zu deinen Favoriten hinzugefügt.' : 'Rezept wurde aus deinen Favoriten entfernt.', true);
+            const recipeTitle = type === 'community'
+                ? communityRecipes.find((recipe) => recipe.id === recipeId)?.title
+                : recipes.find((recipe) => recipe.id === recipeId)?.title;
+            showToast(
+                data.favorited
+                    ? `„${recipeTitle || 'Rezept'}“ wurde zu deinen Favoriten hinzugefügt.`
+                    : `„${recipeTitle || 'Rezept'}“ wurde aus deinen Favoriten entfernt.`,
+                {
+                    title: data.favorited ? 'In Favoriten gespeichert' : 'Aus Favoriten entfernt',
+                    icon: data.favorited ? 'fa-heart' : 'fa-heart-broken'
+                }
+            );
         } catch (error) {
             showMessage(error.message || 'Favorit konnte nicht gespeichert werden.');
             button.disabled = false;
@@ -611,8 +716,28 @@ if (!token) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
             });
-            const data = await readResponse(response, 'Community-Rezept konnte nicht gespeichert werden.');
-            showMessage(data.message || 'Rezept wurde zu deiner Sammlung hinzugefügt.', true);
+            await readResponse(response, 'Community-Rezept konnte nicht gespeichert werden.');
+            const alreadySaved = response.status === 200;
+            const recipeTitle = communityRecipes.find((recipe) => recipe.id === recipeId)?.title || 'Das Rezept';
+            showToast(
+                alreadySaved
+                    ? `„${recipeTitle}“ ist bereits in deiner Sammlung.`
+                    : `„${recipeTitle}“ wurde zu deinen Rezepten hinzugefügt.`,
+                {
+                    title: alreadySaved ? 'Schon vorgemerkt' : 'Rezept gespeichert',
+                    icon: alreadySaved ? 'fa-bookmark' : 'fa-check'
+                }
+            );
+            communityRecipeDetails.querySelectorAll('[data-save-community-recipe-id]').forEach((saveButton) => {
+                if (saveButton.dataset.saveCommunityRecipeId === recipeId) {
+                    saveButton.disabled = true;
+                    saveButton.replaceChildren();
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-check';
+                    icon.setAttribute('aria-hidden', 'true');
+                    saveButton.append(icon, document.createTextNode(' Bereits in deiner Sammlung'));
+                }
+            });
             await loadRecipes();
             renderCommunityRecipes();
         } catch (error) {
@@ -622,24 +747,27 @@ if (!token) {
     }
 
     function createCommunityIngredients(recipe) {
-        const heading = document.createElement('h3');
-        heading.className = 'h5 fw-bold mt-4';
-        heading.textContent = `Zutaten für ${recipe.servings || 1} Portionen`;
         const list = document.createElement('ul');
         list.className = 'community-ingredient-list';
         recipe.ingredients.forEach((ingredient) => {
             const item = document.createElement('li');
-            item.textContent = ingredient;
+            const marker = document.createElement('i');
+            marker.className = 'fas fa-check';
+            marker.setAttribute('aria-hidden', 'true');
+            const label = document.createElement('span');
+            label.textContent = ingredient;
+            item.append(marker, label);
             list.append(item);
         });
-        return [heading, list];
+        return list;
     }
 
     async function openCommunityRecipe(recipeId) {
+        activeCommunityRecipe = null;
         communityRecipeDetails.replaceChildren();
         communityRecipeTitle.textContent = 'Community-Rezept wird geladen';
         const loading = document.createElement('p');
-        loading.className = 'text-muted';
+        loading.className = 'community-detail-loading';
         loading.textContent = 'Rezept wird geladen …';
         communityRecipeDetails.append(loading);
         const modal = bootstrap.Modal.getOrCreateInstance(document.querySelector('#communityRecipeModal'));
@@ -648,53 +776,115 @@ if (!token) {
             const response = await apiRequest(`/api/community/recipes/${encodeURIComponent(recipeId)}`);
             const recipe = await readResponse(response, 'Community-Rezept konnte nicht geladen werden.');
             activeCommunityRecipe = recipe;
-            communityRecipeTitle.textContent = recipe.title;
+            communityRecipeTitle.textContent = `Rezeptdetails: ${recipe.title}`;
             communityRecipeDetails.replaceChildren();
 
-            if (recipe.image) {
-                const image = document.createElement('img');
-                image.className = 'community-detail-image mb-3';
-                image.src = recipe.image;
-                image.alt = recipe.title;
-                communityRecipeDetails.append(image);
+            const detail = document.createElement('article');
+            detail.className = 'community-recipe-detail';
+            const hero = document.createElement('div');
+            hero.className = 'community-detail-hero';
+            const image = createRecipeCardCover(recipe);
+            image.classList.add('community-detail-image');
+            if (image instanceof HTMLImageElement) {
+                image.loading = 'eager';
             }
+            hero.append(image);
             const category = document.createElement('span');
-            category.className = 'badge bg-warning text-dark mb-2';
+            category.className = 'community-detail-category';
             category.textContent = recipe.category || 'Community-Rezept';
+            hero.append(category);
+            detail.append(hero);
+
+            const content = document.createElement('div');
+            content.className = 'community-detail-content';
+            const intro = document.createElement('div');
+            intro.className = 'community-detail-intro';
             const title = document.createElement('h2');
-            title.className = 'h3 fw-bold';
+            title.className = 'community-detail-title';
             title.textContent = recipe.title;
-            const description = document.createElement('p');
-            description.className = 'text-muted';
-            description.textContent = recipe.description || '';
             const author = document.createElement('p');
-            author.className = 'small text-muted';
-            author.textContent = recipe.creatorType === 'user'
-                ? `Hinzugefügt von ${recipe.addedByName}`
-                : `Erstellt von ${recipe.addedByName || 'Lezzetify'}`;
-            const metadata = document.createElement('p');
-            metadata.className = 'small text-muted';
-            metadata.textContent = `${recipe.prepTime ? `${recipe.prepTime} Min.` : 'Zubereitungszeit nicht angegeben'} · ${recipe.servings || 1} Portionen`;
-            communityRecipeDetails.append(category, title, description, author, metadata);
+            author.className = 'community-detail-author';
+            const authorIcon = document.createElement('i');
+            authorIcon.className = 'fas fa-user-circle';
+            authorIcon.setAttribute('aria-hidden', 'true');
+            author.append(authorIcon, document.createTextNode(recipe.creatorType === 'user'
+                ? ` Geteilt von ${recipe.addedByName}`
+                : ` Von ${recipe.addedByName || 'Lezzetify'}`));
+            const description = document.createElement('p');
+            description.className = 'community-detail-description';
+            description.textContent = recipe.description || '';
+            intro.append(title, author);
+            if (recipe.description) {
+                intro.append(description);
+            }
+            content.append(intro);
+
+            const stats = document.createElement('div');
+            stats.className = 'community-detail-stats';
+            [
+                ['far fa-clock', 'Zubereitungszeit', recipe.prepTime ? `${recipe.prepTime} Min.` : 'Nicht angegeben'],
+                ['fas fa-utensils', 'Portionen', String(recipe.servings || 1)],
+                ['fas fa-fire', 'Energie / Portion', getRecipeCalories(recipe) === null
+                    ? 'Wird berechnet'
+                    : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(getRecipeCalories(recipe))} kcal`]
+            ].forEach(([iconClass, label, value]) => {
+                const stat = document.createElement('div');
+                stat.className = 'community-detail-stat';
+                const icon = document.createElement('i');
+                icon.className = iconClass;
+                icon.setAttribute('aria-hidden', 'true');
+                const copy = document.createElement('span');
+                const statLabel = document.createElement('small');
+                statLabel.textContent = label;
+                const statValue = document.createElement('strong');
+                statValue.textContent = value;
+                if (label === 'Energie / Portion') {
+                    statValue.dataset.communityNutritionKcal = '';
+                }
+                copy.append(statLabel, statValue);
+                stat.append(icon, copy);
+                stats.append(stat);
+            });
+            content.append(stats);
+
             const actionBar = document.createElement('div');
-            actionBar.className = 'd-flex flex-column flex-sm-row gap-2 mt-3';
-            const favoriteButton = createFavoriteButton('community', recipe.id);
-            favoriteButton.classList.remove('align-self-start', 'mb-2');
+            actionBar.className = 'community-detail-actions';
+            const favoriteButton = createCommunityDetailFavoriteButton(recipe.id);
             const saveButton = document.createElement('button');
             saveButton.type = 'button';
-            saveButton.className = 'btn btn-outline-primary';
+            saveButton.className = 'btn btn-primary-custom community-detail-save';
             saveButton.dataset.saveCommunityRecipeId = recipe.id;
             const alreadySaved = recipes.some((entry) => entry.sourceCommunityId === recipe.id);
-            saveButton.textContent = alreadySaved ? 'Bereits in meinen Rezepten' : 'Zu meinen Rezepten hinzufügen';
+            const saveIcon = document.createElement('i');
+            saveIcon.className = alreadySaved ? 'fas fa-check' : 'far fa-bookmark';
+            saveIcon.setAttribute('aria-hidden', 'true');
+            saveButton.append(saveIcon, document.createTextNode(
+                alreadySaved ? ' Bereits in deiner Sammlung' : ' Zu meinen Rezepten'
+            ));
             saveButton.disabled = alreadySaved;
             actionBar.append(favoriteButton, saveButton);
-            communityRecipeDetails.append(actionBar);
-            communityRecipeDetails.append(...createCommunityIngredients(recipe));
+            content.append(actionBar);
 
+            const ingredientsSection = document.createElement('section');
+            ingredientsSection.className = 'community-detail-section';
+            const ingredientsHeading = document.createElement('h3');
+            ingredientsHeading.textContent = 'Zutaten';
+            const ingredientsSubtitle = document.createElement('p');
+            ingredientsSubtitle.className = 'community-detail-section-note';
+            ingredientsSubtitle.textContent = `Alles für ${recipe.servings || 1} Portionen`;
+            ingredientsSection.append(
+                ingredientsHeading,
+                ingredientsSubtitle,
+                createCommunityIngredients(recipe)
+            );
+            content.append(ingredientsSection);
+
+            const instructionsSection = document.createElement('section');
+            instructionsSection.className = 'community-detail-section community-detail-instructions';
             const instructionsHeading = document.createElement('h3');
-            instructionsHeading.className = 'h5 fw-bold mt-4';
             instructionsHeading.textContent = 'Zubereitung';
             const instructionsList = document.createElement('ol');
+            instructionsList.className = 'community-instruction-list';
             const instructions = Array.isArray(recipe.instructions)
                 ? recipe.instructions
                 : String(recipe.instructions || '').split('\n').map((step) => step.trim()).filter(Boolean);
@@ -703,9 +893,14 @@ if (!token) {
                 item.textContent = instruction;
                 instructionsList.append(item);
             });
-            communityRecipeDetails.append(instructionsHeading, instructionsList);
+            instructionsSection.append(instructionsHeading, instructionsList);
+            content.append(instructionsSection);
 
-            communityRecipeDetails.append(createRecipeNutritionDisplay(recipe));
+            const nutrition = createRecipeNutritionDisplay(recipe);
+            nutrition.classList.add('community-detail-nutrition');
+            content.append(nutrition);
+            detail.append(content);
+            communityRecipeDetails.append(detail);
             void requestNutritionEstimate(recipe);
         } catch (error) {
             communityRecipeTitle.textContent = 'Community-Rezept';
@@ -1192,6 +1387,8 @@ if (!token) {
         localStorage.removeItem('email');
         window.location.replace('index.html');
     });
+
+    document.querySelector('#dashboard-toast-close').addEventListener('click', dismissDashboardToast);
 
     const today = getLocalDateString();
     planDate.value = today;

@@ -38,6 +38,20 @@
         </div>
     </nav>
 
+    <div class="dashboard-toast" id="dashboard-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <span class="dashboard-toast-icon" id="dashboard-toast-icon" aria-hidden="true">
+            <i class="fas fa-check"></i>
+        </span>
+        <span class="dashboard-toast-copy">
+            <strong id="dashboard-toast-title">Gespeichert</strong>
+            <span id="dashboard-toast-message"></span>
+        </span>
+        <button class="dashboard-toast-close" id="dashboard-toast-close" type="button" aria-label="Meldung schließen">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <span class="dashboard-toast-progress" aria-hidden="true"></span>
+    </div>
+
     <!-- HAUPTBEREICH DASHBOARD-->
     <main class="flex-grow-1 py-4 dashboard-main">
         <div class="container">
@@ -509,14 +523,14 @@
     <!-- MODAL: COMMUNITY REZEPT DETAILS -->
     <div class="modal fade" id="communityRecipeModal" tabindex="-1" aria-labelledby="community-recipe-title"
         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header border-bottom-0 pb-0">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable community-detail-modal-dialog">
+            <div class="modal-content border-0 shadow-lg rounded-4 community-detail-modal-content">
+                <div class="modal-header community-detail-modal-header">
                     <h2 class="visually-hidden" id="community-recipe-title">Community-Rezeptdetails</h2>
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"
                         aria-label="Schließen"></button>
                 </div>
-                <div class="modal-body px-4 px-md-5 pb-5" id="community-recipe-details"></div>
+                <div class="modal-body community-detail-modal-body" id="community-recipe-details"></div>
             </div>
         </div>
     </div>
