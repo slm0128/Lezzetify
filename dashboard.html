@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +10,9 @@
     <link rel="stylesheet" href="library/css/all.min.css">
     <link rel="stylesheet" href="library/css/global.css">
 
-    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/dashboard.css?v=2">
 </head>
+
 <body class="dashboard-page d-flex flex-column min-vh-100">
 
     <!-- NAVIGATION-->
@@ -39,13 +41,17 @@
     <!-- HAUPTBEREICH DASHBOARD-->
     <main class="flex-grow-1 py-4 dashboard-main">
         <div class="container">
-            
+
             <!-- Header-Bereich mit Begrüßung -->
-            <div class="dashboard-hero d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div
+                class="dashboard-hero d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                 <div>
-                    <span class="dashboard-eyebrow mb-2"><i class="fas fa-leaf me-2" aria-hidden="true"></i>Dein persönlicher Rezeptmanager</span>
-                    <h1 class="fw-bold text-dark mb-2">Willkommen, <span class="text-primary-custom" id="user-name">Chefkoch</span>!</h1>
-                    <p class="text-muted mb-0">Deine Rezepte, dein Wochenplan und alles für den nächsten Einkauf – an einem Ort.</p>
+                    <span class="dashboard-eyebrow mb-2"><i class="fas fa-leaf me-2" aria-hidden="true"></i>Dein
+                        persönlicher Rezeptmanager</span>
+                    <h1 class="fw-bold text-dark mb-2">Willkommen, <span class="text-primary-custom"
+                            id="user-name">Chefkoch</span>!</h1>
+                    <p class="text-muted mb-0">Deine Rezepte, dein Wochenplan und alles für den nächsten Einkauf – an
+                        einem Ort.</p>
                 </div>
                 <button class="btn btn-primary-custom btn-lg rounded-pill px-4" id="new-recipe-button" type="button">
                     <i class="fas fa-plus me-2"></i>Neues Rezept
@@ -101,19 +107,23 @@
             <!-- WOCHENPLANER & EINKAUFSLISTE -->
             <section class="meal-planner card border-0 rounded-4 mb-5" aria-labelledby="meal-planner-heading">
                 <div class="card-body p-4">
-                    <div class="dashboard-section-heading d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">
+                    <div
+                        class="dashboard-section-heading d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">
                         <div>
                             <h2 class="h4 fw-bold mb-1" id="meal-planner-heading">
                                 <i class="fas fa-calendar-alt text-primary-custom me-2"></i>Wochenplan & Einkaufsliste
                             </h2>
-                            <p class="text-muted mb-0">Plane deine Gerichte und erstelle automatisch deine Zutatenliste.</p>
+                            <p class="text-muted mb-0">Plane deine Gerichte und erstelle automatisch deine Zutatenliste.
+                            </p>
                         </div>
                         <div class="calendar-toolbar d-flex flex-wrap gap-2">
-                            <button class="btn btn-outline-secondary" id="plan-previous" type="button" aria-label="Vorheriger Zeitraum">
+                            <button class="btn btn-outline-secondary" id="plan-previous" type="button"
+                                aria-label="Vorheriger Zeitraum">
                                 <i class="fas fa-chevron-left" aria-hidden="true"></i>
                             </button>
                             <button class="btn btn-outline-secondary" id="plan-today" type="button">Heute</button>
-                            <button class="btn btn-outline-secondary" id="plan-next" type="button" aria-label="Nächster Zeitraum">
+                            <button class="btn btn-outline-secondary" id="plan-next" type="button"
+                                aria-label="Nächster Zeitraum">
                                 <i class="fas fa-chevron-right" aria-hidden="true"></i>
                             </button>
                             <select class="form-select" id="plan-period" aria-label="Zeitraum für Plan">
@@ -127,43 +137,58 @@
                     <div class="row g-4">
                         <div class="col-12">
                             <div class="planner-form-panel mb-4">
-                            <h3 class="h6 fw-bold mb-3"><i class="fas fa-plus-circle text-primary-custom me-2" aria-hidden="true"></i>Gericht einplanen</h3>
-                            <form id="plan-form" class="row g-3 align-items-end">
-                                <div class="col-md-6">
-                                    <label class="form-label small text-muted fw-bold" for="plan-recipe">Rezept auswählen</label>
-                                    <select class="form-select" id="plan-recipe" required>
-                                        <option value="">Zuerst ein Rezept wählen</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label small text-muted fw-bold" for="plan-date">Kochtag</label>
-                                    <input class="form-control" type="date" id="plan-date" required>
-                                </div>
-                                <div class="col-md-2 d-grid">
-                                    <button class="btn btn-primary-custom" id="save-plan-button" type="submit" disabled>Planen</button>
-                                </div>
-                            </form>
+                                <h3 class="h6 fw-bold mb-3"><i class="fas fa-plus-circle text-primary-custom me-2"
+                                        aria-hidden="true"></i>Gericht einplanen</h3>
+                                <form id="plan-form" class="row g-3 align-items-end">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted fw-bold" for="plan-recipe">Rezept
+                                            auswählen</label>
+                                        <select class="form-select" id="plan-recipe" required>
+                                            <option value="">Zuerst ein Rezept wählen</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-muted fw-bold"
+                                            for="plan-date">Kochtag</label>
+                                        <input class="form-control" type="date" id="plan-date" required>
+                                    </div>
+                                    <div class="col-md-2 d-grid">
+                                        <button class="btn btn-primary-custom" id="save-plan-button" type="submit"
+                                            disabled>Planen</button>
+                                    </div>
+                                </form>
                             </div>
 
-                            <h3 class="h5 fw-bold mb-3">Geplante Gerichte <span class="text-muted fw-normal" id="plan-range-label"></span></h3>
-                            <div class="meal-plan-calendar is-week" id="meal-plan-calendar" role="list" aria-live="polite"></div>
-                            <p class="text-muted small mb-0 mt-2" id="plan-empty-state">Für diesen Zeitraum ist noch kein Gericht eingeplant.</p>
+                            <h3 class="h5 fw-bold mb-3">Geplante Gerichte <span class="text-muted fw-normal"
+                                    id="plan-range-label"></span></h3>
+                            <div class="meal-plan-calendar is-week" id="meal-plan-calendar" role="list"
+                                aria-live="polite"></div>
+                            <p class="text-muted small mb-0 mt-2" id="plan-empty-state">Für diesen Zeitraum ist noch
+                                kein Gericht eingeplant.</p>
                         </div>
 
                         <div class="col-12">
                             <div class="shopping-list-panel rounded-4 p-3 bg-light border h-100">
                                 <div class="row g-4">
                                     <div class="col-lg-6">
-                                        <h3 class="h6 fw-bold mb-3"><i class="fas fa-shopping-basket text-primary-custom me-2"></i>Einkaufsliste für den angezeigten Zeitraum</h3>
+                                        <h3 class="h6 fw-bold mb-3"><i
+                                                class="fas fa-shopping-basket text-primary-custom me-2"></i>Einkaufsliste
+                                            für den angezeigten Zeitraum</h3>
                                         <ul class="shopping-list mb-2" id="shopping-list"></ul>
-                                        <p class="text-muted small mb-0" id="shopping-empty-state">Plane Gerichte ein, um Zutaten hier zu sammeln.</p>
+                                        <p class="text-muted small mb-0" id="shopping-empty-state">Plane Gerichte ein,
+                                            um Zutaten hier zu sammeln.</p>
                                     </div>
                                     <div class="col-lg-6 calendar-subscription">
-                                        <h3 class="h6 fw-bold mb-1"><i class="fas fa-sync-alt text-primary-custom me-2"></i>Kalender abonnieren</h3>
-                                        <p class="text-muted small mb-3">Der Kalender enthält geplante Gerichte und einen wöchentlichen Einkaufstermin mit Zutaten für die folgenden sieben Tage.</p>
+                                        <h3 class="h6 fw-bold mb-1"><i
+                                                class="fas fa-sync-alt text-primary-custom me-2"></i>Kalender abonnieren
+                                        </h3>
+                                        <p class="text-muted small mb-3">Der Kalender enthält geplante Gerichte und
+                                            einen wöchentlichen Einkaufstermin mit Zutaten für die folgenden sieben
+                                            Tage.</p>
                                         <form id="calendar-settings-form" class="row g-2 align-items-end mb-3">
                                             <div class="col-sm-7">
-                                                <label class="form-label small text-muted fw-bold" for="shopping-weekday">Einkaufstag</label>
+                                                <label class="form-label small text-muted fw-bold"
+                                                    for="shopping-weekday">Einkaufstag</label>
                                                 <select class="form-select" id="shopping-weekday">
                                                     <option value="1">Montag</option>
                                                     <option value="2">Dienstag</option>
@@ -175,20 +200,28 @@
                                                 </select>
                                             </div>
                                             <div class="col-sm-5 d-grid">
-                                                <button class="btn btn-outline-primary" id="save-calendar-settings" type="submit">Einkaufstag speichern</button>
+                                                <button class="btn btn-outline-primary" id="save-calendar-settings"
+                                                    type="submit">Einkaufstag speichern</button>
                                             </div>
                                         </form>
-                                        <label class="form-label small text-muted fw-bold" for="calendar-feed-url">Privater iCal-Link</label>
+                                        <label class="form-label small text-muted fw-bold"
+                                            for="calendar-feed-url">Privater iCal-Link</label>
                                         <div class="input-group mb-2">
-                                            <input class="form-control" id="calendar-feed-url" type="url" readonly aria-label="Privater iCal-Link">
-                                            <button class="btn btn-outline-secondary" id="copy-calendar-link" type="button">Kopieren</button>
+                                            <input class="form-control" id="calendar-feed-url" type="url" readonly
+                                                aria-label="Privater iCal-Link">
+                                            <button class="btn btn-outline-secondary" id="copy-calendar-link"
+                                                type="button">Kopieren</button>
                                         </div>
                                         <div class="d-flex flex-wrap gap-2 align-items-center">
-                                            <a class="btn btn-primary-custom btn-sm" id="subscribe-calendar-link" href="#" rel="nofollow">Kalender abonnieren</a>
-                                            <button class="btn btn-outline-danger btn-sm" id="rotate-calendar-link" type="button">Link erneuern</button>
-                                            <span class="small text-muted" id="calendar-settings-status" role="status" aria-live="polite"></span>
+                                            <a class="btn btn-primary-custom btn-sm" id="subscribe-calendar-link"
+                                                href="#" rel="nofollow">Kalender abonnieren</a>
+                                            <button class="btn btn-outline-danger btn-sm" id="rotate-calendar-link"
+                                                type="button">Link erneuern</button>
+                                            <span class="small text-muted" id="calendar-settings-status" role="status"
+                                                aria-live="polite"></span>
                                         </div>
-                                        <p class="small text-muted mt-2 mb-0">Der Link gewährt Zugriff auf deinen Essensplan. Teile ihn nur mit Personen, die ihn sehen dürfen.</p>
+                                        <p class="small text-muted mt-2 mb-0">Der Link gewährt Zugriff auf deinen
+                                            Essensplan. Teile ihn nur mit Personen, die ihn sehen dürfen.</p>
                                     </div>
                                 </div>
                             </div>
@@ -200,16 +233,20 @@
             <!-- MEINE REZEPTE (HAUPTSEKTION MIT SUCHE & FILTER) -->
             <section class="recipe-collection mb-4" aria-labelledby="recipe-collection-heading">
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <button class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"
-                            type="button" data-bs-toggle="collapse" data-bs-target="#recipeCollectionCollapse" aria-expanded="true" aria-controls="recipeCollectionCollapse">
+                    <button
+                        class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#recipeCollectionCollapse"
+                        aria-expanded="true" aria-controls="recipeCollectionCollapse">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="community-heading-icon"><i class="fas fa-utensils" aria-hidden="true"></i></span>
+                            <span class="community-heading-icon"><i class="fas fa-utensils"
+                                    aria-hidden="true"></i></span>
                             <div>
                                 <span class="community-heading-label">Deine Küche</span>
                                 <h2 class="fw-bold mb-0 text-dark h5" id="recipe-collection-heading">Rezeptsammlung</h2>
                             </div>
                         </div>
-                        <span class="community-toggle-icon" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+                        <span class="community-toggle-icon" aria-hidden="true"><i
+                                class="fas fa-chevron-down"></i></span>
                     </button>
                     <div class="collapse show" id="recipeCollectionCollapse">
                         <div class="card-body p-3 p-md-4">
@@ -221,12 +258,16 @@
                                     <div class="row g-3 align-items-center">
                                         <div class="col-md-8">
                                             <div class="input-group">
-                                                <span class="input-group-text"><i class="fas fa-search text-muted" aria-hidden="true"></i></span>
-                                                <input type="search" class="form-control" id="recipe-search" placeholder="Rezepte, Zutaten oder Beschreibung suchen..." aria-label="Eigene Rezepte durchsuchen">
+                                                <span class="input-group-text"><i class="fas fa-search text-muted"
+                                                        aria-hidden="true"></i></span>
+                                                <input type="search" class="form-control" id="recipe-search"
+                                                    placeholder="Rezepte, Zutaten oder Beschreibung suchen..."
+                                                    aria-label="Eigene Rezepte durchsuchen">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
-                                            <select class="form-select" id="recipe-sort" aria-label="Rezeptliste sortieren">
+                                            <select class="form-select" id="recipe-sort"
+                                                aria-label="Rezeptliste sortieren">
                                                 <option value="default">Sortierung: Standard</option>
                                                 <option value="title-asc">Name: A–Z</option>
                                                 <option value="title-desc">Name: Z–A</option>
@@ -240,12 +281,15 @@
                             <!-- Rezept-Grid (Liste für eigene Rezepte) -->
                             <div id="recipe-list" class="row g-4">
                                 <div class="col-12 text-center py-5" id="empty-state">
-                                    <img src="images/logo.png" alt="Lezzetify" class="recipe-empty-logo mb-3">
+                                    <img src="images/Leere Rezept.png" alt="Lezzetify" class="recipe-empty-logo mb-3"
+                                        style="width: 300px; height: auto;">
                                     <h5 class="fw-bold text-dark">Deine Sammlung ist noch leer</h5>
-                                    <p class="text-muted small">Klicke oben auf "Neues Rezept", um dein erstes Gericht hinzuzufügen.</p>
+                                    <p class="text-muted small">Klicke oben auf "Neues Rezept", um dein erstes Gericht
+                                        hinzuzufügen.</p>
                                 </div>
                             </div>
-                            <p class="text-muted text-center py-4 mb-0" id="recipe-no-results" hidden>Keine Rezepte für deine Suche gefunden.</p>
+                            <p class="text-muted text-center py-4 mb-0" id="recipe-no-results" hidden>Keine Rezepte für
+                                deine Suche gefunden.</p>
                         </div>
                     </div>
                 </div>
@@ -254,8 +298,10 @@
             <!-- COMMUNITY REZEPTE -->
             <section class="community-collection mb-4" aria-labelledby="community-heading">
                 <div class="card border-0 shadow-sm rounded-4 mt-4 mb-4 overflow-hidden">
-                    <button class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"
-                            type="button" data-bs-toggle="collapse" data-bs-target="#communityCollapse" aria-expanded="true" aria-controls="communityCollapse">
+                    <button
+                        class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#communityCollapse" aria-expanded="true"
+                        aria-controls="communityCollapse">
                         <div class="d-flex align-items-center gap-2">
                             <span class="community-heading-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
                             <div>
@@ -263,17 +309,23 @@
                                 <h3 class="fw-bold mb-0 text-dark h5" id="community-heading">Rezepte entdecken</h3>
                             </div>
                         </div>
-                        <span class="community-toggle-icon" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+                        <span class="community-toggle-icon" aria-hidden="true"><i
+                                class="fas fa-chevron-down"></i></span>
                     </button>
                     <div class="collapse show" id="communityCollapse">
                         <div class="card-body community-content border-top p-3 p-md-4">
-                            <p class="text-muted small mb-3">Entdecke Inspirationen und Rezepte von Lezzetify und anderen Kochbegeisterten.</p>
+                            <p class="text-muted small mb-3">Entdecke Inspirationen und Rezepte von Lezzetify und
+                                anderen Kochbegeisterten.</p>
                             <div class="input-group community-search mb-4">
-                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                                <input class="form-control border-start-0 ps-0 bg-white" id="community-search" type="search" placeholder="Community-Rezepte suchen..." aria-label="Community-Rezepte suchen">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="fas fa-search text-muted"></i></span>
+                                <input class="form-control border-start-0 ps-0 bg-white" id="community-search"
+                                    type="search" placeholder="Community-Rezepte suchen..."
+                                    aria-label="Community-Rezepte suchen">
                             </div>
                             <div class="row g-3" id="community-recipe-list"></div>
-                            <p class="text-muted text-center py-3 mb-0 small" id="community-empty-state" hidden>Keine Community-Rezepte gefunden.</p>
+                            <p class="text-muted text-center py-3 mb-0 small" id="community-empty-state" hidden>Keine
+                                Community-Rezepte gefunden.</p>
                         </div>
                     </div>
                 </div>
@@ -283,11 +335,13 @@
     </main>
 
     <!-- MODAL: REZEPT ERSTELLEN-->
-    <div class="modal fade" id="createRecipeModal" tabindex="-1" aria-labelledby="createRecipeModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createRecipeModal" tabindex="-1" aria-labelledby="createRecipeModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h4 class="modal-title fw-bold" id="createRecipeModalLabel"><i class="fas fa-utensils text-warning me-2"></i>Neues Rezept</h4>
+                    <h4 class="modal-title fw-bold" id="createRecipeModalLabel"><i
+                            class="fas fa-utensils text-warning me-2"></i>Neues Rezept</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -295,56 +349,73 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control rounded-3" id="recipe-title" name="title" placeholder="Rezeptname" maxlength="100" required>
+                                    <input type="text" class="form-control rounded-3" id="recipe-title" name="title"
+                                        placeholder="Rezeptname" maxlength="100" required>
                                     <label for="recipe-title">Rezeptname</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-floating mb-3">
-                                    <input type="number" class="form-control rounded-3" id="recipe-prep-time" name="prepTime" placeholder="30" min="1" max="1440">
+                                    <input type="number" class="form-control rounded-3" id="recipe-prep-time"
+                                        name="prepTime" placeholder="30" min="1" max="1440">
                                     <label for="recipe-prep-time"><i class="far fa-clock me-1"></i> Dauer (Min)</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-floating mb-3">
-                                    <input type="number" class="form-control rounded-3" id="recipe-servings" name="servings" value="1" min="1" max="100" required>
+                                    <input type="number" class="form-control rounded-3" id="recipe-servings"
+                                        name="servings" value="1" min="1" max="100" required>
                                     <label for="recipe-servings">Portionen</label>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control rounded-3" id="recipe-description" name="description" placeholder="Kurzbeschreibung" maxlength="240">
-                                    <label for="recipe-description">Kurzbeschreibung (z.B. Herzhaftes Abendessen)</label>
+                                    <input type="text" class="form-control rounded-3" id="recipe-description"
+                                        name="description" placeholder="Kurzbeschreibung" maxlength="240">
+                                    <label for="recipe-description">Kurzbeschreibung (z.B. Herzhaftes
+                                        Abendessen)</label>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label text-muted small fw-bold" for="recipe-image">Rezept-Cover</label>
-                                <input class="form-control" type="file" id="recipe-image" accept="image/png,image/jpeg,image/webp,image/gif">
+                                <label class="form-label text-muted small fw-bold"
+                                    for="recipe-image">Rezept-Cover</label>
+                                <input class="form-control" type="file" id="recipe-image"
+                                    accept="image/png,image/jpeg,image/webp,image/gif">
                                 <div class="form-text">Optional, PNG/JPG/WebP/GIF, maximal 3 MB.</div>
-                                <img class="recipe-upload-preview mt-2" id="recipe-image-preview" alt="Vorschau des Rezept-Covers" hidden>
+                                <img class="recipe-upload-preview mt-2" id="recipe-image-preview"
+                                    alt="Vorschau des Rezept-Covers" hidden>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label text-muted small fw-bold" for="recipe-ingredients">Zutaten</label>
-                                <textarea class="form-control rounded-3" id="recipe-ingredients" name="ingredients" rows="5" placeholder="200 g Mehl&#10;150 g Tomaten&#10;2 Eier" required></textarea>
-                                <div class="form-text mb-2">Eine Zutat pro Zeile, z. B. „200 g Mehl“. Die Nährwerte pro Portion werden nach dem Speichern automatisch geschätzt.</div>
+                                <label class="form-label text-muted small fw-bold"
+                                    for="recipe-ingredients">Zutaten</label>
+                                <textarea class="form-control rounded-3" id="recipe-ingredients" name="ingredients"
+                                    rows="5" placeholder="200 g Mehl&#10;150 g Tomaten&#10;2 Eier" required></textarea>
+                                <div class="form-text mb-2">Eine Zutat pro Zeile, z. B. „200 g Mehl“. Die Nährwerte pro
+                                    Portion werden nach dem Speichern automatisch geschätzt.</div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label text-muted small fw-bold" for="recipe-instructions">Zubereitung</label>
-                                <textarea class="form-control rounded-3" id="recipe-instructions" name="instructions" rows="5" placeholder="1. Eier aufschlagen...&#10;2. Mit Mehl vermengen..."></textarea>
+                                <label class="form-label text-muted small fw-bold"
+                                    for="recipe-instructions">Zubereitung</label>
+                                <textarea class="form-control rounded-3" id="recipe-instructions" name="instructions"
+                                    rows="5"
+                                    placeholder="1. Eier aufschlagen...&#10;2. Mit Mehl vermengen..."></textarea>
                             </div>
                         </div>
                         <p class="text-muted small mb-0 mt-2">
                             Nährwerte sind KI-Schätzungen und können von den tatsächlichen Werten abweichen.
                         </p>
                         <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="share-recipe-with-community" name="shareWithCommunity">
+                            <input class="form-check-input" type="checkbox" id="share-recipe-with-community"
+                                name="shareWithCommunity">
                             <label class="form-check-label" for="share-recipe-with-community">
                                 Dieses Rezept zur Community hinzufügen und mit allen teilen
                             </label>
                         </div>
                         <div class="mt-4 text-end">
-                            <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">Abbrechen</button>
-                            <button class="btn btn-primary-custom rounded-pill px-4" id="save-recipe-button" type="submit">
+                            <button type="button" class="btn btn-light rounded-pill px-4 me-2"
+                                data-bs-dismiss="modal">Abbrechen</button>
+                            <button class="btn btn-primary-custom rounded-pill px-4" id="save-recipe-button"
+                                type="submit">
                                 <i class="fas fa-save me-2"></i>Speichern
                             </button>
                         </div>
@@ -355,17 +426,19 @@
     </div>
 
     <!-- MODAL: COMMUNITY REZEPT DETAILS -->
-    <div class="modal fade" id="communityRecipeModal" tabindex="-1" aria-labelledby="community-recipe-title" aria-hidden="true">
+    <div class="modal fade" id="communityRecipeModal" tabindex="-1" aria-labelledby="community-recipe-title"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"
+                        aria-label="Schließen"></button>
                 </div>
                 <div class="modal-body px-4 px-md-5 pb-5" id="community-recipe-details"></div>
             </div>
         </div>
     </div>
-    
+
     <footer class="dashboard-footer text-center mt-auto">
         <div class="container">
             <p class="mb-0">&copy; 2026 Lezzetify.</p>
@@ -373,6 +446,7 @@
     </footer>
     <!-- Bootstrap & Eigene JS -->
     <script src="library/js/bootstrap.bundle.min.js"></script>
-    <script src="dashboard.js"></script>
+    <script src="dashboard.js?v=2"></script>
 </body>
+
 </html>

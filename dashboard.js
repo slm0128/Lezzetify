@@ -191,6 +191,27 @@ if (!token) {
         recipeNoResults.hidden = recipes.length === 0 || visibleRecipes.length > 0;
     }
 
+    function createRecipeCardCover(recipe) {
+        if (recipe.image) {
+            const image = document.createElement('img');
+            image.className = 'card-img-top recipe-img';
+            image.src = recipe.image;
+            image.alt = recipe.title;
+            image.loading = 'lazy';
+            return image;
+        }
+
+        const cover = document.createElement('div');
+        cover.className = 'recipe-img recipe-cover-placeholder';
+        cover.setAttribute('role', 'img');
+        cover.setAttribute('aria-label', `Kein Bild für ${recipe.title}`);
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-utensils';
+        icon.setAttribute('aria-hidden', 'true');
+        cover.append(icon);
+        return cover;
+    }
+
     async function requestNutritionEstimate(recipe) {
         const key = getNutritionEstimateKey(recipe);
         if (nutritionEstimates.has(key)) {
@@ -262,11 +283,7 @@ if (!token) {
         column.className = 'col-12 col-md-6 col-xl-4';
         const card = document.createElement('article');
         card.className = 'card h-100 border-0 shadow-sm recipe-card recipe-dashboard-card';
-        const image = document.createElement('img');
-        image.className = 'card-img-top recipe-img';
-        image.src = recipe.image || 'images/essen.jpg';
-        image.alt = recipe.title;
-        image.loading = 'lazy';
+        const image = createRecipeCardCover(recipe);
         const body = document.createElement('div');
         body.className = 'card-body d-flex flex-column';
         const category = document.createElement('span');
@@ -409,11 +426,7 @@ if (!token) {
         const card = document.createElement('article');
         card.className = 'card h-100 border-0 shadow-sm recipe-card community-recipe-card';
 
-        const image = document.createElement('img');
-        image.className = 'card-img-top recipe-img';
-        image.src = recipe.image || 'images/essen.jpg';
-        image.alt = recipe.title;
-        image.loading = 'lazy';
+        const image = createRecipeCardCover(recipe);
 
         const body = document.createElement('div');
         body.className = 'card-body d-flex flex-column';

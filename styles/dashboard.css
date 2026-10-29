@@ -431,6 +431,20 @@
     object-fit: cover;
 }
 
+.recipe-cover-placeholder {
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(circle at 50% 45%, rgba(231, 111, 81, 0.13), transparent 3.75rem),
+        linear-gradient(135deg, #fff5ef, #f8ebe3);
+    color: var(--primary-color);
+}
+
+.recipe-cover-placeholder i {
+    font-size: 3rem;
+    opacity: 0.85;
+}
+
 .community-detail-image {
     display: block;
     width: 100%;
