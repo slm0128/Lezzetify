@@ -4,78 +4,39 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const amqp = require('amqplib');
 const express = require('express');
+const { estimateOpenRouterRecipe } = require('./openrouter-nutrition');
 
-const QUEUE_NAME = 'nutrition.search';
+const QUEUE_NAME = 'nutrition.recipe-estimate';
 const PORT = Number(process.env.HEALTH_PORT || 3001);
 const cache = new Map();
 let rabbitConnected = false;
 
-async function searchOpenFoodFacts(query) {
-    const cacheKey = query.toLocaleLowerCase('de-DE');
+async function estimateRecipe(recipe) {
+    const cacheKey = JSON.stringify({
+        model: process.env.OPENROUTER_MODEL,
+        title: recipe.title,
+        ingredients: recipe.ingredients,
+        servings: recipe.servings
+    }).toLocaleLowerCase('de-DE');
     const cached = cache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
-        return cached.products;
+        return { nutrition: cached.nutrition };
     }
 
-    const url = new URL('https://world.openfoodfacts.org/api/v2/search');
-    url.searchParams.set('search_terms', query);
-    url.searchParams.set('fields', 'code,product_name,product_name_de,brands,nutriments');
-    url.searchParams.set('page_size', '10');
-    url.searchParams.set('lc', 'de');
-
-    const response = await fetch(url, {
-        headers: { 'User-Agent': 'Lezzetify/1.0 (German recipe nutrition lookup)' },
-        signal: AbortSignal.timeout(8000)
-    });
-    if (!response.ok) {
-        throw new Error(`Open Food Facts returned HTTP ${response.status}.`);
-    }
-
-    const data = await response.json();
-    const products = (Array.isArray(data.products) ? data.products : [])
-        .map((product) => {
-            const nutriments = product.nutriments || {};
-            const readValue = (rawValue) => {
-                if (rawValue === null || rawValue === undefined || rawValue === '') {
-                    return null;
-                }
-                const value = Number(rawValue);
-                return Number.isFinite(value) && value >= 0 ? value : null;
-            };
-            const kcalValue = readValue(nutriments['energy-kcal_100g']);
-            const energyKj = readValue(nutriments['energy_100g']);
-            const kcal = kcalValue !== null ? kcalValue : energyKj !== null ? energyKj / 4.184 : null;
-            const productName = product.product_name_de || product.product_name;
-            if (typeof productName !== 'string' || !productName.trim() || kcal === null) {
-                return null;
-            }
-
-            return {
-                code: typeof product.code === 'string' ? product.code : '',
-                name: productName.trim(),
-                brand: typeof product.brands === 'string' ? product.brands.trim() : '',
-                nutrients: {
-                    kcal,
-                    protein: readValue(nutriments.proteins_100g),
-                    carbohydrates: readValue(nutriments.carbohydrates_100g),
-                    fat: readValue(nutriments.fat_100g),
-                    fiber: readValue(nutriments.fiber_100g),
-                    salt: readValue(nutriments.salt_100g)
-                }
-            };
-        })
-        .filter(Boolean);
-
+    const estimate = await estimateOpenRouterRecipe(recipe);
     if (cache.size >= 500) {
         cache.delete(cache.keys().next().value);
     }
-    cache.set(cacheKey, { products, expiresAt: Date.now() + 6 * 60 * 60 * 1000 });
-    return products;
+    cache.set(cacheKey, { nutrition: estimate.nutrition, expiresAt: Date.now() + 6 * 60 * 60 * 1000 });
+    return estimate;
 }
 
 async function startWorker() {
     if (!process.env.RABBITMQ_URL) {
         throw new Error('RABBITMQ_URL must be configured.');
+    }
+    if (!process.env.OPENROUTER_API_KEY || !process.env.OPENROUTER_MODEL) {
+        throw new Error('OPENROUTER_API_KEY and OPENROUTER_MODEL must be configured.');
     }
 
     const connection = await amqp.connect(process.env.RABBITMQ_URL);
@@ -88,21 +49,36 @@ async function startWorker() {
         }
 
         try {
-            const { query } = JSON.parse(message.content.toString());
-            if (typeof query !== 'string' || !query.trim() || query.length > 80) {
-                throw new Error('Ungültige Zutat für die Nährwertsuche.');
+            const request = JSON.parse(message.content.toString());
+            let result;
+            if (request.type === 'recipe') {
+                const recipe = request.recipe;
+                if (!recipe || typeof recipe.title !== 'string' || !recipe.title.trim()
+                    || !Array.isArray(recipe.ingredients) || recipe.ingredients.length === 0
+                    || recipe.ingredients.length > 100 || !Number.isInteger(recipe.servings)
+                    || recipe.servings < 1 || recipe.servings > 100
+                    || recipe.ingredients.some((item) => typeof item !== 'string'
+                        || !item.trim() || item.length > 200)) {
+                    throw new Error('Ungültiges Rezept für die Nährwertschätzung.');
+                }
+                result = await estimateRecipe(recipe);
+            } else {
+                throw new Error('Unbekannte Nährwertanfrage.');
             }
 
-            const products = await searchOpenFoodFacts(query.trim());
-            channel.sendToQueue(message.properties.replyTo, Buffer.from(JSON.stringify({ products })), {
+            channel.sendToQueue(message.properties.replyTo, Buffer.from(JSON.stringify(result)), {
                 correlationId: message.properties.correlationId,
                 contentType: 'application/json'
             });
         } catch (error) {
-            console.error('Nutrition search failed:', error.message);
+            console.error('Recipe nutrition estimate failed:', error.message);
             if (message.properties.replyTo && message.properties.correlationId) {
                 channel.sendToQueue(message.properties.replyTo, Buffer.from(JSON.stringify({
-                    error: 'Die Nährwertsuche ist gerade nicht verfügbar.'
+                    error: error.statusCode === 402
+                        ? 'OpenRouter hat die Anfrage mit HTTP 402 abgelehnt. Prüfe dein OpenRouter-Guthaben und ob das gewählte Modell kostenpflichtige Anfragen erlaubt.'
+                        : error.statusCode === 429
+                            ? 'OpenRouter hat die Anfrage mit HTTP 429 limitiert. Bitte warte kurz oder prüfe das Anfragelimit deines Modells.'
+                        : 'Die Nährwertschätzung ist gerade nicht verfügbar.'
                 })), {
                     correlationId: message.properties.correlationId,
                     contentType: 'application/json'

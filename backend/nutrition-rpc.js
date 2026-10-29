@@ -1,8 +1,8 @@
 const amqp = require('amqplib');
 const { randomUUID } = require('crypto');
 
-const QUEUE_NAME = 'nutrition.search';
-const REQUEST_TIMEOUT_MS = 12000;
+const QUEUE_NAME = 'nutrition.recipe-estimate';
+const REQUEST_TIMEOUT_MS = 35000;
 
 async function createNutritionRpc() {
     if (!process.env.RABBITMQ_URL) {
@@ -54,43 +54,45 @@ async function createNutritionRpc() {
         }
     }, { noAck: true });
 
-    return {
-        isConnected: () => connected,
-        async search(query) {
-            if (!connected) {
-                throw new Error('Der Nährwert-Service ist nicht erreichbar.');
-            }
+    function sendRequest(payload) {
+        if (!connected) {
+            return Promise.reject(new Error('Der Nährwert-Service ist nicht erreichbar.'));
+        }
 
-            const correlationId = randomUUID();
-            return new Promise((resolve, reject) => {
-                const timer = setTimeout(() => {
-                    pending.delete(correlationId);
-                    reject(new Error('Die Nährwertsuche hat zu lange gedauert.'));
-                }, REQUEST_TIMEOUT_MS);
-                pending.set(correlationId, { resolve, reject, timer });
+        const correlationId = randomUUID();
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => {
+                pending.delete(correlationId);
+                reject(new Error('Die Nährwertsuche hat zu lange gedauert.'));
+            }, REQUEST_TIMEOUT_MS);
+            pending.set(correlationId, { resolve, reject, timer });
 
-                requestChannel.sendToQueue(
-                    QUEUE_NAME,
-                    Buffer.from(JSON.stringify({ query })),
-                    {
-                        correlationId,
-                        replyTo: replyQueue,
-                        contentType: 'application/json',
-                        persistent: true
-                    },
-                    (error) => {
-                        if (error) {
-                            const request = pending.get(correlationId);
-                            if (request) {
-                                pending.delete(correlationId);
-                                clearTimeout(request.timer);
-                                request.reject(new Error('Die Nährwertsuche konnte nicht gestartet werden.'));
-                            }
+            requestChannel.sendToQueue(
+                QUEUE_NAME,
+                Buffer.from(JSON.stringify(payload)),
+                {
+                    correlationId,
+                    replyTo: replyQueue,
+                    contentType: 'application/json',
+                    persistent: true
+                },
+                (error) => {
+                    if (error) {
+                        const request = pending.get(correlationId);
+                        if (request) {
+                            pending.delete(correlationId);
+                            clearTimeout(request.timer);
+                            request.reject(new Error('Die Nährwertsuche konnte nicht gestartet werden.'));
                         }
                     }
-                );
-            });
-        },
+                }
+            );
+        });
+    }
+
+    return {
+        isConnected: () => connected,
+        estimateRecipe: (recipe) => sendRequest({ type: 'recipe', recipe }),
         async close() {
             connected = false;
             await Promise.allSettled([requestChannel.close(), replyChannel.close(), connection.close()]);
