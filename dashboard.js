@@ -729,7 +729,14 @@ if (!token) {
         deleteIcon.className = 'fas fa-trash-alt';
         deleteIcon.setAttribute('aria-hidden', 'true');
         deleteButton.append(deleteIcon, document.createTextNode(' Löschen'));
-        deleteButton.addEventListener('click', () => deleteRecipe(recipe, deleteButton));
+        deleteButton.addEventListener('click', () => {
+            const modalElement = document.querySelector('#recipeDetailsModal');
+            deleteButton.disabled = true;
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                void deleteRecipe(recipe, deleteButton);
+            }, { once: true });
+            bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+        });
         actions.append(editButton, deleteButton);
         content.append(actions);
         appendRecipeDetailSections(content, recipe);
