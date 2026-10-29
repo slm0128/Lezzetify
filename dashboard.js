@@ -31,6 +31,7 @@ if (!token) {
     const communitySearch = document.querySelector('#community-search');
     const communityEmptyState = document.querySelector('#community-empty-state');
     const communityRecipeDetails = document.querySelector('#community-recipe-details');
+    const communityRecipeTitle = document.querySelector('#community-recipe-title');
     const recipeImageInput = document.querySelector('#recipe-image');
     const recipeImagePreview = document.querySelector('#recipe-image-preview');
     const recipes = [];
@@ -368,6 +369,17 @@ if (!token) {
         return column;
     }
 
+    function openNewRecipeModal() {
+        recipeForm.reset();
+        editingRecipeId = null;
+        recipeImageData = null;
+        recipeImagePreview.removeAttribute('src');
+        recipeImagePreview.hidden = true;
+        document.querySelector('#recipe-modal-title').textContent = 'Neues Rezept';
+        document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2" aria-hidden="true"></i>Rezept speichern';
+        bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
+    }
+
     function editRecipe(recipe) {
         editingRecipeId = recipe.id;
         recipeForm.elements.title.value = recipe.title;
@@ -387,8 +399,8 @@ if (!token) {
             recipeImagePreview.hidden = true;
         }
 
-        document.querySelector('#createRecipeModalLabel').lastChild.textContent = 'Rezept bearbeiten';
-        document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2"></i>Änderungen speichern';
+        document.querySelector('#recipe-modal-title').textContent = 'Rezept bearbeiten';
+        document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2" aria-hidden="true"></i>Änderungen speichern';
         bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
     }
 
@@ -586,6 +598,7 @@ if (!token) {
 
     async function openCommunityRecipe(recipeId) {
         communityRecipeDetails.replaceChildren();
+        communityRecipeTitle.textContent = 'Community-Rezept wird geladen';
         const loading = document.createElement('p');
         loading.className = 'text-muted';
         loading.textContent = 'Rezept wird geladen …';
@@ -596,6 +609,7 @@ if (!token) {
             const response = await apiRequest(`/api/community/recipes/${encodeURIComponent(recipeId)}`);
             const recipe = await readResponse(response, 'Community-Rezept konnte nicht geladen werden.');
             activeCommunityRecipe = recipe;
+            communityRecipeTitle.textContent = recipe.title;
             communityRecipeDetails.replaceChildren();
 
             if (recipe.image) {
@@ -610,7 +624,6 @@ if (!token) {
             category.textContent = recipe.category || 'Community-Rezept';
             const title = document.createElement('h2');
             title.className = 'h3 fw-bold';
-            title.id = 'community-recipe-title';
             title.textContent = recipe.title;
             const description = document.createElement('p');
             description.className = 'text-muted';
@@ -656,6 +669,7 @@ if (!token) {
             communityRecipeDetails.append(createRecipeNutritionDisplay(recipe));
             void requestNutritionEstimate(recipe);
         } catch (error) {
+            communityRecipeTitle.textContent = 'Community-Rezept';
             communityRecipeDetails.replaceChildren();
             const message = document.createElement('p');
             message.className = 'alert alert-danger';
@@ -772,9 +786,28 @@ if (!token) {
                 const emptyDay = document.createElement('p');
                 emptyDay.className = 'meal-calendar-empty';
                 emptyDay.textContent = 'Kein Gericht geplant';
-                meals.push(emptyDay);
+                day.append(heading, emptyDay);
+            } else if (meals.length > 1) {
+                const details = document.createElement('details');
+                details.className = 'meal-calendar-details';
+                const summary = document.createElement('summary');
+                summary.className = 'meal-calendar-summary';
+                const count = document.createElement('span');
+                count.className = 'meal-calendar-count';
+                count.innerHTML = '<i class="fas fa-utensils me-2" aria-hidden="true"></i>';
+                count.append(`${meals.length} Gerichte geplant`);
+                const chevron = document.createElement('i');
+                chevron.className = 'fas fa-chevron-down meal-calendar-chevron';
+                chevron.setAttribute('aria-hidden', 'true');
+                summary.append(count, chevron);
+                const mealList = document.createElement('div');
+                mealList.className = 'meal-calendar-meal-list';
+                mealList.append(...meals);
+                details.append(summary, mealList);
+                day.append(heading, details);
+            } else {
+                day.append(heading, meals[0]);
             }
-            day.append(heading, ...meals);
             calendarDays.push(day);
             currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -906,16 +939,8 @@ if (!token) {
         }
     });
 
-    document.querySelector('#new-recipe-button').addEventListener('click', () => {
-        recipeForm.reset();
-        editingRecipeId = null;
-        recipeImageData = null;
-        recipeImagePreview.removeAttribute('src');
-        recipeImagePreview.hidden = true;
-        document.querySelector('#createRecipeModalLabel').lastChild.textContent = 'Neues Rezept';
-        document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2"></i>Speichern';
-        bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
-    });
+    document.querySelector('#new-recipe-button').addEventListener('click', openNewRecipeModal);
+    document.querySelector('#collection-new-recipe-button').addEventListener('click', openNewRecipeModal);
 
     recipeSearch.addEventListener('input', renderRecipeList);
     recipeSort.addEventListener('change', renderRecipeList);
@@ -1049,6 +1074,7 @@ if (!token) {
         if (dayButton) {
             planPeriod.value = 'day';
             planViewDate.value = dayButton.dataset.calendarDate;
+            planDate.value = dayButton.dataset.calendarDate;
             renderPlanView();
             return;
         }
