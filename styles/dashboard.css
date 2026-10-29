@@ -495,14 +495,30 @@
 
 .meal-calendar-heading {
     display: flex;
+    width: 100%;
     flex-direction: column;
     gap: 0.15rem;
     margin: 0 0 0.75rem;
     padding-bottom: 0.5rem;
+    border: 0;
     border-bottom: 1px solid #ececec;
+    background: transparent;
+    color: inherit;
     font-size: 0.95rem;
     font-weight: 700;
+    text-align: left;
     text-transform: capitalize;
+    cursor: pointer;
+}
+
+.meal-calendar-heading:hover {
+    color: var(--primary-color);
+}
+
+.meal-calendar-heading:focus-visible {
+    border-radius: 0.25rem;
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
 }
 
 .meal-calendar-heading time {

@@ -702,8 +702,14 @@ if (!token) {
             day.className = `meal-calendar-day${dateString === getLocalDateString() ? ' is-today' : ''}`;
             day.setAttribute('role', 'listitem');
 
-            const heading = document.createElement('h4');
+            const heading = document.createElement('button');
+            heading.type = 'button';
             heading.className = 'meal-calendar-heading';
+            heading.dataset.calendarDate = dateString;
+            heading.setAttribute(
+                'aria-label',
+                `Tagesansicht für ${weekdayFormatter.format(currentDate)}, ${dateFormatter.format(currentDate)} anzeigen`
+            );
             const weekday = document.createElement('span');
             weekday.textContent = weekdayFormatter.format(currentDate);
             const date = document.createElement('time');
@@ -1012,6 +1018,14 @@ if (!token) {
     });
 
     planCalendar.addEventListener('click', async (event) => {
+        const dayButton = event.target.closest('[data-calendar-date]');
+        if (dayButton) {
+            planPeriod.value = 'day';
+            planViewDate.value = dayButton.dataset.calendarDate;
+            renderPlanView();
+            return;
+        }
+
         const removeButton = event.target.closest('[data-plan-id]');
         if (!removeButton) {
             return;
