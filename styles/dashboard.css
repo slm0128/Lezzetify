@@ -1333,6 +1333,70 @@
     opacity: 1;
 }
 
+.collection-card-body {
+    min-height: 15.5rem;
+}
+
+.collection-card-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2.75rem 2.75rem;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.collection-card-icon-button {
+    display: grid;
+    width: 2.75rem;
+    min-height: 2.8rem;
+    padding: 0;
+    place-items: center;
+    border-radius: 0.85rem;
+}
+
+.collection-card-icon-button.btn-outline-primary {
+    border-color: #eadfd8;
+    color: #8d5b46;
+}
+
+.collection-card-icon-button.btn-outline-primary:hover,
+.collection-card-icon-button.btn-outline-primary:focus-visible {
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.collection-card-icon-button.btn-outline-danger {
+    border-color: #eedede;
+    color: #a75454;
+}
+
+.collection-card-icon-button.btn-outline-danger:hover,
+.collection-card-icon-button.btn-outline-danger:focus-visible {
+    border-color: #b64c52;
+    background: #b64c52;
+    color: #fff;
+}
+
+.community-detail-edit,
+.community-detail-delete {
+    margin-left: 0 !important;
+}
+
+.community-detail-edit {
+    border-color: #e8ded6;
+    color: #855c49;
+}
+
+.community-detail-edit:hover,
+.community-detail-edit:focus-visible {
+    border-color: #9c7159;
+    background: #9c7159;
+    color: #fff;
+}
+
+.community-detail-actions .community-detail-delete {
+    margin-left: auto !important;
+}
+
 .community-detail-modal-dialog {
     max-width: 780px;
 }
@@ -1675,6 +1739,10 @@
 
     .community-detail-save {
         margin-left: 0;
+    }
+
+    .community-detail-actions .community-detail-delete {
+        margin-left: 0 !important;
     }
 
     .community-ingredient-list {
