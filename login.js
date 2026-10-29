@@ -51,7 +51,7 @@ if (loginForm) {
                     errorMessage.style.display = 'block';
                 }
             }
-        } catch (err) {
+        } catch {
             // Falls der Backend-Server gar nicht läuft oder nicht erreichbar ist
             if (errorMessage) {
                 errorMessage.textContent = 'Verbindung zum Server fehlgeschlagen.';
@@ -96,7 +96,7 @@ if (registerForm) {
                 localStorage.setItem('email', data.user.email);
                 window.location.href = 'dashboard.html';
             }
-        } catch (error) {
+        } catch {
             registerMessage.textContent = 'Verbindung zum Server fehlgeschlagen.';
             registerMessage.className = 'alert alert-danger py-2 small';
         } finally {
