@@ -5,20 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meine Rezepte | Lezzetify</title>
     <link rel="icon" type="image/png" href="images/logo.png">
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="library/css/bootstrap.min.css">
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="library/css/all.min.css">
-    <!-- Gemeinsame Basisstile zuerst, danach die Dashboardregeln. -->
     <link rel="stylesheet" href="library/css/global.css">
+
     <link rel="stylesheet" href="styles/dashboard.css">
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="dashboard-page d-flex flex-column min-vh-100">
 
-    <!-- =========================================
-         NAVIGATION
-         ========================================= -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <!-- NAVIGATION-->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top dashboard-navbar">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
                 <img src="images/logo.png" alt="Lezzetify Logo" width="30" height="30" class="me-2 rounded">
@@ -30,7 +26,6 @@
             <div class="collapse navbar-collapse" id="dashboardNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link" href="index.html">Startseite</a></li>
-                    <li class="nav-item"><a class="nav-link active fw-bold text-primary-custom" href="#">Meine Rezepte</a></li>
                     <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
                         <button class="btn btn-outline-danger btn-sm rounded-pill px-3" id="logout-button">
                             <i class="fas fa-sign-out-alt me-1"></i>Abmelden
@@ -41,19 +36,18 @@
         </div>
     </nav>
 
-    <!-- =========================================
-         HAUPTBEREICH DASHBOARD
-         ========================================= -->
-    <main class="flex-grow-1 py-4">
+    <!-- HAUPTBEREICH DASHBOARD-->
+    <main class="flex-grow-1 py-4 dashboard-main">
         <div class="container">
             
             <!-- Header-Bereich mit Begrüßung -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div class="dashboard-hero d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                 <div>
-                    <span class="badge bg-warning text-dark mb-1">Dein Rezeptmanager</span>
-                    <h2 class="fw-bold text-dark mb-0">Willkommen, <span class="text-primary-custom" id="user-name">Chefkoch</span>! 👩‍🍳</h2>
+                    <span class="dashboard-eyebrow mb-2"><i class="fas fa-leaf me-2" aria-hidden="true"></i>Dein persönlicher Rezeptmanager</span>
+                    <h1 class="fw-bold text-dark mb-2">Willkommen, <span class="text-primary-custom" id="user-name">Chefkoch</span>!</h1>
+                    <p class="text-muted mb-0">Deine Rezepte, dein Wochenplan und alles für den nächsten Einkauf – an einem Ort.</p>
                 </div>
-                <button class="btn btn-primary-custom btn-lg rounded-pill px-4 shadow-sm" id="new-recipe-button" type="button">
+                <button class="btn btn-primary-custom btn-lg rounded-pill px-4" id="new-recipe-button" type="button">
                     <i class="fas fa-plus me-2"></i>Neues Rezept
                 </button>
             </div>
@@ -62,42 +56,42 @@
             <div id="dashboard-message" class="alert d-none" role="status"></div>
 
             <!-- Statistik & Übersicht -->
-            <div class="row g-3 mb-4">
+            <div class="row g-3 mb-4 dashboard-stats">
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body d-flex align-items-center p-3">
-                            <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3 text-primary-custom">
+                    <div class="card border-0 rounded-4 h-100 dashboard-stat-card">
+                        <div class="card-body d-flex align-items-center p-3 p-lg-4">
+                            <div class="dashboard-stat-icon me-3">
                                 <i class="fas fa-book-open fa-lg"></i>
                             </div>
                             <div>
-                                <h6 class="text-muted mb-0 small">Meine Rezepte</h6>
-                                <h3 class="fw-bold mb-0" id="recipe-count">0</h3>
+                                <h2 class="text-muted mb-1 small">Meine Rezepte</h2>
+                                <p class="dashboard-stat-value fw-bold mb-0" id="recipe-count">0</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body d-flex align-items-center p-3">
-                            <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3 text-danger">
+                    <div class="card border-0 rounded-4 h-100 dashboard-stat-card">
+                        <div class="card-body d-flex align-items-center p-3 p-lg-4">
+                            <div class="dashboard-stat-icon me-3">
                                 <i class="fas fa-heart fa-lg"></i>
                             </div>
                             <div>
-                                <h6 class="text-muted mb-0 small">Favoriten</h6>
-                                <h3 class="fw-bold mb-0" id="favorite-count">0</h3>
+                                <h2 class="text-muted mb-1 small">Favoriten</h2>
+                                <p class="dashboard-stat-value fw-bold mb-0" id="favorite-count">0</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body d-flex align-items-center p-3">
-                            <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3 text-success">
+                    <div class="card border-0 rounded-4 h-100 dashboard-stat-card">
+                        <div class="card-body d-flex align-items-center p-3 p-lg-4">
+                            <div class="dashboard-stat-icon me-3">
                                 <i class="fas fa-calendar-alt fa-lg"></i>
                             </div>
                             <div>
-                                <h6 class="text-muted mb-0 small">Geplant für diese Woche</h6>
-                                <h3 class="fw-bold mb-0" id="planned-count">0</h3>
+                                <h2 class="text-muted mb-1 small">Geplant für diese Woche</h2>
+                                <p class="dashboard-stat-value fw-bold mb-0" id="planned-count">0</p>
                             </div>
                         </div>
                     </div>
@@ -105,35 +99,36 @@
             </div>
 
             <!-- WOCHENPLANER & EINKAUFSLISTE -->
-            <section class="meal-planner card border-0 shadow-sm rounded-4 mb-5" aria-labelledby="meal-planner-heading">
+            <section class="meal-planner card border-0 rounded-4 mb-5" aria-labelledby="meal-planner-heading">
                 <div class="card-body p-4">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                    <div class="dashboard-section-heading d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">
                         <div>
-                            <h2 class="h5 fw-bold mb-1" id="meal-planner-heading">
+                            <h2 class="h4 fw-bold mb-1" id="meal-planner-heading">
                                 <i class="fas fa-calendar-alt text-primary-custom me-2"></i>Wochenplan & Einkaufsliste
                             </h2>
-                            <p class="text-muted small mb-0">Plane deine Gerichte und erstelle automatisch deine Zutatenliste.</p>
+                            <p class="text-muted mb-0">Plane deine Gerichte und erstelle automatisch deine Zutatenliste.</p>
                         </div>
-                        <div class="d-flex flex-column flex-sm-row gap-2">
-                            <button class="btn btn-outline-secondary btn-sm" id="plan-previous" type="button" aria-label="Vorheriger Zeitraum">
+                        <div class="calendar-toolbar d-flex flex-wrap gap-2">
+                            <button class="btn btn-outline-secondary" id="plan-previous" type="button" aria-label="Vorheriger Zeitraum">
                                 <i class="fas fa-chevron-left" aria-hidden="true"></i>
                             </button>
-                            <button class="btn btn-outline-secondary btn-sm" id="plan-today" type="button">Heute</button>
-                            <button class="btn btn-outline-secondary btn-sm" id="plan-next" type="button" aria-label="Nächster Zeitraum">
+                            <button class="btn btn-outline-secondary" id="plan-today" type="button">Heute</button>
+                            <button class="btn btn-outline-secondary" id="plan-next" type="button" aria-label="Nächster Zeitraum">
                                 <i class="fas fa-chevron-right" aria-hidden="true"></i>
                             </button>
-                            <select class="form-select form-select-sm" id="plan-period" aria-label="Zeitraum für Plan">
+                            <select class="form-select" id="plan-period" aria-label="Zeitraum für Plan">
                                 <option value="week">Woche</option>
                                 <option value="day">Tag</option>
                             </select>
-                            <input class="form-control form-select-sm" type="date" id="plan-view-date" aria-label="Datum für Plan">
+                            <input class="form-control" type="date" id="plan-view-date" aria-label="Datum für Plan">
                         </div>
                     </div>
 
                     <div class="row g-4">
                         <div class="col-12">
-                            <h3 class="h6 fw-bold mb-3">Gericht einplanen</h3>
-                            <form id="plan-form" class="row g-2 align-items-end mb-4">
+                            <div class="planner-form-panel mb-4">
+                            <h3 class="h6 fw-bold mb-3"><i class="fas fa-plus-circle text-primary-custom me-2" aria-hidden="true"></i>Gericht einplanen</h3>
+                            <form id="plan-form" class="row g-3 align-items-end">
                                 <div class="col-md-6">
                                     <label class="form-label small text-muted fw-bold" for="plan-recipe">Rezept auswählen</label>
                                     <select class="form-select" id="plan-recipe" required>
@@ -148,8 +143,9 @@
                                     <button class="btn btn-primary-custom" id="save-plan-button" type="submit" disabled>Planen</button>
                                 </div>
                             </form>
+                            </div>
 
-                            <h3 class="h6 fw-bold mb-2">Geplante Gerichte <span class="text-muted fw-normal" id="plan-range-label"></span></h3>
+                            <h3 class="h5 fw-bold mb-3">Geplante Gerichte <span class="text-muted fw-normal" id="plan-range-label"></span></h3>
                             <div class="meal-plan-calendar is-week" id="meal-plan-calendar" role="list" aria-live="polite"></div>
                             <p class="text-muted small mb-0 mt-2" id="plan-empty-state">Für diesen Zeitraum ist noch kein Gericht eingeplant.</p>
                         </div>
@@ -202,66 +198,75 @@
             </section>
 
             <!-- MEINE REZEPTE (HAUPTSEKTION MIT SUCHE & FILTER) -->
-            <section class="mb-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-                    <h2 class="h4 fw-bold text-dark mb-0"><i class="fas fa-utensils text-warning me-2"></i>Rezeptsammlung</h2>
-                </div>
+            <section class="recipe-collection mb-4" aria-labelledby="recipe-collection-heading">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <button class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#recipeCollectionCollapse" aria-expanded="true" aria-controls="recipeCollectionCollapse">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="community-heading-icon"><i class="fas fa-utensils" aria-hidden="true"></i></span>
+                            <div>
+                                <span class="community-heading-label">Deine Küche</span>
+                                <h2 class="fw-bold mb-0 text-dark h5" id="recipe-collection-heading">Rezeptsammlung</h2>
+                            </div>
+                        </div>
+                        <span class="community-toggle-icon" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+                    </button>
+                    <div class="collapse show" id="recipeCollectionCollapse">
+                        <div class="card-body p-3 p-md-4">
+                            <p class="text-muted mb-3">Alle deine Lieblingsgerichte an einem Platz.</p>
 
-                <!-- Such- und Filterleiste für eigene Rezepte -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body p-3">
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Eigene Rezepte durchsuchen...">
+                            <!-- Such- und Filterleiste für eigene Rezepte -->
+                            <div class="card border-0 rounded-4 mb-4 recipe-toolbar">
+                                <div class="card-body p-3">
+                                    <div class="row g-3 align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-search text-muted" aria-hidden="true"></i></span>
+                                                <input type="search" class="form-control" id="recipe-search" placeholder="Rezepte, Zutaten oder Beschreibung suchen..." aria-label="Eigene Rezepte durchsuchen">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select" id="recipe-sort" aria-label="Rezeptliste sortieren">
+                                                <option value="default">Sortierung: Standard</option>
+                                                <option value="title-asc">Name: A–Z</option>
+                                                <option value="title-desc">Name: Z–A</option>
+                                                <option value="prep-time">Kürzeste Zubereitung</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option selected>Kategorie...</option>
-                                    <option>Frühstück</option>
-                                    <option>Hauptgericht</option>
-                                    <option>Dessert</option>
-                                    <option>Vegan</option>
-                                </select>
+
+                            <!-- Rezept-Grid (Liste für eigene Rezepte) -->
+                            <div id="recipe-list" class="row g-4">
+                                <div class="col-12 text-center py-5" id="empty-state">
+                                    <img src="images/logo.png" alt="Lezzetify" class="recipe-empty-logo mb-3">
+                                    <h5 class="fw-bold text-dark">Deine Sammlung ist noch leer</h5>
+                                    <p class="text-muted small">Klicke oben auf "Neues Rezept", um dein erstes Gericht hinzuzufügen.</p>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <select class="form-select">
-                                    <option selected>Sortieren nach...</option>
-                                    <option>Neueste zuerst</option>
-                                    <option>A-Z</option>
-                                    <option>Schnellste Zubereitung</option>
-                                </select>
-                            </div>
+                            <p class="text-muted text-center py-4 mb-0" id="recipe-no-results" hidden>Keine Rezepte für deine Suche gefunden.</p>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Rezept-Grid (Liste für eigene Rezepte) -->
-                <div id="recipe-list" class="row g-4">
-                    <div class="col-12 text-center py-5" id="empty-state">
-                        <img src="images/logo.png" alt="Lezzetify" class="recipe-empty-logo mb-3">
-                        <h5 class="fw-bold text-dark">Deine Sammlung ist noch leer</h5>
-                        <p class="text-muted small">Klicke oben auf "Neues Rezept", um dein erstes Gericht hinzuzufügen.</p>
-                    </div>
-                </div>
-
-                <!-- COMMUNITY REZEPTE -->
+            <!-- COMMUNITY REZEPTE -->
+            <section class="community-collection mb-4" aria-labelledby="community-heading">
                 <div class="card border-0 shadow-sm rounded-4 mt-4 mb-4 overflow-hidden">
-                    <div class="card-header bg-white border-0 p-3 d-flex justify-content-between align-items-center"
-                         role="button" data-bs-toggle="collapse" data-bs-target="#communityCollapse" aria-expanded="false" aria-controls="communityCollapse">
+                    <button class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#communityCollapse" aria-expanded="true" aria-controls="communityCollapse">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-warning text-dark"><i class="fas fa-users me-1"></i> Community</span>
-                            <h3 class="fw-bold mb-0 text-dark h6" id="community-heading">Community-Rezepte entdecken</h3>
+                            <span class="community-heading-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+                            <div>
+                                <span class="community-heading-label">Aus der Community</span>
+                                <h3 class="fw-bold mb-0 text-dark h5" id="community-heading">Rezepte entdecken</h3>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-center gap-2 text-muted small">
-                            <span>Ausklappen / Durchsuchen</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                    <div class="collapse" id="communityCollapse">
-                        <div class="card-body bg-light border-top p-4">
+                        <span class="community-toggle-icon" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+                    </button>
+                    <div class="collapse show" id="communityCollapse">
+                        <div class="card-body community-content border-top p-3 p-md-4">
                             <p class="text-muted small mb-3">Entdecke Inspirationen und Rezepte von Lezzetify und anderen Kochbegeisterten.</p>
                             <div class="input-group community-search mb-4">
                                 <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
@@ -277,9 +282,7 @@
         </div>
     </main>
 
-    <!-- =========================================
-         MODAL: REZEPT ERSTELLEN
-         ========================================= -->
+    <!-- MODAL: REZEPT ERSTELLEN-->
     <div class="modal fade" id="createRecipeModal" tabindex="-1" aria-labelledby="createRecipeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4">
@@ -362,7 +365,12 @@
             </div>
         </div>
     </div>
-
+    
+    <footer class="dashboard-footer text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Lezzetify.</p>
+        </div>
+    </footer>
     <!-- Bootstrap & Eigene JS -->
     <script src="library/js/bootstrap.bundle.min.js"></script>
     <script src="dashboard.js"></script>
