@@ -1,251 +1,243 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="library/css/bootstrap.min.css">
-    <link rel="stylesheet" href="library/css/all.min.css">
-    <!-- Gemeinsame Basisstile zuerst, danach die Startseitenregeln. -->
-    <link rel="stylesheet" href="library/css/global.css">
-    <link rel="stylesheet" href="styles/landing.css">
 
-    <title>Lezzetify</title>
-    <link rel="icon" type="image/png" href="images/logo.png">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="library/css/bootstrap.min.css">
+  <link rel="stylesheet" href="library/css/all.min.css">
+  <link rel="stylesheet" href="library/css/global.css">
+
+  <link rel="stylesheet" href="styles/landing.css">
+
+  <title>Lezzetify</title>
+  <link rel="icon" type="image/png" href="images/logo.png">
 
 </head>
+
 <body>
 
-<!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">Lezzetify</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#features">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#rezepte">Rezepte</a>
-                    </li>
-                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                        <a class="btn btn-outline-dark rounded-pill px-4" href="login.html">Login</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero-section mt-5">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 text-center text-lg-start">
-                    <h1 class="hero-title">Essen planen, <br><span>Leben genießen.</span></h1>
-                    <p class="lead text-muted mb-4">Erstelle deine eigenen Rezepte, plane deine Woche und lass Lezzetify automatisch deine Einkaufsliste und Makronährstoffe berechnen. Komplett asynchron, blitzschnell und smart.</p>
-                    <a href="login.html" class="btn btn-primary-custom btn-lg">Jetzt starten</a>
-                </div>
-                <div class="col-lg-6 mt-5 mt-lg-0 text-center">
-                    <!-- Lokales Bild verwenden -->
-                    <img src="images/essen.jpg" alt="Gesundes Essen" class="img-fluid rounded-4 shadow-lg hero-image">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-5 bg-light">
-        <div class="container py-5">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">Unsere Kernfunktionen</h2>
-                <p class="text-muted">Alles was du für dein Meal-Prepping brauchst.</p>
-            </div>
-            
-            <div class="row g-4 text-center">
-                <!-- Feature 1 -->
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h4 class="card-title fw-bold">Rezept-Manager</h4>
-                            <p class="card-text text-muted">Lege deine eigenen Lieblingsrezepte an, bearbeite Zutaten und teile sie mit anderen Nutzern.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Feature 2 -->
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h4 class="card-title fw-bold">Smarter Wochenplan</h4>
-                            <p class="card-text text-muted">Weise deine Rezepte per Drag & Drop den Wochentagen zu. Verliere nie wieder den Überblick über deine Mahlzeiten.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Feature 3 -->
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h4 class="card-title fw-bold">Async Makro-Check</h4>
-                            <p class="card-text text-muted">Unser Microservice berechnet im Hintergrund blitzschnell die Nährwerte deiner Mahlzeiten.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-<!-- REZEPTE ABSCHNITT -->
-<section id="rezepte" class="py-5 bg-light">
-  <div class="container">
-    <div class="text-center mb-5">
-      <h2 class="fw-bold text-dark">Beliebte Rezepte</h2>
-      <p class="text-muted">Lass dich von unseren gesunden & leckeren Rezeptideen inspirieren</p>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#start">Lezzetify</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Navigation umschalten">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="#start" aria-current="page">Startseite</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#features">Features</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#rezepte">Rezepte</a>
+          </li>
+          <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+            <a class="btn btn-outline-dark rounded-pill px-4" href="login.html">Login</a>
+          </li>
+        </ul>
+      </div>
     </div>
+  </nav>
 
-    <!-- Bootstrap Carousel -->
-    <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
-      <div class="carousel-inner">
-
-        <!-- ERSTE SEITE (Rezepte 1 bis 3) -->
-        <div class="carousel-item active">
-          <div class="row g-4">
-            <!-- Rezept 1 -->
-            <div class="col-md-4">
-              <div class="card h-100 border-0 shadow-sm recipe-card">
-                <img src="images/menemen.jpg" class="card-img-top recipe-img" alt="Menemen">
-                <div class="card-body d-flex flex-column">
-                  <span class="badge bg-warning text-dark align-self-start mb-2">Vegetarisch & Klassisch</span>
-                  <h5 class="card-title fw-bold">Menemen</h5>
-                  <p class="card-text text-muted flex-grow-1">Saftiges Rührei mit frischen Tomaten, grünen Spitzpaprika, Olivenöl und Kräutern.</p>
-                  <div class="d-flex justify-content-between text-muted small my-3">
-                    <span><i class="far fa-clock me-1"></i> 25 Min.</span>
-                    <span><i class="fas fa-fire me-1"></i> 380 kcal</span>
-                  </div>
-                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Rezept 2 -->
-            <div class="col-md-4">
-              <div class="card h-100 border-0 shadow-sm recipe-card">
-                <img src="images/mercimek corbasi.jpg" class="card-img-top recipe-img" alt="Mercimek Corbasi">
-                <div class="card-body d-flex flex-column">
-                  <span class="badge bg-danger text-white align-self-start mb-2">Proteinreich</span>
-                  <h5 class="card-title fw-bold">Mercimek Çorbasi</h5>
-                  <p class="card-text text-muted flex-grow-1">Traditionelle türkische Linsensuppe mit roten Linsen, Gemüse und ausgewählten Gewürzen.</p>
-                  <div class="d-flex justify-content-between text-muted small my-3">
-                    <span><i class="far fa-clock me-1"></i> 30 Min.</span>
-                    <span><i class="fas fa-fire me-1"></i> 210 kcal</span>
-                  </div>
-                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Rezept 3 -->
-            <div class="col-md-4">
-              <div class="card h-100 border-0 shadow-sm recipe-card">
-                <img src="images/coban salatasi.jpg" class="card-img-top recipe-img" alt="Coban Salatasi">
-                <div class="card-body d-flex flex-column">
-                  <span class="badge bg-success text-white align-self-start mb-2">Schnell & Leicht</span>
-                  <h5 class="card-title fw-bold">Çoban Salatasi</h5>
-                  <p class="card-text text-muted flex-grow-1">Frischer Salat aus fein gewürfelten Tomaten, Gurken, Paprika, Zwiebeln, verfeinert mit Olivenöl, Zitronensaft und frischer Petersilie.</p>
-                  <div class="d-flex justify-content-between text-muted small my-3">
-                    <span><i class="far fa-clock me-1"></i> 10 Min.</span>
-                    <span><i class="fas fa-fire me-1"></i> 120 kcal</span>
-                  </div>
-                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-                </div>
-              </div>
-            </div>
+  <!-- Hero Section -->
+  <section class="hero-section mt-5" id="start" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 text-center text-lg-start">
+          <span class="hero-eyebrow"><i class="fas fa-leaf me-2" aria-hidden="true"></i>Dein Alltag. Einfach
+            lecker.</span>
+          <h1 class="hero-title" id="hero-title">Essen planen,<br><span>Leben genießen.</span></h1>
+          <p class="lead text-muted mb-4">Sammle deine Lieblingsrezepte, plane deine Woche und behalte Einkauf und
+            Nährwerte ganz einfach im Blick.</p>
+          <div
+            class="hero-actions d-flex flex-column flex-sm-row align-items-center justify-content-center justify-content-lg-start gap-3">
+            <a href="login.html" class="btn btn-primary-custom btn-lg">Kostenlos loslegen<i
+                class="fas fa-arrow-right ms-2" aria-hidden="true"></i></a>
+            <a href="#features" class="hero-secondary-link">So funktioniert’s<i class="fas fa-chevron-down ms-2"
+                aria-hidden="true"></i></a>
           </div>
         </div>
-
-        <!-- ZWEITE SEITE (Rezepte 4 bis 6) -->
-        <div class="carousel-item">
-          <div class="row g-4">
-            <!-- Rezept 4 -->
-            <div class="col-md-4">
-              <div class="card h-100 border-0 shadow-sm recipe-card">
-                <img src="images/pelmeni.png" class="card-img-top recipe-img" alt="Pelmeni">
-                <div class="card-body d-flex flex-column">
-                  <span class="badge bg-warning text-dark align-self-start mb-2">Hausgemacht & Beliebt</span>
-                  <h5 class="card-title fw-bold">Pelmeni</h5>
-                  <p class="card-text text-muted flex-grow-1">Zarte Teigtaschen gefüllt mit gewürztem Hackfleisch, serviert mit Butter und frischem Dill.</p>
-                  <div class="d-flex justify-content-between text-muted small my-3">
-                    <span><i class="far fa-clock me-1"></i> 60 Min.</span>
-                    <span><i class="fas fa-fire me-1"></i> 420 kcal</span>
-                  </div>
-                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Rezept 5 -->
-            <div class="col-md-4">
-              <div class="card h-100 border-0 shadow-sm recipe-card">
-                <img src="images/syrniki.png" class="card-img-top recipe-img" alt="Syrniki">
-                <div class="card-body d-flex flex-column">
-                  <span class="badge bg-danger text-white align-self-start mb-2">Süß</span>
-                  <h5 class="card-title fw-bold">Syrniki</h5>
-                  <p class="card-text text-muted flex-grow-1">Fluffige russische Quarkpfannkuchen mit Puderzucker und saurer Sahne oder Beeren.</p>
-                  <div class="d-flex justify-content-between text-muted small my-3">
-                    <span><i class="far fa-clock me-1"></i> 25 Min.</span>
-                    <span><i class="fas fa-fire me-1"></i> 320 kcal</span>
-                  </div>
-                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Rezept 6 -->
-            <div class="col-md-4">
-              <div class="card h-100 border-0 shadow-sm recipe-card">
-                <img src="images/schnitzel.png" class="card-img-top recipe-img" alt="schnitzel">
-                <div class="card-body d-flex flex-column">
-                  <span class="badge bg-success text-white align-self-start mb-2">Klassisch & Knusprig</span>
-                  <h5 class="card-title fw-bold">Wiener Schnitzel vom Kalb</h5>
-                  <p class="card-text text-muted flex-grow-1">Zartes Kalbsschnitzel in einer fluffigen Panade, mit einer Scheibe Zitrone und Petersilienkartoffeln.</p>
-                  <div class="d-flex justify-content-between text-muted small my-3">
-                    <span><i class="far fa-clock me-1"></i> 40 Min.</span>
-                    <span><i class="fas fa-fire me-1"></i> 520 kcal</span>
-                  </div>
-                  <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
-                </div>
-              </div>
-            </div> 
-          </div>
+        <div class="col-lg-6 mt-5 mt-lg-0 text-center">
+          <img src="images/essen.jpg" alt="Frisch angerichtetes Essen als Inspiration für deine Wochenplanung"
+            class="img-fluid rounded-4 shadow-lg hero-image" fetchpriority="high">
         </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- Features Section -->
+  <section id="features" class="py-5 bg-light">
+    <div class="container py-5">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Unsere Kernfunktionen</h2>
+        <p class="text-muted">Alles was du für dein Meal-Prepping brauchst.</p>
       </div>
 
-      <!-- Karussell-Pfeile -->
-      <button class="carousel-control-prev landing-carousel-control" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Zurück</span>
-      </button>
-      <button class="carousel-control-next landing-carousel-control" type="button" data-bs-target="#recipeCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Weiter</span>
-      </button>
-    </div>
-
-  </div>
-</section>
-
-    <!-- Footer -->
-    <footer class="text-center">
-        <div class="container">
-            <p class="mb-0">&copy; 2026 Lezzetify - Webprog & VS Projekt.</p>
+      <div class="row g-4 text-center">
+        <!-- Feature 1 -->
+        <div class="col-md-4">
+          <div class="card feature-card h-100 shadow-sm">
+            <div class="card-body">
+              <span class="feature-icon" aria-hidden="true"><i class="fas fa-book-open"></i></span>
+              <h3 class="card-title h4 fw-bold">Deine Rezepte</h3>
+              <p class="card-text text-muted">Lege deine Lieblingsgerichte an, ergänze Zutaten und teile passende
+                Rezepte mit der Community.</p>
+            </div>
+          </div>
         </div>
-    </footer>
+        <!-- Feature 2 -->
+        <div class="col-md-4">
+          <div class="card feature-card h-100 shadow-sm">
+            <div class="card-body">
+              <span class="feature-icon" aria-hidden="true"><i class="fas fa-calendar-alt"></i></span>
+              <h3 class="card-title h4 fw-bold">Dein Wochenplan</h3>
+              <p class="card-text text-muted">Plane deine Gerichte für die Woche und erhalte eine Einkaufsliste aus den
+                benötigten Zutaten.</p>
+            </div>
+          </div>
+        </div>
+        <!-- Feature 3 -->
+        <div class="col-md-4">
+          <div class="card feature-card h-100 shadow-sm">
+            <div class="card-body">
+              <span class="feature-icon" aria-hidden="true"><i class="fas fa-heartbeat"></i></span>
+              <h3 class="card-title h4 fw-bold">Nährwerte im Blick</h3>
+              <p class="card-text text-muted">Lass die Nährwerte deiner Rezepte automatisch schätzen – übersichtlich
+                direkt beim Gericht.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <script src="script.js"></script>
-    <script src="library/js/bootstrap.bundle.min.js"></script>
+  <!-- REZEPTE ABSCHNITT -->
+  <section id="rezepte" class="py-5 bg-light">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">Beliebte Rezepte</h2>
+        <p class="text-muted">Lass dich von unseren gesunden & leckeren Rezeptideen inspirieren</p>
+      </div>
+
+      <div id="recipeCarousel" class="landing-recipe-carousel" role="region" aria-label="Beliebte Rezepte" tabindex="0">
+        <div class="landing-recipe-track">
+          <article class="landing-recipe-slide">
+            <div class="card h-100 border-0 shadow-sm recipe-card">
+              <img src="images/menemen.jpg" class="card-img-top recipe-img" alt="Menemen">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-warning text-dark align-self-start mb-2">Vegetarisch & Klassisch</span>
+                <h3 class="card-title h5 fw-bold">Menemen</h3>
+                <p class="card-text text-muted flex-grow-1">Saftiges Rührei mit frischen Tomaten, grünen Spitzpaprika,
+                  Olivenöl und Kräutern.</p>
+                <div class="d-flex justify-content-between text-muted small my-3">
+                  <span><i class="far fa-clock me-1" aria-hidden="true"></i>25 Min.</span>
+                  <span><i class="fas fa-fire me-1" aria-hidden="true"></i>380 kcal</span>
+                </div>
+                <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+              </div>
+            </div>
+          </article>
+          <article class="landing-recipe-slide">
+            <div class="card h-100 border-0 shadow-sm recipe-card">
+              <img src="images/mercimek corbasi.jpg" class="card-img-top recipe-img" alt="Mercimek Çorbası">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-danger text-white align-self-start mb-2">Proteinreich</span>
+                <h3 class="card-title h5 fw-bold">Mercimek Çorbası</h3>
+                <p class="card-text text-muted flex-grow-1">Traditionelle türkische Linsensuppe mit roten Linsen, Gemüse
+                  und ausgewählten Gewürzen.</p>
+                <div class="d-flex justify-content-between text-muted small my-3">
+                  <span><i class="far fa-clock me-1" aria-hidden="true"></i>30 Min.</span>
+                  <span><i class="fas fa-fire me-1" aria-hidden="true"></i>210 kcal</span>
+                </div>
+                <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+              </div>
+            </div>
+          </article>
+          <article class="landing-recipe-slide">
+            <div class="card h-100 border-0 shadow-sm recipe-card">
+              <img src="images/coban salatasi.jpg" class="card-img-top recipe-img" alt="Çoban Salatası">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-success text-white align-self-start mb-2">Schnell & Leicht</span>
+                <h3 class="card-title h5 fw-bold">Çoban Salatası</h3>
+                <p class="card-text text-muted flex-grow-1">Frischer Salat aus Tomaten, Gurken, Paprika und Zwiebeln mit
+                  Olivenöl, Zitrone und Petersilie.</p>
+                <div class="d-flex justify-content-between text-muted small my-3">
+                  <span><i class="far fa-clock me-1" aria-hidden="true"></i>10 Min.</span>
+                  <span><i class="fas fa-fire me-1" aria-hidden="true"></i>120 kcal</span>
+                </div>
+                <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+              </div>
+            </div>
+          </article>
+          <article class="landing-recipe-slide">
+            <div class="card h-100 border-0 shadow-sm recipe-card">
+              <img src="images/pelmeni.png" class="card-img-top recipe-img" alt="Pelmeni">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-warning text-dark align-self-start mb-2">Hausgemacht & Beliebt</span>
+                <h3 class="card-title h5 fw-bold">Pelmeni</h3>
+                <p class="card-text text-muted flex-grow-1">Zarte Teigtaschen gefüllt mit gewürztem Hackfleisch,
+                  serviert mit Butter und frischem Dill.</p>
+                <div class="d-flex justify-content-between text-muted small my-3">
+                  <span><i class="far fa-clock me-1" aria-hidden="true"></i>60 Min.</span>
+                  <span><i class="fas fa-fire me-1" aria-hidden="true"></i>420 kcal</span>
+                </div>
+                <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+              </div>
+            </div>
+          </article>
+          <article class="landing-recipe-slide">
+            <div class="card h-100 border-0 shadow-sm recipe-card">
+              <img src="images/syrniki.png" class="card-img-top recipe-img" alt="Syrniki">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-danger text-white align-self-start mb-2">Süß</span>
+                <h3 class="card-title h5 fw-bold">Syrniki</h3>
+                <p class="card-text text-muted flex-grow-1">Fluffige russische Quarkpfannkuchen mit Puderzucker und
+                  saurer Sahne oder Beeren.</p>
+                <div class="d-flex justify-content-between text-muted small my-3">
+                  <span><i class="far fa-clock me-1" aria-hidden="true"></i>25 Min.</span>
+                  <span><i class="fas fa-fire me-1" aria-hidden="true"></i>320 kcal</span>
+                </div>
+                <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+              </div>
+            </div>
+          </article>
+          <article class="landing-recipe-slide">
+            <div class="card h-100 border-0 shadow-sm recipe-card">
+              <img src="images/schnitzel.png" class="card-img-top recipe-img" alt="Wiener Schnitzel">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-success text-white align-self-start mb-2">Klassisch & Knusprig</span>
+                <h3 class="card-title h5 fw-bold">Wiener Schnitzel vom Kalb</h3>
+                <p class="card-text text-muted flex-grow-1">Zartes Kalbsschnitzel in knuspriger Panade, mit Zitrone und
+                  Petersilienkartoffeln.</p>
+                <div class="d-flex justify-content-between text-muted small my-3">
+                  <span><i class="far fa-clock me-1" aria-hidden="true"></i>40 Min.</span>
+                  <span><i class="fas fa-fire me-1" aria-hidden="true"></i>520 kcal</span>
+                </div>
+                <a href="login.html" class="btn btn-primary-custom w-100">Rezept ansehen</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center">
+    <div class="container">
+      <p class="mb-0">&copy; 2026 Lezzetify</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="library/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
