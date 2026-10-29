@@ -233,21 +233,27 @@
             <!-- MEINE REZEPTE (HAUPTSEKTION MIT SUCHE & FILTER) -->
             <section class="recipe-collection mb-4" aria-labelledby="recipe-collection-heading">
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <button
-                        class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"
-                        type="button" data-bs-toggle="collapse" data-bs-target="#recipeCollectionCollapse"
-                        aria-expanded="true" aria-controls="recipeCollectionCollapse">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="community-heading-icon"><i class="fas fa-utensils"
-                                    aria-hidden="true"></i></span>
-                            <div>
-                                <span class="community-heading-label">Deine Küche</span>
-                                <h2 class="fw-bold mb-0 text-dark h5" id="recipe-collection-heading">Rezeptsammlung</h2>
+                    <div class="card-header recipe-collection-header">
+                        <button
+                            class="community-heading-panel community-toggle recipe-collection-toggle border-0 d-flex justify-content-between align-items-center text-start"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#recipeCollectionCollapse"
+                            aria-expanded="true" aria-controls="recipeCollectionCollapse">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="community-heading-icon"><i class="fas fa-utensils"
+                                        aria-hidden="true"></i></span>
+                                <div>
+                                    <span class="community-heading-label">Deine Küche</span>
+                                    <h2 class="fw-bold mb-0 text-dark h5" id="recipe-collection-heading">Rezeptsammlung</h2>
+                                </div>
                             </div>
-                        </div>
-                        <span class="community-toggle-icon" aria-hidden="true"><i
-                                class="fas fa-chevron-down"></i></span>
-                    </button>
+                            <span class="community-toggle-icon" aria-hidden="true"><i
+                                    class="fas fa-chevron-down"></i></span>
+                        </button>
+                        <button class="btn btn-primary-custom rounded-pill collection-new-recipe-button"
+                            id="collection-new-recipe-button" type="button">
+                            <i class="fas fa-plus me-2" aria-hidden="true"></i>Neues Rezept
+                        </button>
+                    </div>
                     <div class="collapse show" id="recipeCollectionCollapse">
                         <div class="card-body p-3 p-md-4">
                             <p class="text-muted mb-3">Alle deine Lieblingsgerichte an einem Platz.</p>
@@ -336,16 +342,31 @@
     <!-- MODAL: REZEPT ERSTELLEN-->
     <div class="modal fade" id="createRecipeModal" tabindex="-1" aria-labelledby="createRecipeModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h4 class="modal-title fw-bold" id="createRecipeModalLabel"><i
-                            class="fas fa-utensils text-warning me-2"></i>Neues Rezept</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable recipe-modal-dialog">
+            <div class="modal-content border-0 shadow-lg rounded-4 recipe-modal-content">
+                <div class="modal-header recipe-modal-header">
+                    <span class="recipe-modal-icon" aria-hidden="true"><i class="fas fa-utensils"></i></span>
+                    <div class="flex-grow-1">
+                        <span class="community-heading-label">Deine Küche</span>
+                        <h4 class="modal-title fw-bold mb-1" id="createRecipeModalLabel">
+                            <span id="recipe-modal-title">Neues Rezept</span>
+                        </h4>
+                        <p class="text-muted small mb-0">Halte Zutaten und Zubereitung fest – du kannst das Rezept jederzeit bearbeiten.</p>
+                    </div>
+                    <button type="button" class="btn-close align-self-start" data-bs-dismiss="modal"
+                        aria-label="Schließen"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body recipe-modal-body">
                     <form id="recipe-form">
-                        <div class="row g-3">
+                        <section class="recipe-form-section" aria-labelledby="recipe-basics-heading">
+                            <div class="recipe-form-section-heading">
+                                <span class="recipe-form-step">01</span>
+                                <div>
+                                    <h5 class="mb-1" id="recipe-basics-heading">Auf einen Blick</h5>
+                                    <p class="text-muted small mb-0">Name, Zeit und Portionen</p>
+                                </div>
+                            </div>
+                            <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
                                     <input type="text" class="form-control rounded-3" id="recipe-title" name="title"
@@ -375,22 +396,45 @@
                                         Abendessen)</label>
                                 </div>
                             </div>
-                            <div class="col-12">
-                                <label class="form-label text-muted small fw-bold"
-                                    for="recipe-image">Rezept-Cover</label>
-                                <input class="form-control" type="file" id="recipe-image"
-                                    accept="image/png,image/jpeg,image/webp,image/gif">
-                                <div class="form-text">Optional, PNG/JPG/WebP/GIF, maximal 3 MB.</div>
-                                <img class="recipe-upload-preview mt-2" id="recipe-image-preview"
-                                    alt="Vorschau des Rezept-Covers" hidden>
                             </div>
+                        </section>
+                        <section class="recipe-form-section" aria-labelledby="recipe-photo-heading">
+                            <div class="recipe-form-section-heading">
+                                <span class="recipe-form-step">02</span>
+                                <div>
+                                    <h5 class="mb-1" id="recipe-photo-heading">Rezept-Cover</h5>
+                                    <p class="text-muted small mb-0">Optional – ohne Bild verwenden wir ein Besteck-Icon.</p>
+                                </div>
+                            </div>
+                            <label class="recipe-upload-panel" for="recipe-image">
+                                <span class="recipe-upload-icon"><i class="fas fa-cloud-upload-alt"
+                                        aria-hidden="true"></i></span>
+                                <span class="flex-grow-1">
+                                    <strong>Bild auswählen</strong>
+                                    <span class="d-block text-muted small">PNG, JPG, WebP oder GIF · maximal 3 MB</span>
+                                </span>
+                                <i class="fas fa-chevron-right text-muted" aria-hidden="true"></i>
+                                <input class="form-control recipe-file-input" type="file" id="recipe-image"
+                                    accept="image/png,image/jpeg,image/webp,image/gif">
+                            </label>
+                            <img class="recipe-upload-preview mt-3" id="recipe-image-preview"
+                                alt="Vorschau des Rezept-Covers" hidden>
+                        </section>
+                        <section class="recipe-form-section" aria-labelledby="recipe-details-heading">
+                            <div class="recipe-form-section-heading">
+                                <span class="recipe-form-step">03</span>
+                                <div>
+                                    <h5 class="mb-1" id="recipe-details-heading">Zutaten & Zubereitung</h5>
+                                    <p class="text-muted small mb-0">Eine Zutat pro Zeile – die Nährwerte werden pro Portion geschätzt.</p>
+                                </div>
+                            </div>
+                            <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold"
                                     for="recipe-ingredients">Zutaten</label>
                                 <textarea class="form-control rounded-3" id="recipe-ingredients" name="ingredients"
                                     rows="5" placeholder="200 g Mehl&#10;150 g Tomaten&#10;2 Eier" required></textarea>
-                                <div class="form-text mb-2">Eine Zutat pro Zeile, z. B. „200 g Mehl“. Die Nährwerte pro
-                                    Portion werden nach dem Speichern automatisch geschätzt.</div>
+                                <div class="form-text mb-2">Zum Beispiel: „200 g Mehl“</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-bold"
@@ -399,19 +443,34 @@
                                     rows="5"
                                     placeholder="1. Eier aufschlagen...&#10;2. Mit Mehl vermengen..."></textarea>
                             </div>
-                        </div>
-                        <p class="text-muted small mb-0 mt-2">
-                            Nährwerte sind KI-Schätzungen und können von den tatsächlichen Werten abweichen.
-                        </p>
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="share-recipe-with-community"
+                            </div>
+                        </section>
+                        <section class="recipe-form-section recipe-sharing-section"
+                            aria-labelledby="recipe-sharing-heading">
+                            <div class="recipe-form-section-heading">
+                                <span class="recipe-form-step">04</span>
+                                <div>
+                                    <h5 class="mb-1" id="recipe-sharing-heading">Sichtbarkeit</h5>
+                                    <p class="text-muted small mb-0">Du entscheidest, wer dein Rezept sehen kann.</p>
+                                </div>
+                            </div>
+                            <label class="community-share-card" for="share-recipe-with-community">
+                            <input class="form-check-input community-share-checkbox" type="checkbox" id="share-recipe-with-community"
                                 name="shareWithCommunity" aria-describedby="share-recipe-help">
-                            <label class="form-check-label" for="share-recipe-with-community">
-                                Dieses Rezept mit der Community teilen
+                                <span class="community-share-icon"><i class="fas fa-users"
+                                        aria-hidden="true"></i></span>
+                                <span class="community-share-copy">
+                                    <strong>Mit der Community teilen</strong>
+                                    <span id="share-recipe-help">Andere können das Rezept entdecken und speichern. Standardmäßig bleibt es privat.</span>
+                                </span>
+                                <span class="community-share-status">Optional</span>
                             </label>
-                            <div class="form-text" id="share-recipe-help">Standardmäßig bleibt dein Rezept privat. Nur wenn du dieses Kästchen aktivierst, wird es für andere sichtbar.</div>
-                        </div>
-                        <div class="mt-4 text-end">
+                            <p class="recipe-nutrition-note mb-0 mt-3">
+                                <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
+                                Nährwerte sind KI-Schätzungen und können von den tatsächlichen Werten abweichen.
+                            </p>
+                        </section>
+                        <div class="recipe-modal-actions">
                             <button type="button" class="btn btn-light rounded-pill px-4 me-2"
                                 data-bs-dismiss="modal">Abbrechen</button>
                             <button class="btn btn-primary-custom rounded-pill px-4" id="save-recipe-button"
@@ -431,6 +490,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-header border-bottom-0 pb-0">
+                    <h2 class="visually-hidden" id="community-recipe-title">Community-Rezeptdetails</h2>
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"
                         aria-label="Schließen"></button>
                 </div>
