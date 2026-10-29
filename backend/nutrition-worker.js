@@ -11,6 +11,35 @@ const PORT = Number(process.env.HEALTH_PORT || 3001);
 const cache = new Map();
 let rabbitConnected = false;
 
+function getProviderErrorMessage(statusCode, providerMessage) {
+    let message;
+    switch (statusCode) {
+        case 400:
+            message = 'OpenRouter hat die Anfrage mit HTTP 400 abgelehnt. Prüfe, ob das Modell das JSON-Antwortformat unterstützt.';
+            break;
+        case 401:
+            message = 'OpenRouter hat die Anfrage mit HTTP 401 abgelehnt. Prüfe den OPENROUTER_API_KEY.';
+            break;
+        case 402:
+            message = 'OpenRouter hat die Anfrage mit HTTP 402 abgelehnt. Prüfe dein OpenRouter-Guthaben und den Modellzugriff.';
+            break;
+        case 403:
+            message = 'OpenRouter hat die Anfrage mit HTTP 403 abgelehnt. Prüfe den Zugriff und das Ausgabenlimit deines API-Schlüssels.';
+            break;
+        case 404:
+            message = 'OpenRouter hat die Anfrage mit HTTP 404 abgelehnt. Prüfe die Modell-ID in OPENROUTER_MODEL.';
+            break;
+        case 429:
+            message = 'OpenRouter hat die Anfrage mit HTTP 429 limitiert. Bitte warte kurz oder prüfe das Anfragelimit deines Modells.';
+            break;
+        default:
+            message = statusCode
+                ? `Die Nährwertschätzung wurde von OpenRouter mit HTTP ${statusCode} abgelehnt.`
+                : 'Die Nährwertschätzung ist gerade nicht verfügbar.';
+    }
+    return providerMessage ? `${message} Details: ${providerMessage}` : message;
+}
+
 async function estimateRecipe(recipe) {
     const cacheKey = JSON.stringify({
         model: process.env.OPENROUTER_MODEL,
@@ -74,11 +103,8 @@ async function startWorker() {
             console.error('Recipe nutrition estimate failed:', error.message);
             if (message.properties.replyTo && message.properties.correlationId) {
                 channel.sendToQueue(message.properties.replyTo, Buffer.from(JSON.stringify({
-                    error: error.statusCode === 402
-                        ? 'OpenRouter hat die Anfrage mit HTTP 402 abgelehnt. Prüfe dein OpenRouter-Guthaben und ob das gewählte Modell kostenpflichtige Anfragen erlaubt.'
-                        : error.statusCode === 429
-                            ? 'OpenRouter hat die Anfrage mit HTTP 429 limitiert. Bitte warte kurz oder prüfe das Anfragelimit deines Modells.'
-                        : 'Die Nährwertschätzung ist gerade nicht verfügbar.'
+                    error: getProviderErrorMessage(error.statusCode, error.message),
+                    statusCode: error.statusCode || null
                 })), {
                     correlationId: message.properties.correlationId,
                     contentType: 'application/json'

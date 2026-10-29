@@ -2,7 +2,7 @@ const amqp = require('amqplib');
 const { randomUUID } = require('crypto');
 
 const QUEUE_NAME = 'nutrition.recipe-estimate';
-const REQUEST_TIMEOUT_MS = 35000;
+const REQUEST_TIMEOUT_MS = 70000;
 
 async function createNutritionRpc() {
     if (!process.env.RABBITMQ_URL) {

@@ -42,6 +42,7 @@ if (!token) {
     let editingRecipeId = null;
     const nutritionEstimates = new Map();
     const pendingNutritionEstimates = new Map();
+    let nutritionRequestQueue = Promise.resolve();
     let nutritionFailureMessageShown = false;
 
     let savedUser = {};
@@ -148,6 +149,17 @@ if (!token) {
             status.className = `small mb-0 mt-1 ${estimate?.error ? 'text-danger' : 'text-muted'}`;
             status.textContent = estimate?.error || 'Wird automatisch berechnet …';
             section.append(status);
+            if (estimate?.error) {
+                const retryButton = document.createElement('button');
+                retryButton.type = 'button';
+                retryButton.className = 'btn btn-sm btn-outline-secondary mt-2';
+                retryButton.textContent = 'Erneut versuchen';
+                retryButton.addEventListener('click', () => {
+                    nutritionEstimates.delete(key);
+                    void requestNutritionEstimate(recipe);
+                });
+                section.append(retryButton);
+            }
         }
         return section;
     }
@@ -221,7 +233,7 @@ if (!token) {
             return pendingNutritionEstimates.get(key);
         }
 
-        const request = (async () => {
+        const request = nutritionRequestQueue.then(async () => {
             try {
                 const response = await apiRequest('/api/nutrition/recipe-estimate', {
                     method: 'POST',
@@ -248,7 +260,10 @@ if (!token) {
                 pendingNutritionEstimates.delete(key);
                 refreshRecipeNutritionDisplays();
             }
-        })();
+        });
+        nutritionRequestQueue = request.then(() => undefined, (error) => {
+            console.error('Unexpected nutrition request queue failure:', error);
+        });
         pendingNutritionEstimates.set(key, request);
         return request;
     }
@@ -260,17 +275,16 @@ if (!token) {
         ])).values()].filter((recipe) => (
             !nutritionEstimates.has(getNutritionEstimateKey(recipe))
         ));
-        for (let index = 0; index < uniqueRecipes.length; index += 2) {
-            const batch = uniqueRecipes.slice(index, index + 2);
-            const estimates = await Promise.all(batch.map(requestNutritionEstimate));
-            const providerLimitError = estimates.find((estimate) => (
+        for (const [index, recipe] of uniqueRecipes.entries()) {
+            const estimate = await requestNutritionEstimate(recipe);
+            const providerLimitError = estimate.error && (
                 estimate.error?.includes('HTTP 402')
                 || estimate.error?.includes('HTTP 429')
                 || estimate.error?.includes('Zu viele Nährwertanfragen')
-            ));
+            );
             if (providerLimitError) {
-                uniqueRecipes.slice(index + batch.length).forEach((recipe) => {
-                    nutritionEstimates.set(getNutritionEstimateKey(recipe), { error: providerLimitError.error });
+                uniqueRecipes.slice(index + 1).forEach((remainingRecipe) => {
+                    nutritionEstimates.set(getNutritionEstimateKey(remainingRecipe), { error: estimate.error });
                 });
                 refreshRecipeNutritionDisplays();
                 return;

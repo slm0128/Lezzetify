@@ -527,6 +527,9 @@ app.post('/api/nutrition/recipe-estimate', authenticateToken, nutritionRateLimit
         throw new HttpError(502, 'Die Nährwertschätzung konnte nicht gestartet werden.');
     }
     if (result.error) {
+        if (result.statusCode === 429) {
+            throw new HttpError(429, result.error);
+        }
         throw new HttpError(502, result.error);
     }
     if (!result.nutrition || typeof result.nutrition !== 'object') {
