@@ -1,6 +1,6 @@
 # Lezzetify
 
-Ein Rezept-Manager mit Nutzerkonten, Wochenplanung, Einkaufsliste, Community-Rezepten und Nährwertsuche.
+Ein Rezept-Manager mit Nutzerkonten, Wochenplanung, Einkaufsliste, Community-Rezepten und automatischen Nährwertschätzungen.
 
 ## Funktionen
 
@@ -9,14 +9,14 @@ Ein Rezept-Manager mit Nutzerkonten, Wochenplanung, Einkaufsliste, Community-Rez
 * Rezepte für bestimmte Tage einplanen und Zutaten als Einkaufsliste ansehen.
 * Rezepte und Favoriten pro Nutzer dauerhaft speichern.
 * Rezepte freiwillig mit der Community teilen.
-* Open-Food-Facts-Suche für Nährwerte. Die Produktdaten sind gemeinschaftlich gepflegt; Werte können fehlen oder abweichen.
+* Automatische KI-Nährwertschätzungen pro Portion für eigene und Community-Rezepte.
 
 ## Architektur
 
 * **Frontend:** HTML, CSS, Bootstrap und Vanilla JavaScript; wird von einem eigenen Nginx-Container ausgeliefert.
 * **API-Service:** Node.js/Express für Authentifizierung, Rezepte, Favoriten und Essenspläne.
-* **Nährwert-Service:** separater Node.js-Worker; die API sendet Suchanfragen über RabbitMQ und erhält Antworten über eine temporäre Reply-Queue.
-* **Datenbank:** PostgreSQL in einem eigenen Container. Nutzer, Rezepte, Favoriten, Nährwert-Produkte und Essenspläne bleiben über Neustarts hinweg erhalten.
+* **Nährwert-Service:** separater Node.js-Worker; die API sendet Rezeptschätzungen über RabbitMQ und erhält KI-Ergebnisse von OpenRouter über eine temporäre Reply-Queue.
+* **Datenbank:** PostgreSQL in einem eigenen Container. Nutzer, Rezepte, Favoriten, Nährwertschätzungen und Essenspläne bleiben über Neustarts hinweg erhalten.
 * **Message Broker:** RabbitMQ.
 
 ## Mit Docker Compose starten
@@ -24,7 +24,7 @@ Ein Rezept-Manager mit Nutzerkonten, Wochenplanung, Einkaufsliste, Community-Rez
 Voraussetzungen: Docker Desktop mit laufender Docker Engine und Docker Compose.
 
 1. `.env.example` nach `.env` kopieren.
-2. `POSTGRES_PASSWORD`, `RABBITMQ_DEFAULT_PASS` und `JWT_SECRET` in `.env` durch eigene Werte ersetzen. Für die Passwörter im Compose-URL-Format nur URL-sichere Zeichen verwenden. Der JWT-Schlüssel muss mindestens 32 zufällige Bytes enthalten; erzeugen lässt er sich zum Beispiel mit `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`.
+2. `POSTGRES_PASSWORD`, `RABBITMQ_DEFAULT_PASS` und `JWT_SECRET` in `.env` durch eigene Werte ersetzen. Trage dort außerdem deinen OpenRouter-API-Schlüssel als `OPENROUTER_API_KEY` und eine in deinem OpenRouter-Konto verfügbare Modell-ID als `OPENROUTER_MODEL` ein. Für die Passwörter im Compose-URL-Format nur URL-sichere Zeichen verwenden. Der JWT-Schlüssel muss mindestens 32 zufällige Bytes enthalten; erzeugen lässt er sich zum Beispiel mit `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`.
 3. Im Projektverzeichnis starten:
 
    ```powershell
@@ -45,4 +45,4 @@ Das Backend setzt eine erreichbare PostgreSQL- und RabbitMQ-Instanz sowie diesel
 
 JWTs sind auf den Algorithmus HS256 festgelegt, laufen nach einer Stunde ab und werden mit einem verpflichtenden Umgebungsvariablen-Schlüssel signiert. Der API-Start schlägt fehl, wenn `JWT_SECRET` fehlt oder weniger als 32 Bytes hat. Passwörter müssen mindestens 12 Zeichen und höchstens 72 Bytes umfassen; Registrierungs- und Login-Versuche sind begrenzt. Zugangsdaten und Schlüssel gehören ausschließlich in die ignorierte `.env`-Datei, nicht in den Quellcode.
 
-Die Nährwertsuche nutzt Open Food Facts ohne API-Schlüssel. Produktdaten werden mit Quellenangabe angezeigt und unterliegen der Open Database License (ODbL). Open Food Facts enthält vor allem verpackte Produkte.
+Die Nährwertangaben werden beim Laden der eigenen und Community-Rezepte automatisch pro Portion über OpenRouter geschätzt und in den Rezeptkarten, Details und Essensplänen angezeigt. Die Werte sind keine verifizierten Produktdaten und können ungenau sein. Der OpenRouter-Schlüssel wird nur an den Nährwert-Worker übergeben und darf nicht im Frontend oder in Git abgelegt werden. OpenRouter muss für das eingestellte Modell nutzbares Guthaben haben; HTTP 402 bedeutet meist, dass Guthaben oder Modellzugriff fehlt.
