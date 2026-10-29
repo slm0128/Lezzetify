@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const { randomBytes } = require('crypto');
 
 if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL must be configured.');
@@ -20,6 +21,10 @@ async function initializeDatabase() {
             favorites JSONB NOT NULL DEFAULT '{"recipes":[],"community":[]}'::jsonb,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS calendar_feed_token TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS shopping_list_weekday SMALLINT NOT NULL DEFAULT 6;
+        CREATE UNIQUE INDEX IF NOT EXISTS users_calendar_feed_token_unique
+            ON users (calendar_feed_token) WHERE calendar_feed_token IS NOT NULL;
         CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_unique ON users (LOWER(email));
 
         CREATE TABLE IF NOT EXISTS recipes (
@@ -57,6 +62,16 @@ async function initializeDatabase() {
 
         DROP TABLE IF EXISTS nutrition_products;
     `);
+
+    const usersWithoutFeedToken = await pool.query(
+        'SELECT id FROM users WHERE calendar_feed_token IS NULL'
+    );
+    for (const user of usersWithoutFeedToken.rows) {
+        await pool.query(
+            'UPDATE users SET calendar_feed_token = $1 WHERE id = $2 AND calendar_feed_token IS NULL',
+            [randomBytes(32).toString('base64url'), user.id]
+        );
+    }
 }
 
 module.exports = { pool, initializeDatabase };

@@ -2,7 +2,7 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-const { createHash, randomUUID } = require('crypto');
+const { createHash, randomBytes, randomUUID } = require('crypto');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const express = require('express');
@@ -12,11 +12,14 @@ const jwt = require('jsonwebtoken');
 const defaultCommunityRecipes = require('./community-recipes');
 const { initializeDatabase, pool } = require('./db');
 const { createNutritionRpc } = require('./nutrition-rpc');
+const { createCalendarFeed, getCalendarToday } = require('./calendar-feed');
 const { HttpError, validateRecipePayload } = require('./recipe-validation');
 
 const PORT = Number(process.env.PORT || 3000);
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:8000';
+const CALENDAR_PUBLIC_URL = (process.env.CALENDAR_PUBLIC_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const CALENDAR_TIMEZONE = process.env.CALENDAR_TIMEZONE || 'Europe/Berlin';
 const app = express();
 let nutritionRpc;
 
@@ -149,8 +152,9 @@ app.post('/api/register', authRateLimit, async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
     try {
         await pool.query(
-            'INSERT INTO users (id, name, email, password_hash) VALUES ($1, $2, $3, $4)',
-            [userId, cleanName, cleanEmail, passwordHash]
+            `INSERT INTO users (id, name, email, password_hash, calendar_feed_token)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [userId, cleanName, cleanEmail, passwordHash, randomBytes(32).toString('base64url')]
         );
     } catch (error) {
         if (error.code === '23505') {
@@ -561,6 +565,87 @@ app.delete('/api/plans/:id', authenticateToken, async (req, res) => {
         throw new HttpError(404, 'Geplanter Eintrag wurde nicht gefunden.');
     }
     res.status(204).end();
+});
+
+app.get('/api/calendar/settings', authenticateToken, async (req, res) => {
+    const result = await pool.query(
+        'SELECT calendar_feed_token, shopping_list_weekday FROM users WHERE id = $1',
+        [req.user.id]
+    );
+    const user = result.rows[0];
+    if (!user?.calendar_feed_token) {
+        throw new HttpError(500, 'Der Kalender-Link konnte nicht erstellt werden.');
+    }
+    res.json({
+        shoppingWeekday: user.shopping_list_weekday,
+        feedUrl: `${CALENDAR_PUBLIC_URL}/api/calendar/${user.calendar_feed_token}.ics`
+    });
+});
+
+app.put('/api/calendar/settings', authenticateToken, async (req, res) => {
+    const weekday = req.body.shoppingWeekday;
+    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) {
+        throw new HttpError(400, 'Bitte wähle einen gültigen Wochentag für den Einkauf.');
+    }
+    await pool.query(
+        'UPDATE users SET shopping_list_weekday = $1 WHERE id = $2',
+        [weekday, req.user.id]
+    );
+    res.json({ message: 'Kalender-Einstellungen wurden gespeichert.', shoppingWeekday: weekday });
+});
+
+app.post('/api/calendar/settings/rotate-link', authenticateToken, async (req, res) => {
+    const token = randomBytes(32).toString('base64url');
+    const result = await pool.query(
+        `UPDATE users SET calendar_feed_token = $1
+         WHERE id = $2 RETURNING shopping_list_weekday`,
+        [token, req.user.id]
+    );
+    if (result.rowCount !== 1) {
+        throw new HttpError(404, 'Benutzer wurde nicht gefunden.');
+    }
+    res.json({
+        message: 'Der Kalender-Link wurde erneuert. Der bisherige Link ist nicht mehr gültig.',
+        shoppingWeekday: result.rows[0].shopping_list_weekday,
+        feedUrl: `${CALENDAR_PUBLIC_URL}/api/calendar/${token}.ics`
+    });
+});
+
+app.get('/api/calendar/:token.ics', async (req, res) => {
+    const token = req.params.token;
+    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) {
+        throw new HttpError(404, 'Kalender wurde nicht gefunden.');
+    }
+
+    const userResult = await pool.query(
+        'SELECT id, shopping_list_weekday FROM users WHERE calendar_feed_token = $1',
+        [token]
+    );
+    const user = userResult.rows[0];
+    if (!user) {
+        throw new HttpError(404, 'Kalender wurde nicht gefunden.');
+    }
+
+    const plans = await pool.query(
+        `SELECT mp.id::text AS id, TO_CHAR(mp.date, 'YYYY-MM-DD') AS date,
+                r.data->>'title' AS title, r.data->'ingredients' AS ingredients
+         FROM meal_plans mp
+         JOIN recipes r ON r.id = mp.recipe_id
+         WHERE mp.user_id = $1 AND mp.date BETWEEN $2::date AND $2::date + 370
+         ORDER BY mp.date, mp.id`,
+        [user.id, getCalendarToday(new Date(), CALENDAR_TIMEZONE)]
+    );
+    const feed = createCalendarFeed({
+        plans: plans.rows,
+        shoppingWeekday: user.shopping_list_weekday,
+        timezone: CALENDAR_TIMEZONE
+    });
+    res.set({
+        'Cache-Control': 'private, no-store',
+        'Content-Type': 'text/calendar; charset=utf-8',
+        'Content-Disposition': 'inline; filename="lezzetify.ics"'
+    });
+    res.send(feed);
 });
 
 app.get('/api/logintest', (req, res) => {
