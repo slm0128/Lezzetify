@@ -7,6 +7,7 @@ Ein Rezept-Manager mit Nutzerkonten, Wochenplanung, Einkaufsliste, Community-Rez
 * Registrierung und Anmeldung; Passwörter werden mit bcrypt gehasht.
 * Eigene Rezepte anlegen, bearbeiten und löschen.
 * Rezepte für bestimmte Tage einplanen und Zutaten als Einkaufsliste ansehen.
+* Essensplan als privaten iCal-Kalender abonnieren; der wöchentliche Einkaufstermin mit Einkaufsliste ist auf einen Wochentag konfigurierbar.
 * Rezepte und Favoriten pro Nutzer dauerhaft speichern.
 * Rezepte freiwillig mit der Community teilen.
 * Automatische KI-Nährwertschätzungen pro Portion für eigene und Community-Rezepte.
@@ -32,6 +33,8 @@ Voraussetzungen: Docker Desktop mit laufender Docker Engine und Docker Compose.
    ```
 
 4. Die Anwendung unter <http://localhost:8000> öffnen. Die API ist unter <http://localhost:3000> erreichbar. RabbitMQ Management ist unter <http://localhost:15672> verfügbar; dort gelten die Zugangsdaten aus `.env`.
+
+Im Wochenplan kannst du den Einkaufstag einstellen und den Kalender mit dem `webcal`-Button abonnieren. Alternativ lässt sich der private iCal-Link kopieren. Der Feed enthält geplante Gerichte und einen Einkaufstermin am gewählten Wochentag mit den Zutaten der geplanten Gerichte für die folgenden sieben Tage. `CALENDAR_TIMEZONE` steuert, wann der nächste Einkaufstag beginnt (Standard: `Europe/Berlin`). Der Link funktioniert wie ein Passwort: Teile ihn nur mit Personen, die deinen Essensplan sehen dürfen. Über **Link erneuern** kannst du den Zugriff des bisherigen Links widerrufen. Für einen von anderen Geräten erreichbaren Feed muss `CALENDAR_PUBLIC_URL` in `.env` auf die öffentlich erreichbare Basis-URL der API gesetzt werden (lokal: `http://localhost:3000`).
 
 Compose wartet auf die Healthchecks von PostgreSQL und RabbitMQ, bevor die API beziehungsweise der Worker starten. Die API und der Nährwert-Worker besitzen eigene Healthchecks. PostgreSQL- und RabbitMQ-Daten liegen in benannten Docker-Volumes.
 
