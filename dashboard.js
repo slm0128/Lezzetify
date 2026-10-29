@@ -7,6 +7,9 @@ if (!token) {
     const recipeForm = document.querySelector('#recipe-form');
     const recipeList = document.querySelector('#recipe-list');
     const emptyState = document.querySelector('#empty-state');
+    const recipeSearch = document.querySelector('#recipe-search');
+    const recipeSort = document.querySelector('#recipe-sort');
+    const recipeNoResults = document.querySelector('#recipe-no-results');
     const recipeCount = document.querySelector('#recipe-count');
     const dashboardMessage = document.querySelector('#dashboard-message');
     const userName = document.querySelector('#user-name');
@@ -161,11 +164,31 @@ if (!token) {
     }
 
     function renderRecipeList() {
-        recipeList.replaceChildren(...recipes.map(createRecipeCard));
+        const searchTerm = recipeSearch.value.trim().toLocaleLowerCase('de-DE');
+        const visibleRecipes = recipes
+            .filter((recipe) => `${recipe.title} ${recipe.description || ''} ${(recipe.ingredients || []).join(' ')}`
+                .toLocaleLowerCase('de-DE')
+                .includes(searchTerm))
+            .slice();
+
+        if (recipeSort.value === 'title-asc') {
+            visibleRecipes.sort((first, second) => first.title.localeCompare(second.title, 'de'));
+        } else if (recipeSort.value === 'title-desc') {
+            visibleRecipes.sort((first, second) => second.title.localeCompare(first.title, 'de'));
+        } else if (recipeSort.value === 'prep-time') {
+            visibleRecipes.sort((first, second) => {
+                const firstTime = first.prepTime || Number.POSITIVE_INFINITY;
+                const secondTime = second.prepTime || Number.POSITIVE_INFINITY;
+                return firstTime - secondTime || first.title.localeCompare(second.title, 'de');
+            });
+        }
+
+        recipeList.replaceChildren(...visibleRecipes.map(createRecipeCard));
         if (recipes.length === 0) {
             recipeList.append(emptyState);
         }
         emptyState.hidden = recipes.length > 0;
+        recipeNoResults.hidden = recipes.length === 0 || visibleRecipes.length > 0;
     }
 
     async function requestNutritionEstimate(recipe) {
@@ -860,6 +883,9 @@ if (!token) {
         document.querySelector('#save-recipe-button').innerHTML = '<i class="fas fa-save me-2"></i>Speichern';
         bootstrap.Modal.getOrCreateInstance(document.querySelector('#createRecipeModal')).show();
     });
+
+    recipeSearch.addEventListener('input', renderRecipeList);
+    recipeSort.addEventListener('change', renderRecipeList);
 
     recipeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
