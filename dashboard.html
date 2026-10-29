@@ -115,6 +115,13 @@
                             <p class="text-muted small mb-0">Plane deine Gerichte und erstelle automatisch deine Zutatenliste.</p>
                         </div>
                         <div class="d-flex flex-column flex-sm-row gap-2">
+                            <button class="btn btn-outline-secondary btn-sm" id="plan-previous" type="button" aria-label="Vorheriger Zeitraum">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" id="plan-today" type="button">Heute</button>
+                            <button class="btn btn-outline-secondary btn-sm" id="plan-next" type="button" aria-label="Nächster Zeitraum">
+                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </button>
                             <select class="form-select form-select-sm" id="plan-period" aria-label="Zeitraum für Plan">
                                 <option value="week">Woche</option>
                                 <option value="day">Tag</option>
@@ -124,7 +131,7 @@
                     </div>
 
                     <div class="row g-4">
-                        <div class="col-lg-7">
+                        <div class="col-12">
                             <h3 class="h6 fw-bold mb-3">Gericht einplanen</h3>
                             <form id="plan-form" class="row g-2 align-items-end mb-4">
                                 <div class="col-md-6">
@@ -147,11 +154,47 @@
                             <p class="text-muted small mb-0 mt-2" id="plan-empty-state">Für diesen Zeitraum ist noch kein Gericht eingeplant.</p>
                         </div>
 
-                        <div class="col-lg-5">
+                        <div class="col-12">
                             <div class="shopping-list-panel rounded-4 p-3 bg-light border h-100">
-                                <h3 class="h6 fw-bold mb-3"><i class="fas fa-shopping-basket text-primary-custom me-2"></i>Einkaufsliste</h3>
-                                <ul class="shopping-list mb-2" id="shopping-list"></ul>
-                                <p class="text-muted small mb-0" id="shopping-empty-state">Plane Gerichte ein, um Zutaten hier zu sammeln.</p>
+                                <div class="row g-4">
+                                    <div class="col-lg-6">
+                                        <h3 class="h6 fw-bold mb-3"><i class="fas fa-shopping-basket text-primary-custom me-2"></i>Einkaufsliste für den angezeigten Zeitraum</h3>
+                                        <ul class="shopping-list mb-2" id="shopping-list"></ul>
+                                        <p class="text-muted small mb-0" id="shopping-empty-state">Plane Gerichte ein, um Zutaten hier zu sammeln.</p>
+                                    </div>
+                                    <div class="col-lg-6 calendar-subscription">
+                                        <h3 class="h6 fw-bold mb-1"><i class="fas fa-sync-alt text-primary-custom me-2"></i>Kalender abonnieren</h3>
+                                        <p class="text-muted small mb-3">Der Kalender enthält geplante Gerichte und einen wöchentlichen Einkaufstermin mit Zutaten für die folgenden sieben Tage.</p>
+                                        <form id="calendar-settings-form" class="row g-2 align-items-end mb-3">
+                                            <div class="col-sm-7">
+                                                <label class="form-label small text-muted fw-bold" for="shopping-weekday">Einkaufstag</label>
+                                                <select class="form-select" id="shopping-weekday">
+                                                    <option value="1">Montag</option>
+                                                    <option value="2">Dienstag</option>
+                                                    <option value="3">Mittwoch</option>
+                                                    <option value="4">Donnerstag</option>
+                                                    <option value="5">Freitag</option>
+                                                    <option value="6">Samstag</option>
+                                                    <option value="0">Sonntag</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-5 d-grid">
+                                                <button class="btn btn-outline-primary" id="save-calendar-settings" type="submit">Einkaufstag speichern</button>
+                                            </div>
+                                        </form>
+                                        <label class="form-label small text-muted fw-bold" for="calendar-feed-url">Privater iCal-Link</label>
+                                        <div class="input-group mb-2">
+                                            <input class="form-control" id="calendar-feed-url" type="url" readonly aria-label="Privater iCal-Link">
+                                            <button class="btn btn-outline-secondary" id="copy-calendar-link" type="button">Kopieren</button>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                                            <a class="btn btn-primary-custom btn-sm" id="subscribe-calendar-link" href="#" rel="nofollow">Kalender abonnieren</a>
+                                            <button class="btn btn-outline-danger btn-sm" id="rotate-calendar-link" type="button">Link erneuern</button>
+                                            <span class="small text-muted" id="calendar-settings-status" role="status" aria-live="polite"></span>
+                                        </div>
+                                        <p class="small text-muted mt-2 mb-0">Der Link gewährt Zugriff auf deinen Essensplan. Teile ihn nur mit Personen, die ihn sehen dürfen.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

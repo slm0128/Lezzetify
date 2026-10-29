@@ -17,6 +17,11 @@ if (!token) {
     const planEmptyState = document.querySelector('#plan-empty-state');
     const planViewDate = document.querySelector('#plan-view-date');
     const planPeriod = document.querySelector('#plan-period');
+    const calendarSettingsForm = document.querySelector('#calendar-settings-form');
+    const shoppingWeekday = document.querySelector('#shopping-weekday');
+    const calendarFeedUrl = document.querySelector('#calendar-feed-url');
+    const subscribeCalendarLink = document.querySelector('#subscribe-calendar-link');
+    const calendarSettingsStatus = document.querySelector('#calendar-settings-status');
     const shoppingList = document.querySelector('#shopping-list');
     const shoppingEmptyState = document.querySelector('#shopping-empty-state');
     const communityRecipeList = document.querySelector('#community-recipe-list');
@@ -774,6 +779,77 @@ if (!token) {
         }
     }
 
+    function showCalendarFeedUrl(url) {
+        calendarFeedUrl.value = url;
+        subscribeCalendarLink.href = url.replace(/^https?:/, 'webcal:');
+    }
+
+    async function loadCalendarSettings() {
+        try {
+            const response = await apiRequest('/api/calendar/settings');
+            const settings = await readResponse(response, 'Kalender-Einstellungen konnten nicht geladen werden.');
+            shoppingWeekday.value = String(settings.shoppingWeekday);
+            showCalendarFeedUrl(settings.feedUrl);
+        } catch (error) {
+            calendarSettingsStatus.textContent = error.message || 'Kalender-Einstellungen konnten nicht geladen werden.';
+            calendarSettingsStatus.className = 'small text-danger';
+        }
+    }
+
+    calendarSettingsForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const saveButton = document.querySelector('#save-calendar-settings');
+        saveButton.disabled = true;
+        calendarSettingsStatus.textContent = '';
+        try {
+            const response = await apiRequest('/api/calendar/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ shoppingWeekday: Number(shoppingWeekday.value) })
+            });
+            const data = await readResponse(response, 'Einkaufstag konnte nicht gespeichert werden.');
+            calendarSettingsStatus.textContent = data.message;
+            calendarSettingsStatus.className = 'small text-success';
+        } catch (error) {
+            calendarSettingsStatus.textContent = error.message || 'Einkaufstag konnte nicht gespeichert werden.';
+            calendarSettingsStatus.className = 'small text-danger';
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+
+    document.querySelector('#copy-calendar-link').addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(calendarFeedUrl.value);
+            calendarSettingsStatus.textContent = 'iCal-Link wurde kopiert.';
+            calendarSettingsStatus.className = 'small text-success';
+        } catch (error) {
+            calendarSettingsStatus.textContent = 'Der Link konnte nicht kopiert werden. Markiere ihn und kopiere ihn manuell.';
+            calendarSettingsStatus.className = 'small text-danger';
+        }
+    });
+
+    document.querySelector('#rotate-calendar-link').addEventListener('click', async (event) => {
+        if (!window.confirm('Den Kalender-Link erneuern? Der bisherige Link funktioniert danach nicht mehr.')) {
+            return;
+        }
+        const button = event.currentTarget;
+        button.disabled = true;
+        calendarSettingsStatus.textContent = '';
+        try {
+            const response = await apiRequest('/api/calendar/settings/rotate-link', { method: 'POST' });
+            const settings = await readResponse(response, 'Kalender-Link konnte nicht erneuert werden.');
+            showCalendarFeedUrl(settings.feedUrl);
+            calendarSettingsStatus.textContent = settings.message;
+            calendarSettingsStatus.className = 'small text-success';
+        } catch (error) {
+            calendarSettingsStatus.textContent = error.message || 'Kalender-Link konnte nicht erneuert werden.';
+            calendarSettingsStatus.className = 'small text-danger';
+        } finally {
+            button.disabled = false;
+        }
+    });
+
     document.querySelector('#new-recipe-button').addEventListener('click', () => {
         recipeForm.reset();
         editingRecipeId = null;
@@ -934,6 +1010,22 @@ if (!token) {
 
     planViewDate.addEventListener('change', renderPlanView);
     planPeriod.addEventListener('change', renderPlanView);
+    document.querySelector('#plan-previous').addEventListener('click', () => {
+        const date = new Date(`${planViewDate.value || getLocalDateString()}T00:00:00`);
+        date.setDate(date.getDate() - (planPeriod.value === 'day' ? 1 : 7));
+        planViewDate.value = getLocalDateString(date);
+        renderPlanView();
+    });
+    document.querySelector('#plan-next').addEventListener('click', () => {
+        const date = new Date(`${planViewDate.value || getLocalDateString()}T00:00:00`);
+        date.setDate(date.getDate() + (planPeriod.value === 'day' ? 1 : 7));
+        planViewDate.value = getLocalDateString(date);
+        renderPlanView();
+    });
+    document.querySelector('#plan-today').addEventListener('click', () => {
+        planViewDate.value = getLocalDateString();
+        renderPlanView();
+    });
 
     document.querySelector('#logout-button').addEventListener('click', () => {
         localStorage.removeItem('token');
@@ -950,4 +1042,5 @@ if (!token) {
     loadPlans();
     loadCommunityRecipes();
     loadFavorites();
+    loadCalendarSettings();
 }
