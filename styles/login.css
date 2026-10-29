@@ -1,12 +1,93 @@
-/* Nur für den Login- und Registrierungsbildschirm. */
+/* Nur fÃ¼r den Login- und Registrierungsbildschirm. */
 .auth-main {
-    background-color: #fcf8f2;
+    background:
+        radial-gradient(ellipse at 10% 12%, rgba(231, 111, 81, 0.1), transparent 30%),
+        linear-gradient(145deg, #fffaf7 0%, #f8f5f2 100%);
 }
 
 .auth-card {
     border-radius: 20px;
+    box-shadow: 0 1.25rem 3.5rem rgba(45, 52, 54, 0.11) !important;
 }
 
 .auth-error {
     display: none;
+}
+
+.auth-password-field {
+    position: relative;
+}
+
+.auth-password-field .form-control {
+    padding-right: 3.25rem;
+}
+
+.auth-password-toggle {
+    position: absolute;
+    z-index: 5;
+    top: 50%;
+    right: 0.75rem;
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    transform: translateY(-50%);
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #747a7e;
+}
+
+.auth-password-toggle:hover,
+.auth-password-toggle:focus-visible {
+    background: #fff0e9;
+    color: var(--primary-color);
+}
+
+.auth-password-toggle:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.auth-submit {
+    min-height: 3rem;
+}
+
+.auth-submit:disabled {
+    cursor: wait;
+    opacity: 0.75;
+}
+
+.auth-card .nav-pills {
+    padding: 0.25rem;
+    border-radius: 999px;
+    background: #f5f0ec;
+}
+
+.auth-card .nav-pills .nav-link {
+    min-height: 2.75rem;
+}
+
+.auth-card .form-control {
+    border-color: #e7e1dc;
+}
+
+.auth-card .form-control:focus {
+    border-color: rgba(231, 111, 81, 0.7);
+    box-shadow: 0 0 0 0.22rem rgba(231, 111, 81, 0.14);
+}
+
+@media (max-width: 575.98px) {
+    .auth-main {
+        align-items: flex-start !important;
+        padding: 1.5rem 0 !important;
+    }
+
+    .auth-card {
+        border-radius: 1rem;
+    }
+
+    .auth-card .card-body {
+        padding: 1.5rem !important;
+    }
 }
