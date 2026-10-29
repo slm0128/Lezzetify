@@ -2,7 +2,7 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-const { randomUUID } = require('crypto');
+const { createHash, randomUUID } = require('crypto');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const express = require('express');
@@ -73,7 +73,6 @@ async function findCommunityRecipe(id, client = pool) {
             ...builtin,
             ingredients: [...builtin.ingredients],
             instructions: [...builtin.instructions],
-            nutritionIngredients: [...builtin.nutritionIngredients],
             addedByName: 'Lezzetify',
             creatorType: 'lezzetify'
         };
@@ -87,49 +86,6 @@ async function findCommunityRecipe(id, client = pool) {
         [id]
     );
     return result.rows[0] ? toCommunityRecipe(result.rows[0]) : null;
-}
-
-async function getVerifiedNutritionIngredients(client, entries) {
-    if (entries === undefined || entries === null) {
-        return [];
-    }
-    if (!Array.isArray(entries) || entries.length > 100) {
-        throw new HttpError(400, 'Die Nährwertangaben sind ungültig.');
-    }
-
-    if (entries.length === 0) {
-        return [];
-    }
-    if (entries.some((entry) => !entry
-        || typeof entry.ingredient !== 'string'
-        || !entry.ingredient.trim()
-        || typeof entry.productCode !== 'string'
-        || !entry.productCode
-        || entry.productCode.length > 100)) {
-        throw new HttpError(400, 'Die Nährwertangaben enthalten einen ungültigen Produkt-Treffer.');
-    }
-
-    const codes = [...new Set(entries.map((entry) => entry.productCode))];
-    const result = await client.query(
-        'SELECT code, name, nutrients FROM nutrition_products WHERE code = ANY($1::text[])',
-        [codes]
-    );
-    const products = new Map(result.rows.map((product) => [product.code, product]));
-    if (products.size !== codes.length) {
-        throw new HttpError(400, 'Ein Nährwert-Treffer ist nicht mehr verifiziert. Suche die Nährwerte erneut.');
-    }
-
-    return entries.map((entry) => {
-        const product = products.get(entry.productCode);
-        const amountGrams = Number(entry.amountGrams);
-        return {
-            ingredient: entry.ingredient.trim(),
-            amountGrams: Number.isFinite(amountGrams) && amountGrams > 0 ? amountGrams : null,
-            productName: product.name,
-            productCode: product.code,
-            nutrients: product.nutrients
-        };
-    });
 }
 
 async function removeFavoriteForAllUsers(type, id, client) {
@@ -150,6 +106,15 @@ const authRateLimit = rateLimit({
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     message: { error: 'Zu viele Versuche. Bitte warte 15 Minuten und versuche es erneut.' }
+});
+
+const nutritionRateLimit = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 100,
+    keyGenerator: (req) => req.user.id,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { error: 'Zu viele Nährwertanfragen. Bitte warte eine Stunde und versuche es erneut.' }
 });
 
 app.get('/', (req, res) => {
@@ -297,15 +262,11 @@ app.put('/api/recipes/:id', authenticateToken, async (req, res) => {
             throw new HttpError(404, 'Rezept wurde nicht gefunden.');
         }
 
-        const nutritionIngredients = req.body.nutritionIngredients === undefined
-            ? existing.data.nutritionIngredients
-            : await getVerifiedNutritionIngredients(client, req.body.nutritionIngredients);
         const image = fields.image === null ? existing.data.image || null : fields.image;
         const recipe = {
             ...existing.data,
             ...fields,
             image,
-            nutritionIngredients,
             category: 'Community-Rezept',
             createdByName: req.user.name,
             shareWithCommunity: typeof req.body.shareWithCommunity === 'boolean'
@@ -384,7 +345,6 @@ app.get('/api/community/recipes', authenticateToken, async (req, res) => {
             ...recipe,
             ingredients: [...recipe.ingredients],
             instructions: [...recipe.instructions],
-            nutritionIngredients: [...recipe.nutritionIngredients],
             addedByName: 'Lezzetify',
             creatorType: 'lezzetify'
         })),
@@ -454,12 +414,6 @@ app.post('/api/recipes/from-community/:id', authenticateToken, async (req, res) 
         return res.json({ message: 'Rezept ist bereits in deiner Sammlung.', recipe: existing.rows[0].data });
     }
 
-    const nutritionIngredients = await getVerifiedNutritionIngredients(
-        pool,
-        req.body.nutritionIngredients === undefined
-            ? communityRecipe.nutritionIngredients
-            : req.body.nutritionIngredients
-    );
     const recipe = {
         ...communityRecipe,
         id: randomUUID(),
@@ -467,7 +421,6 @@ app.post('/api/recipes/from-community/:id', authenticateToken, async (req, res) 
         instructions: Array.isArray(communityRecipe.instructions)
             ? communityRecipe.instructions.join('\n')
             : communityRecipe.instructions,
-        nutritionIngredients,
         createdByName: req.user.name,
         sourceCommunityId: communityRecipe.id,
         shareWithCommunity: false
@@ -481,11 +434,9 @@ app.post('/api/recipes/from-community/:id', authenticateToken, async (req, res) 
 
 app.post('/api/recipes', authenticateToken, async (req, res) => {
     const fields = validateRecipePayload(req.body);
-    const nutritionIngredients = await getVerifiedNutritionIngredients(pool, req.body.nutritionIngredients);
     const recipe = {
         ...fields,
         id: randomUUID(),
-        nutritionIngredients,
         category: 'Community-Rezept',
         createdByName: req.user.name,
         shareWithCommunity: req.body.shareWithCommunity === true
@@ -504,37 +455,63 @@ app.post('/api/recipes', authenticateToken, async (req, res) => {
     });
 });
 
-app.get('/api/nutrition/search', authenticateToken, async (req, res) => {
-    const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
-    if (!query || query.length > 80) {
-        throw new HttpError(400, 'Bitte gib eine Zutat mit höchstens 80 Zeichen ein.');
+app.post('/api/nutrition/recipe-estimate', authenticateToken, nutritionRateLimit, async (req, res) => {
+    const title = typeof req.body.title === 'string' ? req.body.title.trim() : '';
+    const ingredients = Array.isArray(req.body.ingredients)
+        ? req.body.ingredients.map((ingredient) => typeof ingredient === 'string' ? ingredient.trim() : '')
+        : [];
+    const servings = Number(req.body.servings);
+    if (!title || title.length > 100 || ingredients.length === 0 || ingredients.length > 100
+        || ingredients.some((ingredient) => !ingredient || ingredient.length > 200)
+        || !Number.isInteger(servings) || servings < 1 || servings > 100) {
+        throw new HttpError(400, 'Rezeptdaten für die Nährwertschätzung sind ungültig.');
+    }
+
+    const recipe = { title, ingredients, servings };
+    const cacheKey = `recipe:${createHash('sha256')
+        .update(`${process.env.OPENROUTER_MODEL}\0${JSON.stringify(recipe).toLocaleLowerCase('de-DE')}`)
+        .digest('hex')}`;
+    const cached = await pool.query(
+        'SELECT nutrients FROM nutrition_estimates WHERE code = $1',
+        [cacheKey]
+    );
+    if (cached.rows[0]) {
+        return res.json({
+            nutrition: cached.rows[0].nutrients,
+            source: 'OpenRouter',
+            estimated: true
+        });
     }
 
     let result;
     try {
-        result = await nutritionRpc.search(query);
+        result = await nutritionRpc.estimateRecipe(recipe);
     } catch (error) {
-        console.error('Nutrition service request failed:', error.message);
-        throw new HttpError(502, 'Die Nährwertsuche ist gerade nicht erreichbar.');
+        console.error('Recipe nutrition request failed:', error.message);
+        if (error.statusCode === 402) {
+            throw new HttpError(502, 'OpenRouter hat die Anfrage mit HTTP 402 abgelehnt. Prüfe Kontoguthaben und den Zugriff auf das Modell.');
+        }
+        throw new HttpError(502, 'Die Nährwertschätzung konnte nicht gestartet werden.');
     }
     if (result.error) {
         throw new HttpError(502, result.error);
     }
-
-    const products = Array.isArray(result.products) ? result.products : [];
-    for (const product of products) {
-        if (!product.code) {
-            continue;
-        }
-        await pool.query(
-            `INSERT INTO nutrition_products (code, name, nutrients)
-             VALUES ($1, $2, $3::jsonb)
-             ON CONFLICT (code) DO UPDATE
-             SET name = EXCLUDED.name, nutrients = EXCLUDED.nutrients, updated_at = NOW()`,
-            [product.code, product.name, JSON.stringify(product.nutrients)]
-        );
+    if (!result.nutrition || typeof result.nutrition !== 'object') {
+        throw new HttpError(502, 'Der Nährwert-Service hat ein ungültiges Ergebnis geliefert.');
     }
-    res.json({ products, source: 'Open Food Facts' });
+
+    await pool.query(
+        `INSERT INTO nutrition_estimates (code, name, nutrients)
+         VALUES ($1, $2, $3::jsonb)
+         ON CONFLICT (code) DO UPDATE
+         SET name = EXCLUDED.name, nutrients = EXCLUDED.nutrients, updated_at = NOW()`,
+        [cacheKey, title, JSON.stringify(result.nutrition)]
+    );
+    res.json({
+        nutrition: result.nutrition,
+        source: 'OpenRouter',
+        estimated: true
+    });
 });
 
 app.get('/api/plans', authenticateToken, async (req, res) => {
