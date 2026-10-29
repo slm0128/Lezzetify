@@ -36,6 +36,8 @@ Voraussetzungen: Docker Desktop mit laufender Docker Engine und Docker Compose.
 
 Im Wochenplan kannst du den Einkaufstag einstellen und den Kalender mit dem `webcal`-Button abonnieren. Alternativ lässt sich der private iCal-Link kopieren. Der Feed enthält geplante Gerichte und einen Einkaufstermin am gewählten Wochentag mit den Zutaten der geplanten Gerichte für die folgenden sieben Tage. `CALENDAR_TIMEZONE` steuert, wann der nächste Einkaufstag beginnt (Standard: `Europe/Berlin`). Der Link funktioniert wie ein Passwort: Teile ihn nur mit Personen, die deinen Essensplan sehen dürfen. Über **Link erneuern** kannst du den Zugriff des bisherigen Links widerrufen. Für einen von anderen Geräten erreichbaren Feed muss `CALENDAR_PUBLIC_URL` in `.env` auf die öffentlich erreichbare Basis-URL der API gesetzt werden (lokal: `http://localhost:3000`).
 
+Optional kann ein lokales Testkonto mit `TEST_USER_ENABLED=true`, `TEST_USER_NAME`, `TEST_USER_EMAIL` und `TEST_USER_PASSWORD` in `.env` beim API-Start angelegt werden. Bereits existierende E-Mail-Adressen werden nicht überschrieben. Das Konto wird nur erstellt, wenn es noch fehlt. Verwende diese Option nicht in öffentlich erreichbaren oder produktiven Umgebungen; das Testkonto umgeht bei der erstmaligen Anlage die Mindestlänge der normalen Registrierung.
+
 Compose wartet auf die Healthchecks von PostgreSQL und RabbitMQ, bevor die API beziehungsweise der Worker starten. Die API und der Nährwert-Worker besitzen eigene Healthchecks. PostgreSQL- und RabbitMQ-Daten liegen in benannten Docker-Volumes.
 
 Zum Stoppen `Ctrl+C`, danach `docker compose down`. Die Datenvolumes bleiben dabei erhalten. Ein bewusstes `docker compose down -v` löscht die gespeicherten Daten.

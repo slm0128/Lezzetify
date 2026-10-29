@@ -103,6 +103,36 @@ async function removeFavoriteForAllUsers(type, id, client) {
     }
 }
 
+async function ensureLocalTestUser() {
+    if (process.env.TEST_USER_ENABLED !== 'true') {
+        return;
+    }
+
+    const name = process.env.TEST_USER_NAME;
+    const email = process.env.TEST_USER_EMAIL?.trim().toLowerCase();
+    const password = process.env.TEST_USER_PASSWORD;
+    if (!name || name.length > 40 || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+        || !password || Buffer.byteLength(password) > 72) {
+        throw new Error('TEST_USER_ENABLED requires a valid TEST_USER_NAME, TEST_USER_EMAIL and TEST_USER_PASSWORD (max 72 bytes).');
+    }
+
+    const existing = await pool.query(
+        'SELECT id FROM users WHERE LOWER(email) = $1',
+        [email]
+    );
+    if (existing.rows[0]) {
+        return;
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    await pool.query(
+        `INSERT INTO users (id, name, email, password_hash, calendar_feed_token)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [randomUUID(), name.trim(), email, passwordHash, randomBytes(32).toString('base64url')]
+    );
+    console.log('Configured local test account is ready.');
+}
+
 const authRateLimit = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 10,
@@ -672,6 +702,7 @@ app.use((error, req, res, next) => {
 
 async function startServer() {
     await initializeDatabase();
+    await ensureLocalTestUser();
     nutritionRpc = await createNutritionRpc();
     const server = app.listen(PORT, () => {
         console.log(`Lezzetify API listening on port ${PORT}`);
