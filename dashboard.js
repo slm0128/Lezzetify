@@ -287,8 +287,8 @@ if (!token) {
         const body = document.createElement('div');
         body.className = 'card-body d-flex flex-column';
         const category = document.createElement('span');
-        category.className = 'badge bg-warning text-dark align-self-start mb-2';
-        category.textContent = 'Mein Rezept';
+        category.className = `badge align-self-start mb-2 ${recipe.shareWithCommunity ? 'recipe-shared-badge' : 'recipe-private-badge'}`;
+        category.textContent = recipe.shareWithCommunity ? 'Mit Community geteilt' : 'Privat';
         const favoriteButton = createFavoriteButton('recipes', recipe.id);
         const title = document.createElement('h3');
         title.className = 'card-title fw-bold';

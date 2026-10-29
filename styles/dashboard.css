@@ -249,6 +249,16 @@
     font-weight: 600;
 }
 
+.recipe-dashboard-card .recipe-private-badge {
+    background: #f1f2f2 !important;
+    color: #596164 !important;
+}
+
+.recipe-dashboard-card .recipe-shared-badge {
+    background: #fff0e9 !important;
+    color: #a94830 !important;
+}
+
 .recipe-dashboard-card .btn-outline-primary,
 .community-recipe-card .btn-outline-primary {
     border-radius: 999px;

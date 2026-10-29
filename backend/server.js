@@ -297,19 +297,19 @@ app.put('/api/recipes/:id', authenticateToken, async (req, res) => {
         }
 
         const image = fields.image === null ? existing.data.image || null : fields.image;
+        const share = fields.shareWithCommunity;
         const recipe = {
             ...existing.data,
             ...fields,
             image,
-            category: 'Community-Rezept',
+            category: share
+                ? 'Community-Rezept'
+                : existing.data.sourceCommunityId
+                    ? existing.data.category || 'Community-Rezept'
+                    : 'Eigenes Rezept',
             createdByName: req.user.name,
-            shareWithCommunity: typeof req.body.shareWithCommunity === 'boolean'
-                ? req.body.shareWithCommunity
-                : existing.is_shared
+            shareWithCommunity: share
         };
-        const share = typeof req.body.shareWithCommunity === 'boolean'
-            ? req.body.shareWithCommunity
-            : existing.is_shared;
         const communityId = share ? existing.community_id || randomUUID() : null;
 
         await client.query(
@@ -471,11 +471,10 @@ app.post('/api/recipes', authenticateToken, async (req, res) => {
     const recipe = {
         ...fields,
         id: randomUUID(),
-        category: 'Community-Rezept',
+        category: fields.shareWithCommunity ? 'Community-Rezept' : 'Eigenes Rezept',
         createdByName: req.user.name,
-        shareWithCommunity: req.body.shareWithCommunity === true
     };
-    const share = req.body.shareWithCommunity === true;
+    const share = fields.shareWithCommunity;
     const communityId = share ? randomUUID() : null;
     await pool.query(
         `INSERT INTO recipes (id, user_id, data, is_shared, community_id)

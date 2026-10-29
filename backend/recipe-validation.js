@@ -43,7 +43,8 @@ function validateRecipePayload(body) {
         instructions,
         prepTime: Number.isInteger(prepTime) && prepTime > 0 ? prepTime : null,
         servings,
-        image
+        image,
+        shareWithCommunity: body.shareWithCommunity === true
     };
 }
 
