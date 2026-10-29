@@ -24,7 +24,6 @@ const communityRecipes = [
             'Eier über der Soße aufschlagen. Das Eiweiß leicht unterrühren und das Eigelb nach Wunsch ganz lassen oder anstechen.',
             'Bei geschlossener Pfanne 2–3 Minuten stocken lassen. Mit Petersilie bestreuen und servieren.'
         ],
-        nutritionIngredients: []
     },
     {
         id: 'lezzetify-mercimek-corbasi',
@@ -55,7 +54,6 @@ const communityRecipes = [
             'Die restliche Butter in einer kleinen Pfanne schmelzen. Minze und Paprikapulver kurz darin aufschäumen lassen.',
             'Minz-Butter über die Suppe träufeln und mit Zitrone servieren.'
         ],
-        nutritionIngredients: []
     },
     {
         id: 'lezzetify-coban-salatasi',
@@ -83,7 +81,6 @@ const communityRecipes = [
             'Aus Olivenöl, Zitronensaft, Granatapfelsirup und Salz ein Dressing anrühren.',
             'Das Dressing unter den Salat mischen und vor dem Servieren 5 Minuten ziehen lassen.'
         ],
-        nutritionIngredients: []
     },
     {
         id: 'lezzetify-pelmeni',
@@ -113,7 +110,6 @@ const communityRecipes = [
             'Pelmeni in reichlich Salzwasser kochen. Sobald sie an die Oberfläche steigen, noch 3–4 Minuten ziehen lassen.',
             'Herausheben und mit Butter, Schmand und gehacktem Dill servieren.'
         ],
-        nutritionIngredients: []
     },
     {
         id: 'lezzetify-syrniki',
@@ -142,7 +138,6 @@ const communityRecipes = [
             'Etwas Öl bei mittlerer Hitze erhitzen und Syrniki von beiden Seiten jeweils 4–5 Minuten goldbraun braten.',
             'Auf Küchenpapier abtropfen lassen und warm mit Puderzucker und einer Beilage servieren.'
         ],
-        nutritionIngredients: []
     },
     {
         id: 'lezzetify-wiener-schnitzel',
@@ -169,7 +164,6 @@ const communityRecipes = [
             'Schnitzel im heißen Fett goldbraun ausbacken und die Pfanne leicht bewegen. Nach 2–3 Minuten wenden.',
             'Auf Küchenpapier abtropfen lassen und sofort mit Zitronenspalten servieren.'
         ],
-        nutritionIngredients: []
     }
 ];
 
