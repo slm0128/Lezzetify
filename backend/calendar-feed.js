@@ -73,11 +73,17 @@ function createCalendarFeed({ plans, shoppingWeekday, now = new Date(), timezone
         .sort((first, second) => first.date.localeCompare(second.date));
 
     for (const plan of upcomingPlans) {
+        const servings = Number.isInteger(plan.servings) && plan.servings > 0
+            ? ` (${plan.servings} ${plan.servings === 1 ? 'Portion' : 'Portionen'})`
+            : '';
         events.push(...createEvent({
             uid: `meal-${plan.id}@lezzetify`,
             date: plan.date,
-            summary: `Kochen: ${plan.title}`,
-            description: (Array.isArray(plan.ingredients) ? plan.ingredients : []).join('\n'),
+            summary: `Kochen: ${plan.title}${servings}`,
+            description: [
+                ...(plan.servings ? [`Portionen: ${plan.servings}`] : []),
+                ...(Array.isArray(plan.ingredients) ? plan.ingredients : [])
+            ].join('\n'),
             stamp
         }));
     }
@@ -107,7 +113,12 @@ function createCalendarFeed({ plans, shoppingWeekday, now = new Date(), timezone
             const ingredientLines = [...ingredients.values()]
                 .sort((first, second) => first.name.localeCompare(second.name, 'de'))
                 .map(({ name, count }) => `- ${name}${count > 1 ? ` (in ${count} Gerichten)` : ''}`);
-            const mealLines = shoppingPlans.map((plan) => `- ${plan.title} (${plan.date})`);
+            const mealLines = shoppingPlans.map((plan) => {
+                const servings = Number.isInteger(plan.servings) && plan.servings > 0
+                    ? `, ${plan.servings} ${plan.servings === 1 ? 'Portion' : 'Portionen'}`
+                    : '';
+                return `- ${plan.title} (${plan.date}${servings})`;
+            });
             events.push(...createEvent({
                 uid: `shopping-${shoppingDate}@lezzetify`,
                 date: shoppingDate,

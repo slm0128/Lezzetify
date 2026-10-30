@@ -45,8 +45,16 @@ async function initializeDatabase() {
             id UUID PRIMARY KEY,
             user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-            date DATE NOT NULL
+            date DATE NOT NULL,
+            servings INTEGER NOT NULL DEFAULT 1 CHECK (servings BETWEEN 1 AND 100)
         );
+        ALTER TABLE meal_plans ADD COLUMN IF NOT EXISTS servings INTEGER;
+        UPDATE meal_plans mp
+        SET servings = COALESCE(NULLIF(r.data->>'servings', '')::integer, 1)
+        FROM recipes r
+        WHERE mp.recipe_id = r.id AND mp.servings IS NULL;
+        ALTER TABLE meal_plans ALTER COLUMN servings SET DEFAULT 1;
+        ALTER TABLE meal_plans ALTER COLUMN servings SET NOT NULL;
         CREATE INDEX IF NOT EXISTS meal_plans_user_date ON meal_plans (user_id, date);
 
         CREATE TABLE IF NOT EXISTS nutrition_estimates (

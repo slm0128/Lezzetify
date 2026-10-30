@@ -553,7 +553,7 @@ app.post('/api/nutrition/recipe-estimate', authenticateToken, nutritionRateLimit
 
 app.get('/api/plans', authenticateToken, async (req, res) => {
     const result = await pool.query(
-        `SELECT id, recipe_id AS "recipeId", TO_CHAR(date, 'YYYY-MM-DD') AS date
+        `SELECT id, recipe_id AS "recipeId", TO_CHAR(date, 'YYYY-MM-DD') AS date, servings
          FROM meal_plans WHERE user_id = $1 ORDER BY date, id`,
         [req.user.id]
     );
@@ -561,7 +561,7 @@ app.get('/api/plans', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/plans', authenticateToken, async (req, res) => {
-    const { recipeId, date } = req.body;
+    const { recipeId, date, servings } = req.body;
     if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)
         || Number.isNaN(Date.parse(`${date}T00:00:00Z`))
         || new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date) {
@@ -570,20 +570,25 @@ app.post('/api/plans', authenticateToken, async (req, res) => {
     if (typeof recipeId !== 'string' || !UUID_PATTERN.test(recipeId)) {
         throw new HttpError(400, 'Bitte wähle ein gültiges Rezept.');
     }
+    if (servings !== undefined && (!Number.isInteger(servings) || servings < 1 || servings > 100)) {
+        throw new HttpError(400, 'Die Portionszahl muss zwischen 1 und 100 liegen.');
+    }
     const recipe = await pool.query(
-        'SELECT 1 FROM recipes WHERE id = $1 AND user_id = $2',
+        `SELECT COALESCE(NULLIF(data->>'servings', '')::integer, 1) AS servings
+         FROM recipes WHERE id = $1 AND user_id = $2`,
         [recipeId, req.user.id]
     );
     if (!recipe.rows[0]) {
         throw new HttpError(400, 'Bitte wähle ein gültiges Rezept.');
     }
 
+    const selectedServings = servings ?? recipe.rows[0].servings;
     const id = randomUUID();
     await pool.query(
-        'INSERT INTO meal_plans (id, user_id, recipe_id, date) VALUES ($1, $2, $3, $4)',
-        [id, req.user.id, recipeId, date]
+        'INSERT INTO meal_plans (id, user_id, recipe_id, date, servings) VALUES ($1, $2, $3, $4, $5)',
+        [id, req.user.id, recipeId, date, selectedServings]
     );
-    res.status(201).json({ message: 'Gericht eingeplant.', plan: { id, recipeId, date } });
+    res.status(201).json({ message: 'Gericht eingeplant.', plan: { id, recipeId, date, servings: selectedServings } });
 });
 
 app.delete('/api/plans/:id', authenticateToken, async (req, res) => {
@@ -715,7 +720,7 @@ app.get('/api/calendar/:token.ics', async (req, res) => {
 
     const plans = await pool.query(
         `SELECT mp.id::text AS id, TO_CHAR(mp.date, 'YYYY-MM-DD') AS date,
-                r.data->>'title' AS title, r.data->'ingredients' AS ingredients
+                r.data->>'title' AS title, r.data->'ingredients' AS ingredients, mp.servings
          FROM meal_plans mp
          JOIN recipes r ON r.id = mp.recipe_id
          WHERE mp.user_id = $1 AND mp.date BETWEEN $2::date AND $2::date + 370

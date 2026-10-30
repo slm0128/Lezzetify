@@ -33,6 +33,7 @@ test('creates meal and weekly shopping events on the selected weekday', () => {
                 id: 'meal-1',
                 date: '2026-11-03',
                 title: 'Linsensuppe, klassisch',
+                servings: 3,
                 ingredients: ['Linsen', 'Zwiebel']
             },
             {
@@ -47,7 +48,9 @@ test('creates meal and weekly shopping events on the selected weekday', () => {
 
     assert.match(feed, /BEGIN:VCALENDAR\r\nVERSION:2\.0/);
     assert.match(unfoldedFeed, /UID:meal-meal-1@lezzetify\r\nDTSTAMP:20261029T123000Z\r\nDTSTART;VALUE=DATE:20261103/);
-    assert.match(unfoldedFeed, /SUMMARY:Kochen: Linsensuppe\\, klassisch/);
+    assert.match(unfoldedFeed, /SUMMARY:Kochen: Linsensuppe\\, klassisch \(3 Portionen\)/);
+    assert.match(unfoldedFeed, /DESCRIPTION:Portionen: 3\\nLinsen\\nZwiebel/);
+    assert.match(unfoldedFeed, /- Linsensuppe\\, klassisch \(2026-11-03\\, 3 Portionen\)/);
     assert.match(unfoldedFeed, /UID:shopping-2026-10-31@lezzetify[\s\S]*DTSTART;VALUE=DATE:20261031/);
     assert.match(unfoldedFeed, /Zutaten:\\n- Karotten\\n- Linsen\\n- Zwiebel \(in 2 Gerichten\)/);
     assert.match(unfoldedFeed, /Geplante Gerichte vom 2026-11-01 bis 2026-11-07:/);

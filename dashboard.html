@@ -217,19 +217,26 @@
                                 <h3 class="h6 fw-bold mb-3"><i class="fas fa-plus-circle text-primary-custom me-2"
                                         aria-hidden="true"></i>Gericht einplanen</h3>
                                 <form id="plan-form" class="row g-3 align-items-end">
-                                    <div class="col-md-6">
+                                    <div class="col-lg-5 col-md-12">
                                         <label class="form-label small text-muted fw-bold" for="plan-recipe">Rezept
                                             auswählen</label>
                                         <select class="form-select" id="plan-recipe" required>
                                             <option value="">Zuerst ein Rezept wählen</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-lg-2 col-md-4">
+                                        <label class="form-label small text-muted fw-bold" for="plan-servings">
+                                            Portionen
+                                        </label>
+                                        <input class="form-control" id="plan-servings" type="number" min="1" max="100"
+                                            step="1" placeholder="–" required disabled>
+                                    </div>
+                                    <div class="col-lg-3 col-md-5">
                                         <label class="form-label small text-muted fw-bold"
                                             for="plan-date">Kochtag</label>
                                         <input class="form-control" type="date" id="plan-date" required>
                                     </div>
-                                    <div class="col-md-2 d-grid">
+                                    <div class="col-lg-2 col-md-3 d-grid">
                                         <button class="btn btn-primary-custom" id="save-plan-button" type="submit"
                                             disabled>Planen</button>
                                     </div>

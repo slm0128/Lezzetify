@@ -1518,6 +1518,7 @@
 
 .meal-calendar-event {
     display: flex;
+    flex-wrap: wrap;
     min-width: 0;
     min-height: 2.45rem;
     align-items: center;
@@ -1536,6 +1537,7 @@
 }
 
 .meal-calendar-event-title {
+    order: 1;
     min-width: 0;
     flex: 1;
     overflow: hidden;
@@ -1547,7 +1549,17 @@
     white-space: nowrap;
 }
 
+.meal-calendar-event-servings {
+    order: 3;
+    flex: 0 0 100%;
+    padding-left: 0.1rem;
+    color: #858b86;
+    font-size: 0.65rem;
+    line-height: 1.2;
+}
+
 .meal-calendar-remove {
+    order: 2;
     display: grid;
     width: 1.7rem;
     height: 1.7rem;

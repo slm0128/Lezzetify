@@ -25,6 +25,7 @@ if (!token) {
     const favoriteNoResults = document.querySelector('#favorite-no-results');
     const planForm = document.querySelector('#plan-form');
     const planRecipe = document.querySelector('#plan-recipe');
+    const planServings = document.querySelector('#plan-servings');
     const planDate = document.querySelector('#plan-date');
     const planCalendar = document.querySelector('#meal-plan-calendar');
     const planEmptyState = document.querySelector('#plan-empty-state');
@@ -1212,7 +1213,15 @@ if (!token) {
             option.textContent = recipe.title;
             planRecipe.append(option);
         });
+        planServings.value = '';
+        planServings.disabled = true;
         document.querySelector('#save-plan-button').disabled = recipes.length === 0;
+    }
+
+    function updatePlanServingsFromRecipe() {
+        const recipe = recipes.find((entry) => entry.id === planRecipe.value);
+        planServings.disabled = !recipe;
+        planServings.value = recipe ? String(recipe.servings || 1) : '';
     }
 
     async function loadRecipes() {
@@ -1394,7 +1403,7 @@ if (!token) {
                 }
                 return;
             }
-            totalCalories += caloriesPerServing * (Number(recipe.servings) || 1);
+            totalCalories += caloriesPerServing * (Number(plan.servings) || Number(recipe.servings) || 1);
         });
 
         return { totalCalories, unavailableCount, pendingCount };
@@ -1727,6 +1736,13 @@ if (!token) {
         title.textContent = recipe ? recipe.title : 'Rezept nicht mehr verfügbar';
         title.title = title.textContent;
         meal.append(title);
+        if (recipe) {
+            const servings = document.createElement('small');
+            servings.className = 'meal-calendar-event-servings';
+            const servingCount = Number(plan.servings) || Number(recipe.servings) || 1;
+            servings.textContent = `${servingCount} ${servingCount === 1 ? 'Portion' : 'Portionen'}`;
+            meal.append(servings);
+        }
 
         const removeButton = document.createElement('button');
         removeButton.type = 'button';
@@ -2069,10 +2085,15 @@ if (!token) {
             const response = await apiRequest('/api/plans', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ recipeId: planRecipe.value, date: planDate.value })
+                body: JSON.stringify({
+                    recipeId: planRecipe.value,
+                    date: planDate.value,
+                    servings: Number(planServings.value)
+                })
             });
             await readResponse(response, 'Gericht konnte nicht eingeplant werden.');
             planRecipe.value = '';
+            updatePlanServingsFromRecipe();
             showMessage('Gericht wurde eingeplant.', true);
             await loadPlans();
         } catch (error) {
@@ -2081,6 +2102,7 @@ if (!token) {
             saveButton.disabled = recipes.length === 0;
         }
     });
+    planRecipe.addEventListener('change', updatePlanServingsFromRecipe);
 
     planCalendar.addEventListener('click', async (event) => {
         const dayButton = event.target.closest('[data-calendar-date]');
