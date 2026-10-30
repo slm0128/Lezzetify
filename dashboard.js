@@ -1470,7 +1470,6 @@ if (!token) {
         }
     });
 
-    document.querySelector('#new-recipe-button').addEventListener('click', openNewRecipeModal);
     document.querySelector('#collection-new-recipe-button').addEventListener('click', openNewRecipeModal);
 
     recipeSearch.addEventListener('input', renderRecipeList);

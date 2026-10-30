@@ -80,6 +80,16 @@
     transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
+.dashboard-stat-card-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.dashboard-stat-card-link:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 3px;
+}
+
 .dashboard-stat-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 28px rgba(45, 52, 54, 0.08);
