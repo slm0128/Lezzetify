@@ -83,7 +83,6 @@ async function initializeDatabase() {
         SET data = data - 'nutritionIngredients'
         WHERE data ? 'nutritionIngredients';
 
-        DROP TABLE IF EXISTS nutrition_products;
     `);
 
     const usersWithoutFeedToken = await pool.query(
