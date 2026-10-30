@@ -67,11 +67,9 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file (CRITICAL: NEVER COMMIT THIS)
-.env
-.env.test
-.env.production
-.env.local
+# dotenv environment variables files (keep the example template versioned)
+.env*
+!.env.example
 
 # parcel-bundler cache
 .cache
