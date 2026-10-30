@@ -1605,7 +1605,7 @@
     line-height: 1.4;
     overflow-wrap: anywhere;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .community-card-description {
@@ -1617,7 +1617,7 @@
     font-size: 0.88rem;
     line-height: 1.5;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    line-clamp: 3;
 }
 
 .community-card-meta {
