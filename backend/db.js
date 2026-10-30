@@ -56,6 +56,21 @@ async function initializeDatabase() {
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
+        CREATE TABLE IF NOT EXISTS calorie_goals (
+            user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+            gender TEXT NOT NULL CHECK (gender IN ('female', 'male')),
+            age SMALLINT NOT NULL CHECK (age BETWEEN 18 AND 100),
+            height_cm NUMERIC(5, 1) NOT NULL CHECK (height_cm BETWEEN 100 AND 250),
+            weight_kg NUMERIC(5, 1) NOT NULL CHECK (weight_kg BETWEEN 30 AND 350),
+            activity_level TEXT NOT NULL CHECK (activity_level IN (
+                'sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extra_active'
+            )),
+            goal TEXT NOT NULL CHECK (goal IN ('lose', 'maintain', 'gain')),
+            maintenance_calories INTEGER NOT NULL CHECK (maintenance_calories >= 0),
+            target_calories INTEGER NOT NULL CHECK (target_calories >= 0),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
         UPDATE recipes
         SET data = data - 'nutritionIngredients'
         WHERE data ? 'nutritionIngredients';

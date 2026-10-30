@@ -51,6 +51,11 @@
     max-width: 42rem;
 }
 
+.dashboard-calorie-goal-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 .dashboard-eyebrow {
     display: inline-flex;
     align-items: center;
@@ -379,6 +384,36 @@
     color: #999e99;
 }
 
+.calendar-calorie-total.is-deficit {
+    border-color: #b9d8c4;
+    background: #edf7f0;
+    color: #286344;
+}
+
+.calendar-calorie-total.is-deficit i {
+    color: #39815a;
+}
+
+.calendar-calorie-total.is-surplus {
+    border-color: #efc7bd;
+    background: #fff0ec;
+    color: #9c3d30;
+}
+
+.calendar-calorie-total.is-surplus i {
+    color: #c64f3d;
+}
+
+.calendar-calorie-total.is-on-target {
+    border-color: #d3caed;
+    background: #f4f1fb;
+    color: #54427d;
+}
+
+.calendar-calorie-total.is-on-target i {
+    color: #735eaa;
+}
+
 .planner-form-panel {
     padding: 1.15rem;
     border: 1px solid #f0e5df;
@@ -623,6 +658,385 @@
 
 .recipe-modal-dialog {
     max-width: 820px;
+}
+
+.calorie-goal-dialog {
+    max-width: 920px;
+}
+
+.calorie-goal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem;
+    border-bottom: 1px solid var(--dashboard-line);
+    background:
+        radial-gradient(ellipse at 95% 0%, rgba(231, 111, 81, 0.12), transparent 40%),
+        #fffaf7;
+}
+
+.calorie-goal-header .modal-title {
+    color: var(--dashboard-ink);
+}
+
+.calorie-goal-body {
+    padding: 1.5rem 2rem 1.75rem;
+    background:
+        radial-gradient(ellipse at 8% 0%, rgba(231, 111, 81, 0.06), transparent 35%),
+        #fffdfa;
+}
+
+.calorie-goal-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-bottom: 1.35rem;
+    padding: 0.75rem 0.95rem;
+    border: 1px solid #f1e2d9;
+    border-radius: 0.9rem;
+    background: #fff8f1;
+    color: #625b55;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.calorie-goal-notice i {
+    margin-top: 0.15rem;
+    color: var(--primary-color);
+}
+
+.calorie-goal-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.15rem 0 1.1rem;
+}
+
+.calorie-goal-section-icon {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 2.5rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: #fff0e9;
+    color: var(--primary-color);
+}
+
+.calorie-goal-section-heading h3 {
+    margin: 0;
+    color: #684536;
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.calorie-goal-section-heading p {
+    margin: 0.15rem 0 0;
+    color: #858b86;
+    font-size: 0.78rem;
+}
+
+.calorie-goal-form .form-label {
+    margin-bottom: 0.45rem;
+    color: #684536;
+    font-size: 0.8rem;
+    font-weight: 750;
+}
+
+.calorie-goal-form .form-control,
+.calorie-goal-form .form-select,
+.calorie-goal-form .input-group-text {
+    min-height: 3rem;
+    border-color: #e9e2dc;
+    border-radius: 0.85rem;
+    background-color: #fff;
+    font-size: 0.86rem;
+}
+
+.calorie-goal-form .input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.calorie-goal-form .input-group .input-group-text {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    background: #faf6f2;
+    color: #706a65;
+    font-size: 0.82rem;
+    font-weight: 650;
+}
+
+.calorie-goal-form .form-control:focus,
+.calorie-goal-form .form-select:focus {
+    border-color: rgba(231, 111, 81, 0.7);
+    box-shadow: 0 0 0 0.22rem rgba(231, 111, 81, 0.14);
+}
+
+.calorie-goal-form .form-text {
+    color: #85817d;
+    font-size: 0.73rem;
+}
+
+.calorie-goal-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.8fr);
+    align-items: stretch;
+    gap: 1.35rem;
+}
+
+.calorie-goal-inputs {
+    min-width: 0;
+    padding: 1.25rem;
+    border: 1px solid #f0e9e3;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 8px 26px rgba(155, 83, 57, 0.045);
+}
+
+.calorie-goal-preview {
+    position: relative;
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    overflow: hidden;
+    padding: 1.45rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1.2rem;
+    background:
+        radial-gradient(ellipse at 100% 0%, rgba(254, 202, 87, 0.42), transparent 43%),
+        linear-gradient(145deg, #fff5e8 0%, #fff0e8 58%, #fbe2d7 100%);
+    box-shadow: 0 18px 34px rgba(155, 83, 57, 0.14);
+    color: #725344;
+    line-height: 1.55;
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.calorie-goal-preview::after {
+    position: absolute;
+    right: -3.2rem;
+    bottom: -5.2rem;
+    width: 13rem;
+    height: 13rem;
+    border: 1px solid rgba(231, 111, 81, 0.15);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.2rem rgba(231, 111, 81, 0.035), 0 0 0 2.4rem rgba(231, 111, 81, 0.025);
+    content: "";
+    pointer-events: none;
+}
+
+.calorie-goal-preview.has-value {
+    box-shadow: 0 20px 40px rgba(155, 83, 57, 0.18), 0 0 0 3px rgba(231, 111, 81, 0.16);
+}
+
+.calorie-goal-result-icon,
+.calorie-goal-preview-empty-icon {
+    z-index: 1;
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 3rem;
+    place-items: center;
+    border: 1px solid rgba(231, 111, 81, 0.13);
+    border-radius: 1rem;
+    background: rgba(231, 111, 81, 0.1);
+    color: var(--primary-hover);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.calorie-goal-preview-empty-icon {
+    background: rgba(231, 111, 81, 0.08);
+    color: #b65b45;
+}
+
+.calorie-goal-result-copy {
+    z-index: 1;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+}
+
+.calorie-goal-result-label {
+    color: #b9513c;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.calorie-goal-result-copy > strong {
+    color: #684536;
+    font-size: clamp(2.15rem, 4vw, 3.1rem);
+    font-weight: 800;
+    letter-spacing: -0.065em;
+    line-height: 1;
+}
+
+.calorie-goal-result-unit {
+    margin-top: 0.2rem;
+    color: #816957;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.calorie-goal-result-details {
+    display: grid;
+    width: 100%;
+    gap: 0.65rem;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(174, 105, 78, 0.2);
+    color: #725344;
+    font-size: 0.77rem;
+}
+
+.calorie-goal-result-details > span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+}
+
+.calorie-goal-result-details strong {
+    color: #684536;
+    font-size: 0.78rem;
+    font-weight: 750;
+    text-align: right;
+}
+
+.calorie-goal-actions .btn-primary-custom {
+    min-height: 2.8rem;
+    padding-inline: 1.3rem;
+    border: 1px solid var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), #ed805f);
+    box-shadow: 0 8px 18px rgba(231, 111, 81, 0.2);
+    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.calorie-goal-actions .btn-primary-custom:hover,
+.calorie-goal-actions .btn-primary-custom:focus-visible {
+    border-color: var(--primary-hover);
+    background: var(--primary-hover);
+    box-shadow: 0 10px 22px rgba(231, 111, 81, 0.3);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.calorie-goal-actions .btn-primary-custom:focus-visible,
+.calorie-goal-actions .btn:focus-visible {
+    outline: 3px solid rgba(231, 111, 81, 0.25);
+    outline-offset: 2px;
+}
+
+.calorie-goal-actions .btn-primary-custom:disabled {
+    border-color: #e7a08e;
+    background: #e7a08e;
+    box-shadow: none;
+    transform: none;
+}
+
+.calorie-goal-close-button {
+    min-height: 2.8rem;
+    padding-inline: 1.1rem;
+    border: 1px solid #e8e1db;
+    background: #fff;
+    color: #725344;
+    font-weight: 650;
+    transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.calorie-goal-close-button:hover,
+.calorie-goal-close-button:focus-visible {
+    border-color: #d9d0c8;
+    background: #f8f4f0;
+    color: #684536;
+}
+
+.calorie-goal-reset-button {
+    min-height: 2.8rem;
+    padding-inline: 1.1rem;
+    border: 1px solid #f0d7d1;
+    background: #fff8f6;
+    color: #a75454;
+    font-weight: 650;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.calorie-goal-reset-button:hover,
+.calorie-goal-reset-button:focus-visible {
+    border-color: #b64c52;
+    background: #b64c52;
+    color: #fff;
+}
+
+.calorie-goal-reset-button:disabled {
+    opacity: 0.6;
+}
+
+.calorie-goal-validation-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid #efc9c2;
+    border-radius: 0.8rem;
+    background: #fff1ee;
+    color: #963c34;
+    font-size: 0.84rem;
+    font-weight: 650;
+}
+
+.calorie-goal-validation-summary[hidden] {
+    display: none !important;
+}
+
+.calorie-goal-form .calorie-goal-field.has-error .form-label {
+    color: #a63f36;
+}
+
+.calorie-goal-form .form-control.is-invalid,
+.calorie-goal-form .form-select.is-invalid,
+.calorie-goal-form .input-group .form-control.is-invalid {
+    border-color: #c84f45;
+    background-color: #fff9f8;
+    box-shadow: 0 0 0 0.18rem rgba(200, 79, 69, 0.12);
+}
+
+.calorie-goal-form .form-control.is-invalid:focus,
+.calorie-goal-form .form-select.is-invalid:focus {
+    border-color: #b9433a;
+    box-shadow: 0 0 0 0.22rem rgba(200, 79, 69, 0.16);
+}
+
+.calorie-goal-form .calorie-goal-field .invalid-feedback {
+    margin-top: 0.35rem;
+    color: #a63f36;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.calorie-goal-form .calorie-goal-field.has-error .invalid-feedback {
+    display: block;
+}
+
+.calorie-goal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid var(--dashboard-line);
+}
+
+.calorie-goal-actions [hidden] {
+    display: none !important;
 }
 
 .recipe-modal-content {
@@ -1282,6 +1696,47 @@
         padding: 1rem;
     }
 
+    .calorie-goal-header,
+    .calorie-goal-body {
+        padding: 1.15rem 1rem;
+    }
+
+    .calorie-goal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .calorie-goal-actions .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    .calorie-goal-main-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+
+    .calorie-goal-inputs {
+        padding: 1rem;
+    }
+
+    .calorie-goal-preview {
+        min-height: 15rem;
+        padding: 1.25rem;
+    }
+
+    .calorie-goal-result-icon,
+    .calorie-goal-preview-empty-icon {
+        width: 2.7rem;
+        height: 2.7rem;
+        flex-basis: 2.7rem;
+    }
+
+    .calorie-goal-result-details > span {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
     .calendar-overview-heading {
         align-items: flex-start;
     }
@@ -1297,6 +1752,10 @@
     .dashboard-hero {
         align-items: stretch !important;
         border-radius: 1.1rem;
+    }
+
+    .dashboard-calorie-goal-button {
+        align-self: flex-start;
     }
 
     .calendar-toolbar {

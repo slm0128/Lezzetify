@@ -16,6 +16,8 @@ In der Community können veröffentlichte Rezepte angesehen und nach passenden G
 
 Der Kalender unterstützt dabei, Rezepte für einzelne Tage zu planen. Die Planung lässt sich in einer Tages- oder Wochenansicht überblicken. Für den ausgewählten Tag zeigt Lezzetify außerdem die gemeinsame Kalorienmenge der eingeplanten Gerichte an, sofern Nährwertangaben verfügbar sind.
 
+Optional lässt sich der persönliche Tagesbedarf mit der Mifflin-St.-Jeor-Formel schätzen. Ein Ziel zum Abnehmen, Zunehmen oder Gewichtbeibehalten kann gespeichert, geändert oder zurückgesetzt werden. Im Kalender wird dann für den ausgewählten Tag angezeigt, wie weit die geplanten Kalorien über oder unter diesem Ziel liegen.
+
 ### Einkäufe vorbereiten
 
 Aus den geplanten Rezepten stellt Lezzetify eine Einkaufsliste mit den benötigten Zutaten zusammen. So lässt sich auf einen Blick erkennen, was für die anstehenden Mahlzeiten eingekauft werden muss.

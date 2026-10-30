@@ -67,6 +67,12 @@
                     <p class="text-muted mb-0">Deine Rezepte, dein Wochenplan und alles für den nächsten Einkauf – an
                         einem Ort.</p>
                 </div>
+                <button class="btn btn-primary-custom rounded-pill dashboard-calorie-goal-button"
+                    id="open-calorie-goal-button" type="button" data-bs-toggle="modal"
+                    data-bs-target="#calorieGoalModal">
+                    <i class="fas fa-calculator me-2" aria-hidden="true"></i>
+                    <span>Kalorienbedarf berechnen</span>
+                </button>
             </div>
 
             <!-- Statistik & Übersicht -->
@@ -567,6 +573,140 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="calorieGoalModal" tabindex="-1" aria-labelledby="calorie-goal-heading"
+        aria-describedby="calorie-goal-description" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable calorie-goal-dialog">
+            <div class="modal-content border-0 shadow-lg rounded-4 calorie-goal-content">
+                <div class="modal-header calorie-goal-header">
+                    <span class="recipe-modal-icon" aria-hidden="true"><i class="fas fa-fire"></i></span>
+                    <div class="flex-grow-1">
+                        <span class="community-heading-label">Dein persönlicher Richtwert</span>
+                        <h2 class="modal-title h4 fw-bold mb-1" id="calorie-goal-heading">Kalorienbedarf berechnen</h2>
+                        <p class="text-muted small mb-0" id="calorie-goal-description">
+                            Finde deinen täglichen Richtwert – abgestimmt auf dich und dein Ziel.
+                        </p>
+                    </div>
+                    <button class="btn-close align-self-start" type="button" data-bs-dismiss="modal"
+                        aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body calorie-goal-body">
+                    <p class="calorie-goal-notice">
+                        <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
+                        Die Mifflin-St.-Jeor-Formel verwendet für Frauen und Männer unterschiedliche Werte.
+                        Das Ergebnis ist eine grobe Schätzung und keine medizinische Beratung.
+                    </p>
+                    <form id="calorie-goal-form" class="calorie-goal-form" novalidate>
+                        <div class="calorie-goal-validation-summary" id="calorie-goal-validation-summary"
+                            role="alert" aria-live="assertive" hidden>
+                            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                            <span>Bitte prüfe die markierten Angaben.</span>
+                        </div>
+                        <div class="calorie-goal-section-heading">
+                            <span class="calorie-goal-section-icon" aria-hidden="true">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                            </span>
+                            <div>
+                                <h3>Deine Angaben</h3>
+                                <p>So genau wie möglich eintragen – alle Angaben bleiben privat.</p>
+                            </div>
+                        </div>
+                        <div class="calorie-goal-main-grid">
+                            <div class="calorie-goal-inputs">
+                                <div class="row g-3">
+                                    <div class="col-md-6 calorie-goal-field">
+                                        <label class="form-label" for="calorie-goal-gender">Geschlecht</label>
+                                        <select class="form-select" id="calorie-goal-gender" name="gender"
+                                            aria-describedby="calorie-goal-gender-error" required>
+                                            <option value="">Geschlecht auswählen</option>
+                                            <option value="female">Weiblich</option>
+                                            <option value="male">Männlich</option>
+                                        </select>
+                                        <div class="form-text">Wird nur für die passende Formelvariante verwendet.</div>
+                                        <div class="invalid-feedback" id="calorie-goal-gender-error"></div>
+                                    </div>
+                                    <div class="col-md-6 calorie-goal-field">
+                                        <label class="form-label" for="calorie-goal-age">Alter</label>
+                                        <div class="input-group">
+                                            <input class="form-control" id="calorie-goal-age" name="age" type="number"
+                                                min="18" max="100" step="1" placeholder="z. B. 30"
+                                                aria-describedby="calorie-goal-age-error" required>
+                                            <span class="input-group-text">Jahre</span>
+                                        </div>
+                                        <div class="invalid-feedback" id="calorie-goal-age-error"></div>
+                                    </div>
+                                    <div class="col-md-6 calorie-goal-field">
+                                        <label class="form-label" for="calorie-goal-height">Größe</label>
+                                        <div class="input-group">
+                                            <input class="form-control" id="calorie-goal-height" name="heightCm" type="number"
+                                                min="100" max="250" step="0.1" placeholder="z. B. 170"
+                                                aria-describedby="calorie-goal-height-error" required>
+                                            <span class="input-group-text">cm</span>
+                                        </div>
+                                        <div class="invalid-feedback" id="calorie-goal-height-error"></div>
+                                    </div>
+                                    <div class="col-md-6 calorie-goal-field">
+                                        <label class="form-label" for="calorie-goal-weight">Gewicht</label>
+                                        <div class="input-group">
+                                            <input class="form-control" id="calorie-goal-weight" name="weightKg" type="number"
+                                                min="30" max="350" step="0.1" placeholder="z. B. 65"
+                                                aria-describedby="calorie-goal-weight-error" required>
+                                            <span class="input-group-text">kg</span>
+                                        </div>
+                                        <div class="invalid-feedback" id="calorie-goal-weight-error"></div>
+                                    </div>
+                                    <div class="col-12 calorie-goal-field">
+                                        <label class="form-label" for="calorie-goal-activity">Aktivitätsniveau</label>
+                                        <select class="form-select" id="calorie-goal-activity" name="activityLevel"
+                                            aria-describedby="calorie-goal-activity-error" required>
+                                            <option value="">Bitte auswählen</option>
+                                            <option value="sedentary">Überwiegend sitzend, kaum Bewegung</option>
+                                            <option value="lightly_active">Leichte Bewegung oder Sport 1–3 Tage/Woche</option>
+                                            <option value="moderately_active">Mäßige Bewegung oder Sport 3–5 Tage/Woche</option>
+                                            <option value="very_active">Viel Bewegung oder Sport 6–7 Tage/Woche</option>
+                                            <option value="extra_active">Sehr aktiv, körperliche Arbeit oder intensives Training</option>
+                                        </select>
+                                        <div class="invalid-feedback" id="calorie-goal-activity-error"></div>
+                                    </div>
+                                    <div class="col-12 calorie-goal-field">
+                                        <label class="form-label" for="calorie-goal-purpose">Dein Ziel</label>
+                                        <select class="form-select" id="calorie-goal-purpose" name="goal"
+                                            aria-describedby="calorie-goal-purpose-error" required>
+                                            <option value="lose">Abnehmen (−500 kcal/Tag)</option>
+                                            <option value="maintain">Gewicht beibehalten</option>
+                                            <option value="gain">Zunehmen (+500 kcal/Tag)</option>
+                                        </select>
+                                        <div class="invalid-feedback" id="calorie-goal-purpose-error"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <output class="calorie-goal-preview" id="calorie-goal-preview" aria-live="polite">
+                                <span class="calorie-goal-preview-empty-icon" aria-hidden="true">
+                                    <i class="fas fa-chart-line"></i>
+                                </span>
+                                <span>Ergänze deine Angaben, um deinen geschätzten Tagesbedarf zu sehen.</span>
+                            </output>
+                        </div>
+                        <div class="calorie-goal-actions">
+                            <button class="btn calorie-goal-reset-button rounded-pill me-auto" id="reset-calorie-goal-button"
+                                type="button" hidden>
+                                <i class="fas fa-undo me-2" aria-hidden="true"></i>Kalorienziel zurücksetzen
+                            </button>
+                            <button class="btn calorie-goal-close-button rounded-pill" type="button" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1" aria-hidden="true"></i>Schließen
+                            </button>
+                            <button class="btn btn-primary-custom rounded-pill" id="save-calorie-goal-button"
+                                type="submit"><i class="fas fa-bullseye me-2" aria-hidden="true"></i>Kalorienziel speichern</button>
+                        </div>
+                    </form>
+                    <p class="small text-muted mt-3 mb-0">
+                        Du kannst die Funktion jederzeit ignorieren oder das gespeicherte Ziel zurücksetzen.
+                        Nährwertangaben der Rezepte sind ebenfalls Schätzungen.
+                    </p>
                 </div>
             </div>
         </div>

@@ -30,6 +30,10 @@ if (!token) {
     const planEmptyState = document.querySelector('#plan-empty-state');
     const planViewDate = document.querySelector('#plan-view-date');
     const planPeriod = document.querySelector('#plan-period');
+    const calorieGoalForm = document.querySelector('#calorie-goal-form');
+    const calorieGoalPreview = document.querySelector('#calorie-goal-preview');
+    const calorieGoalResetButton = document.querySelector('#reset-calorie-goal-button');
+    const calorieGoalModal = document.querySelector('#calorieGoalModal');
     const calendarSettingsForm = document.querySelector('#calendar-settings-form');
     const shoppingWeekday = document.querySelector('#shopping-weekday');
     const calendarFeedUrl = document.querySelector('#calendar-feed-url');
@@ -52,6 +56,7 @@ if (!token) {
     let activeFavoriteFilter = 'all';
     let activeCommunityRecipe = null;
     let favorites = { recipes: [], community: [] };
+    let calorieGoal = null;
     let recipeImageData = null;
     let editingRecipeId = null;
     const nutritionEstimates = new Map();
@@ -1237,6 +1242,86 @@ if (!token) {
         return { start: getLocalDateString(start), end: getLocalDateString(end) };
     }
 
+    function calculateCalorieGoalPreview() {
+        const gender = document.querySelector('#calorie-goal-gender').value;
+        const age = Number(document.querySelector('#calorie-goal-age').value);
+        const heightCm = Number(document.querySelector('#calorie-goal-height').value);
+        const weightKg = Number(document.querySelector('#calorie-goal-weight').value);
+        const activityLevel = document.querySelector('#calorie-goal-activity').value;
+        const goal = document.querySelector('#calorie-goal-purpose').value;
+        const activityFactors = {
+            sedentary: 1.2,
+            lightly_active: 1.375,
+            moderately_active: 1.55,
+            very_active: 1.725,
+            extra_active: 1.9
+        };
+        const adjustments = { lose: -500, maintain: 0, gain: 500 };
+
+        if (!calorieGoalForm.checkValidity() || !Object.hasOwn(activityFactors, activityLevel)
+            || !Object.hasOwn(adjustments, goal)) {
+            calorieGoalPreview.classList.remove('has-value');
+            const icon = document.createElement('span');
+            icon.className = 'calorie-goal-preview-empty-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            const iconElement = document.createElement('i');
+            iconElement.className = 'fas fa-chart-line';
+            icon.append(iconElement);
+            const copy = document.createElement('span');
+            copy.className = 'calorie-goal-result-copy';
+            const label = document.createElement('span');
+            label.className = 'calorie-goal-result-label';
+            label.textContent = 'Dein Ergebnis';
+            const message = document.createElement('span');
+            message.textContent = 'Ergänze deine Angaben und dein Tagesziel erscheint hier live.';
+            copy.append(label, message);
+            calorieGoalPreview.replaceChildren(icon, copy);
+            return null;
+        }
+
+        const basalMetabolicRate = 10 * weightKg + 6.25 * heightCm - 5 * age
+            + (gender === 'male' ? 5 : -161);
+        const maintenanceCalories = Math.round(basalMetabolicRate * activityFactors[activityLevel]);
+        const targetCalories = Math.max(0, maintenanceCalories + adjustments[goal]);
+        const formatter = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
+        calorieGoalPreview.classList.add('has-value');
+        const icon = document.createElement('span');
+        icon.className = 'calorie-goal-result-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        const iconElement = document.createElement('i');
+        iconElement.className = 'fas fa-fire';
+        icon.append(iconElement);
+        const copy = document.createElement('span');
+        copy.className = 'calorie-goal-result-copy';
+        const resultLabel = document.createElement('span');
+        resultLabel.className = 'calorie-goal-result-label';
+        resultLabel.textContent = 'Dein tägliches Ziel';
+        const target = document.createElement('strong');
+        target.textContent = formatter.format(targetCalories);
+        const unit = document.createElement('span');
+        unit.className = 'calorie-goal-result-unit';
+        unit.textContent = 'Kilokalorien pro Tag';
+        const details = document.createElement('span');
+        details.className = 'calorie-goal-result-details';
+        const maintenance = document.createElement('span');
+        const maintenanceLabel = document.createElement('span');
+        maintenanceLabel.textContent = 'Zum Gewicht halten';
+        const maintenanceValue = document.createElement('strong');
+        maintenanceValue.textContent = `${formatter.format(maintenanceCalories)} kcal`;
+        maintenance.append(maintenanceLabel, maintenanceValue);
+        const adjustment = document.createElement('span');
+        const adjustmentValue = adjustments[goal];
+        const adjustmentLabel = document.createElement('span');
+        adjustmentLabel.textContent = 'Deine Zielanpassung';
+        const adjustmentAmount = document.createElement('strong');
+        adjustmentAmount.textContent = `${adjustmentValue > 0 ? '+' : ''}${formatter.format(adjustmentValue)} kcal`;
+        adjustment.append(adjustmentLabel, adjustmentAmount);
+        details.append(maintenance, adjustment);
+        copy.append(resultLabel, target, unit, details);
+        calorieGoalPreview.replaceChildren(icon, copy);
+        return { maintenanceCalories, targetCalories };
+    }
+
     function updateCalendarNutritionTotal() {
         const calorieTotal = document.querySelector('#plan-calorie-total');
         if (!calorieTotal) {
@@ -1271,18 +1356,186 @@ if (!token) {
 
         const numberFormatter = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
         calorieTotal.classList.toggle('is-unavailable', unavailableCount > 0 && pendingCount === 0);
+        calorieTotal.classList.remove('is-deficit', 'is-surplus', 'is-on-target');
         if (pendingCount > 0) {
             label.textContent = 'Kalorien werden berechnet …';
         } else if (unavailableCount > 0) {
             label.textContent = totalCalories > 0
-                ? `Kalorien am Tag: mind. ${numberFormatter.format(totalCalories)} kcal`
+                ? `Geplant: mindestens ${numberFormatter.format(totalCalories)} kcal · Vergleich unvollständig`
                 : 'Kalorien nicht verfügbar';
         } else {
-            label.textContent = `Kalorien am Tag: ${numberFormatter.format(totalCalories)} kcal`;
+            const roundedTotal = Math.round(totalCalories);
+            if (calorieGoal) {
+                const difference = roundedTotal - calorieGoal.targetCalories;
+                const absoluteDifference = numberFormatter.format(Math.abs(difference));
+                const target = numberFormatter.format(calorieGoal.targetCalories);
+                if (difference > 0) {
+                    label.textContent = `Geplant: ${numberFormatter.format(roundedTotal)} kcal · ${absoluteDifference} kcal über deinem Tagesziel (${target} kcal)`;
+                    calorieTotal.classList.add('is-surplus');
+                } else if (difference < 0) {
+                    label.textContent = `Geplant: ${numberFormatter.format(roundedTotal)} kcal · ${absoluteDifference} kcal unter deinem Tagesziel (${target} kcal)`;
+                    calorieTotal.classList.add('is-deficit');
+                } else {
+                    label.textContent = `Geplant: ${numberFormatter.format(roundedTotal)} kcal · Tagesziel erreicht (${target} kcal)`;
+                    calorieTotal.classList.add('is-on-target');
+                }
+            } else {
+                label.textContent = `Kalorien am Tag: ${numberFormatter.format(roundedTotal)} kcal`;
+            }
         }
         calorieTotal.title = unavailableCount > 0
             ? 'Für mindestens ein Gericht ist keine Nährwertschätzung verfügbar.'
-            : 'Geschätzte Gesamtkalorien für alle Portionen am ausgewählten Tag.';
+            : calorieGoal
+                ? 'Vergleich der geschätzten Kalorien aus den geplanten Gerichten am ausgewählten Tag mit deinem persönlichen Tagesziel.'
+                : 'Geschätzte Gesamtkalorien für alle Portionen am ausgewählten Tag.';
+    }
+
+    function populateCalorieGoalForm(goal) {
+        document.querySelector('#calorie-goal-gender').value = goal?.gender || '';
+        document.querySelector('#calorie-goal-age').value = goal?.age ?? '';
+        document.querySelector('#calorie-goal-height').value = goal?.heightCm ?? '';
+        document.querySelector('#calorie-goal-weight').value = goal?.weightKg ?? '';
+        document.querySelector('#calorie-goal-activity').value = goal?.activityLevel || '';
+        document.querySelector('#calorie-goal-purpose').value = goal?.goal || 'maintain';
+        calorieGoalForm.dataset.validationShown = 'false';
+        calorieGoalForm.querySelectorAll('input, select').forEach((field) => {
+            field.dataset.touched = 'false';
+            setCalorieGoalFieldError(field, false);
+        });
+        document.querySelector('#calorie-goal-validation-summary').hidden = true;
+        calorieGoalResetButton.hidden = !goal;
+        if (goal) {
+            calculateCalorieGoalPreview();
+        } else {
+            calorieGoalPreview.classList.remove('has-value');
+            calculateCalorieGoalPreview();
+        }
+    }
+
+    function setCalorieGoalFieldError(field, show = false) {
+        const errorElement = document.querySelector(`#${field.id}-error`);
+        const fieldContainer = field.closest('.calorie-goal-field');
+        const shouldShow = show && !field.validity.valid;
+        const message = field.validity.valueMissing
+            ? 'Bitte fülle dieses Feld aus.'
+            : field.validity.rangeUnderflow || field.validity.rangeOverflow
+                ? field.id === 'calorie-goal-age'
+                    ? 'Bitte gib ein Alter zwischen 18 und 100 Jahren ein.'
+                    : field.id === 'calorie-goal-height'
+                        ? 'Bitte gib eine Größe zwischen 100 und 250 cm ein.'
+                        : 'Bitte gib ein Gewicht zwischen 30 und 350 kg ein.'
+                : field.validity.stepMismatch
+                    ? 'Bitte gib einen gültigen Wert ein.'
+                    : field.validity.badInput
+                        ? 'Bitte gib eine gültige Zahl ein.'
+                        : '';
+
+        field.classList.toggle('is-invalid', shouldShow);
+        field.setAttribute('aria-invalid', String(shouldShow));
+        fieldContainer?.classList.toggle('has-error', shouldShow);
+        if (errorElement) {
+            errorElement.textContent = shouldShow ? message : '';
+        }
+        return !shouldShow;
+    }
+
+    function validateCalorieGoalForm() {
+        calorieGoalForm.dataset.validationShown = 'true';
+        const fields = [...calorieGoalForm.querySelectorAll('input, select')];
+        let firstInvalidField = null;
+        fields.forEach((field) => {
+            field.dataset.touched = 'true';
+            if (!setCalorieGoalFieldError(field, true) && !firstInvalidField) {
+                firstInvalidField = field;
+            }
+        });
+        document.querySelector('#calorie-goal-validation-summary').hidden = !firstInvalidField;
+        if (firstInvalidField) {
+            firstInvalidField.focus();
+            return false;
+        }
+        return true;
+    }
+
+    async function loadCalorieGoal() {
+        try {
+            const response = await apiRequest('/api/calorie-goal');
+            const data = await readResponse(response, 'Kalorienziel konnte nicht geladen werden.');
+            calorieGoal = data.goal;
+            populateCalorieGoalForm(calorieGoal);
+            updateCalendarNutritionTotal();
+        } catch (error) {
+            showMessage(error.message || 'Kalorienziel konnte nicht geladen werden.');
+        }
+    }
+
+    async function saveCalorieGoal(event) {
+        event.preventDefault();
+        if (!validateCalorieGoalForm()) {
+            return;
+        }
+        const saveButton = document.querySelector('#save-calorie-goal-button');
+        saveButton.disabled = true;
+        const values = {
+            gender: document.querySelector('#calorie-goal-gender').value,
+            age: Number(document.querySelector('#calorie-goal-age').value),
+            heightCm: Number(document.querySelector('#calorie-goal-height').value),
+            weightKg: Number(document.querySelector('#calorie-goal-weight').value),
+            activityLevel: document.querySelector('#calorie-goal-activity').value,
+            goal: document.querySelector('#calorie-goal-purpose').value
+        };
+        try {
+            const response = await apiRequest('/api/calorie-goal', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(values)
+            });
+            const data = await readResponse(response, 'Kalorienziel konnte nicht gespeichert werden.');
+            calorieGoal = data.goal;
+            populateCalorieGoalForm(calorieGoal);
+            updateCalendarNutritionTotal();
+            bootstrap.Modal.getOrCreateInstance(calorieGoalModal).hide();
+            showToast(data.message, { title: 'Kalorienziel gespeichert', icon: 'fa-bullseye' });
+        } catch (error) {
+            showMessage(error.message || 'Kalorienziel konnte nicht gespeichert werden.');
+        } finally {
+            saveButton.disabled = false;
+        }
+    }
+
+    async function resetCalorieGoal() {
+        const goalModal = bootstrap.Modal.getOrCreateInstance(calorieGoalModal);
+        const goalModalHidden = new Promise((resolve) => {
+            calorieGoalModal.addEventListener('hidden.bs.modal', resolve, { once: true });
+        });
+        goalModal.hide();
+        await goalModalHidden;
+
+        const confirmed = await requestConfirmation({
+            title: 'Kalorienziel zurücksetzen?',
+            message: 'Dein gespeichertes Kalorienziel und die zugehörigen Angaben werden gelöscht. Die Kalenderanzeige vergleicht danach keine Kalorien mehr mit einem Ziel.',
+            confirmLabel: 'Kalorienziel löschen',
+            tone: 'warning',
+            icon: 'fa-undo'
+        });
+        if (!confirmed) {
+            goalModal.show();
+            return;
+        }
+
+        calorieGoalResetButton.disabled = true;
+        try {
+            const response = await apiRequest('/api/calorie-goal', { method: 'DELETE' });
+            const data = await readResponse(response, 'Kalorienziel konnte nicht zurückgesetzt werden.');
+            calorieGoal = null;
+            populateCalorieGoalForm(null);
+            updateCalendarNutritionTotal();
+            showToast(data.message, { title: 'Kalorienziel zurückgesetzt', icon: 'fa-undo' });
+        } catch (error) {
+            showMessage(error.message || 'Kalorienziel konnte nicht zurückgesetzt werden.');
+        } finally {
+            calorieGoalResetButton.disabled = false;
+        }
     }
 
     function renderPlanView() {
@@ -1465,6 +1718,43 @@ if (!token) {
             showMessage(error.message || 'Kalender-Einstellungen konnten nicht geladen werden.');
         }
     }
+
+    calorieGoalForm.addEventListener('input', calculateCalorieGoalPreview);
+    calorieGoalForm.addEventListener('change', calculateCalorieGoalPreview);
+    calorieGoalForm.addEventListener('focusout', (event) => {
+        const field = event.target;
+        if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement)) {
+            return;
+        }
+        field.dataset.touched = 'true';
+        setCalorieGoalFieldError(field, true);
+    });
+    calorieGoalForm.addEventListener('input', (event) => {
+        const field = event.target;
+        if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement)) {
+            return;
+        }
+        if (field.dataset.touched === 'true' || calorieGoalForm.dataset.validationShown === 'true') {
+            setCalorieGoalFieldError(field, true);
+        }
+        if (calorieGoalForm.checkValidity()) {
+            document.querySelector('#calorie-goal-validation-summary').hidden = true;
+        }
+    });
+    calorieGoalForm.addEventListener('change', (event) => {
+        const field = event.target;
+        if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement)) {
+            return;
+        }
+        if (field.dataset.touched === 'true' || calorieGoalForm.dataset.validationShown === 'true') {
+            setCalorieGoalFieldError(field, true);
+        }
+        if (calorieGoalForm.checkValidity()) {
+            document.querySelector('#calorie-goal-validation-summary').hidden = true;
+        }
+    });
+    calorieGoalForm.addEventListener('submit', saveCalorieGoal);
+    calorieGoalResetButton.addEventListener('click', resetCalorieGoal);
 
     calendarSettingsForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -1832,4 +2122,5 @@ if (!token) {
     loadCommunityRecipes();
     loadFavorites();
     loadCalendarSettings();
+    loadCalorieGoal();
 }

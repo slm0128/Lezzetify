@@ -13,6 +13,7 @@ const defaultCommunityRecipes = require('./community-recipes');
 const { initializeDatabase, pool } = require('./db');
 const { createNutritionRpc } = require('./nutrition-rpc');
 const { createCalendarFeed, getCalendarToday } = require('./calendar-feed');
+const { calculateCalorieGoal } = require('./calorie-goal');
 const { HttpError, validateRecipePayload } = require('./recipe-validation');
 
 const PORT = Number(process.env.PORT || 3000);
@@ -597,6 +598,60 @@ app.delete('/api/plans/:id', authenticateToken, async (req, res) => {
         throw new HttpError(404, 'Geplanter Eintrag wurde nicht gefunden.');
     }
     res.status(204).end();
+});
+
+app.get('/api/calorie-goal', authenticateToken, async (req, res) => {
+    const result = await pool.query(
+        `SELECT gender, age, height_cm AS "heightCm", weight_kg AS "weightKg",
+                activity_level AS "activityLevel", goal,
+                maintenance_calories AS "maintenanceCalories",
+                target_calories AS "targetCalories"
+         FROM calorie_goals WHERE user_id = $1`,
+        [req.user.id]
+    );
+    res.json({ goal: result.rows[0] || null });
+});
+
+app.put('/api/calorie-goal', authenticateToken, async (req, res) => {
+    const calorieGoal = calculateCalorieGoal(req.body);
+    const result = await pool.query(
+        `INSERT INTO calorie_goals (
+            user_id, gender, age, height_cm, weight_kg, activity_level, goal,
+            maintenance_calories, target_calories, updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+         ON CONFLICT (user_id) DO UPDATE SET
+            gender = EXCLUDED.gender,
+            age = EXCLUDED.age,
+            height_cm = EXCLUDED.height_cm,
+            weight_kg = EXCLUDED.weight_kg,
+            activity_level = EXCLUDED.activity_level,
+            goal = EXCLUDED.goal,
+            maintenance_calories = EXCLUDED.maintenance_calories,
+            target_calories = EXCLUDED.target_calories,
+            updated_at = NOW()
+         RETURNING gender, age, height_cm AS "heightCm", weight_kg AS "weightKg",
+                   activity_level AS "activityLevel", goal,
+                   maintenance_calories AS "maintenanceCalories",
+                   target_calories AS "targetCalories"`,
+        [
+            req.user.id,
+            calorieGoal.gender,
+            calorieGoal.age,
+            calorieGoal.heightCm,
+            calorieGoal.weightKg,
+            calorieGoal.activityLevel,
+            calorieGoal.goal,
+            calorieGoal.maintenanceCalories,
+            calorieGoal.targetCalories
+        ]
+    );
+    res.json({ message: 'Dein Kalorienziel wurde gespeichert.', goal: result.rows[0] });
+});
+
+app.delete('/api/calorie-goal', authenticateToken, async (req, res) => {
+    await pool.query('DELETE FROM calorie_goals WHERE user_id = $1', [req.user.id]);
+    res.json({ message: 'Dein gespeichertes Kalorienziel wurde zurückgesetzt.' });
 });
 
 app.get('/api/calendar/settings', authenticateToken, async (req, res) => {
