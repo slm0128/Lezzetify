@@ -63,10 +63,6 @@
     letter-spacing: 0.025em;
 }
 
-.dashboard-hero .btn {
-    flex-shrink: 0;
-}
-
 .dashboard-stat-card,
 .meal-planner,
 .recipe-toolbar,
@@ -390,31 +386,6 @@
     background: #fffaf7;
 }
 
-.shopping-list-panel {
-    border-color: var(--dashboard-line) !important;
-    background: #fffaf7 !important;
-}
-
-.calendar-subscription {
-    border-color: var(--dashboard-line);
-}
-
-.meal-calendar-day {
-    border-color: var(--dashboard-line);
-    box-shadow: 0 2px 8px rgba(45, 52, 54, 0.025);
-}
-
-.meal-calendar-day.is-today {
-    border-color: rgba(231, 111, 81, 0.55);
-    background: #fffaf7;
-    box-shadow: inset 0 0 0 1px rgba(231, 111, 81, 0.28);
-}
-
-.meal-calendar-event {
-    border-left-color: var(--primary-color);
-    background: #fff3ed;
-}
-
 .recipe-collection {
     scroll-margin-top: 5rem;
 }
@@ -517,16 +488,6 @@
     font-weight: 600;
 }
 
-.recipe-dashboard-card .recipe-private-badge {
-    background: #f1f2f2 !important;
-    color: #596164 !important;
-}
-
-.recipe-dashboard-card .recipe-shared-badge {
-    background: #fff0e9 !important;
-    color: #a94830 !important;
-}
-
 .recipe-dashboard-card .btn-outline-primary,
 .community-recipe-card .btn-outline-primary {
     border-radius: 999px;
@@ -537,11 +498,6 @@
 .recipe-dashboard-card .btn-danger,
 .community-recipe-card .btn-danger {
     border-radius: 999px;
-}
-
-.recipe-nutrition {
-    border: 1px solid #f3e9e3;
-    background: #fffaf7;
 }
 
 .community-heading-panel {
@@ -914,6 +870,8 @@
 
 .recipe-nutrition {
     padding: 0.8rem;
+    margin-top: 0.85rem;
+    border: 1px solid #f3e9e3;
     border-radius: 0.75rem;
     background: #fffaf6;
     font-size: 0.85rem;
@@ -937,10 +895,6 @@
 
 .recipe-nutrition-grid strong {
     text-align: right;
-}
-
-.recipe-nutrition {
-    margin-top: 0.85rem;
 }
 
 .recipe-instructions {
@@ -994,10 +948,6 @@
     max-height: 22rem;
     border-radius: 1rem;
     object-fit: cover;
-}
-
-.community-ingredient-list li {
-    margin-bottom: 0.35rem;
 }
 
 .recipe-upload-preview {
@@ -1262,7 +1212,8 @@
 }
 
 .shopping-list-panel {
-    background: #fffaf6;
+    border-color: var(--dashboard-line) !important;
+    background: #fffaf7 !important;
 }
 
 .shopping-list:empty {
@@ -1278,6 +1229,7 @@
 }
 
 .calendar-subscription {
+    border-color: var(--dashboard-line);
     border-left: 1px solid #e5e7eb;
 }
 
@@ -1345,10 +1297,6 @@
     .dashboard-hero {
         align-items: stretch !important;
         border-radius: 1.1rem;
-    }
-
-    .dashboard-hero .btn {
-        width: 100%;
     }
 
     .calendar-toolbar {
