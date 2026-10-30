@@ -86,7 +86,9 @@
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <div class="card border-0 rounded-4 h-100 dashboard-stat-card">
+                    <button class="card border-0 rounded-4 h-100 dashboard-stat-card dashboard-stat-card-link"
+                        id="open-favorites-button" type="button" aria-controls="favorite-collection"
+                        aria-expanded="false">
                         <div class="card-body d-flex align-items-center p-3 p-lg-4">
                             <div class="dashboard-stat-icon me-3">
                                 <i class="fas fa-heart fa-lg"></i>
@@ -96,7 +98,7 @@
                                 <p class="dashboard-stat-value fw-bold mb-0" id="favorite-count">0</p>
                             </div>
                         </div>
-                    </div>
+                    </button>
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 rounded-4 h-100 dashboard-stat-card">
@@ -108,6 +110,67 @@
                                 <h2 class="text-muted mb-1 small">Geplant für diese Woche</h2>
                                 <p class="dashboard-stat-value fw-bold mb-0" id="planned-count">0</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL: FAVORITEN -->
+            <div class="modal fade" id="favorite-collection" tabindex="-1"
+                aria-labelledby="favorite-collection-heading" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable favorite-modal-dialog">
+                    <div class="modal-content border-0 shadow-lg rounded-4 favorite-modal-content">
+                        <div class="modal-header favorite-modal-header">
+                            <div class="favorite-view-header">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="favorite-view-icon" aria-hidden="true"><i class="fas fa-heart"></i></span>
+                                    <div>
+                                        <span class="community-heading-label">Deine Auswahl</span>
+                                        <h2 class="h4 fw-bold mb-1" id="favorite-collection-heading">
+                                            Deine Favoriten
+                                        </h2>
+                                        <p class="text-muted small mb-0">Alle gespeicherten Lieblingsrezepte an einem Ort.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Favoriten schließen"></button>
+                        </div>
+                        <div class="modal-body favorite-modal-body">
+                            <div class="favorite-view-toolbar">
+                                <div class="input-group favorite-search">
+                                    <span class="input-group-text"><i class="fas fa-search text-muted"
+                                            aria-hidden="true"></i></span>
+                                    <input class="form-control" id="favorite-search" type="search"
+                                        placeholder="Favoriten durchsuchen..." aria-label="Favoriten durchsuchen">
+                                </div>
+                                <div class="favorite-filter-group" role="group" aria-label="Favoriten filtern">
+                                    <button class="favorite-filter-button is-active" type="button"
+                                        data-favorite-filter="all" aria-pressed="true">Alle</button>
+                                    <button class="favorite-filter-button" type="button"
+                                        data-favorite-filter="recipes" aria-pressed="false">Meine Rezepte</button>
+                                    <button class="favorite-filter-button" type="button"
+                                        data-favorite-filter="community" aria-pressed="false">Community</button>
+                                </div>
+                                <span class="favorite-view-count" id="favorite-view-count" aria-live="polite">0
+                                    Rezepte</span>
+                            </div>
+
+                            <div class="row g-3 favorite-recipe-grid" id="favorite-recipe-list"></div>
+                            <div class="favorite-empty-state" id="favorite-empty-state" hidden>
+                                <span class="favorite-empty-icon" aria-hidden="true"><i class="fas fa-heart"></i></span>
+                                <h3 class="h5 fw-bold">Noch keine Favoriten gespeichert</h3>
+                                <p class="text-muted mb-3">Markiere Rezepte mit dem Herz, damit du sie hier schnell
+                                    wiederfindest.</p>
+                                <a class="btn btn-primary-custom rounded-pill px-4" href="#community-collection"
+                                    id="favorite-discover-link">
+                                    <i class="fas fa-compass me-2" aria-hidden="true"></i>Rezepte entdecken
+                                </a>
+                            </div>
+                            <p class="favorite-no-results text-center text-muted py-4 mb-0" id="favorite-no-results"
+                                hidden>
+                                Keine passenden Favoriten gefunden. Passe Suche oder Filter an.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -326,7 +389,7 @@
             </section>
 
             <!-- COMMUNITY REZEPTE -->
-            <section class="community-collection mb-4" aria-labelledby="community-heading">
+            <section class="community-collection mb-4" id="community-collection" aria-labelledby="community-heading">
                 <div class="card border-0 shadow-sm rounded-4 mt-4 mb-4 overflow-hidden">
                     <button
                         class="card-header community-heading-panel community-toggle border-0 p-3 p-md-4 d-flex justify-content-between align-items-center w-100 text-start"

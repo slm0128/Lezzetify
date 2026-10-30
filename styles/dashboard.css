@@ -81,13 +81,184 @@
 }
 
 .dashboard-stat-card-link {
+    width: 100%;
+    padding: 0;
     color: inherit;
+    font: inherit;
+    text-align: left;
     text-decoration: none;
+}
+
+.dashboard-stat-card-link#open-favorites-button .dashboard-stat-icon {
+    background: #fff0ed;
+    color: #d65b57;
 }
 
 .dashboard-stat-card-link:focus-visible {
     outline: 3px solid var(--primary-color);
     outline-offset: 3px;
+}
+
+.favorite-modal-dialog {
+    max-width: 1120px;
+}
+
+.favorite-modal-content {
+    overflow: hidden;
+    border-radius: 1.4rem !important;
+}
+
+.favorite-modal-header {
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem 1.25rem;
+    border-bottom: 1px solid #f0e8e2;
+    background:
+        radial-gradient(ellipse at 100% 0%, rgba(231, 111, 81, 0.1), transparent 38%),
+        #fff;
+}
+
+.favorite-modal-header .btn-close {
+    flex: 0 0 auto;
+    margin: 0.2rem 0 0 auto;
+}
+
+.favorite-view-header {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 1;
+}
+
+.favorite-modal-body {
+    padding: 1.25rem 1.75rem 1.75rem;
+}
+
+.favorite-view-icon,
+.favorite-empty-icon {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 3rem;
+    place-items: center;
+    border-radius: 1rem;
+    background: #fff0ed;
+    color: #d65b57;
+    font-size: 1.1rem;
+}
+
+.favorite-view-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+}
+
+.favorite-search {
+    max-width: 24rem;
+}
+
+.favorite-search .input-group-text,
+.favorite-search .form-control {
+    min-height: 2.8rem;
+    border-color: var(--dashboard-line);
+    background: #fff;
+}
+
+.favorite-search .input-group-text {
+    border-right: 0;
+    border-radius: 0.75rem 0 0 0.75rem;
+}
+
+.favorite-search .form-control {
+    border-left: 0;
+    border-radius: 0 0.75rem 0.75rem 0;
+}
+
+.favorite-filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.25rem;
+    border: 1px solid #eee7e2;
+    border-radius: 999px;
+    background: #faf8f6;
+}
+
+.favorite-filter-button {
+    min-height: 2.1rem;
+    padding: 0.4rem 0.8rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #777e79;
+    font-size: 0.78rem;
+    font-weight: 650;
+    transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.favorite-filter-button:hover {
+    color: #a25436;
+}
+
+.favorite-filter-button.is-active {
+    background: #fff;
+    color: #a25436;
+    box-shadow: 0 2px 6px rgba(45, 52, 54, 0.08);
+}
+
+.favorite-filter-button:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.favorite-view-count {
+    margin-left: auto;
+    color: #858b86;
+    font-size: 0.8rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.favorite-empty-state {
+    display: grid;
+    justify-items: center;
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+}
+
+.favorite-empty-state[hidden],
+.favorite-no-results[hidden] {
+    display: none;
+}
+
+.favorite-empty-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1rem;
+    border-radius: 1.15rem;
+    font-size: 1.25rem;
+}
+
+.favorite-empty-state p {
+    max-width: 27rem;
+}
+
+.favorite-recipe-grid .recipe-card,
+.favorite-recipe-grid .community-recipe-card {
+    animation: favorite-card-enter 220ms ease both;
+}
+
+@keyframes favorite-card-enter {
+    from {
+        transform: translateY(6px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .dashboard-stat-card:hover {
@@ -1124,6 +1295,39 @@
 @media (max-width: 767.98px) {
     .dashboard-main {
         padding-top: 1.25rem !important;
+    }
+
+    .favorite-modal-header {
+        padding: 1.15rem 1rem 1rem;
+    }
+
+    .favorite-view-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .favorite-filter-group {
+        align-self: flex-start;
+        max-width: 100%;
+        overflow-x: auto;
+        border-radius: 0.85rem;
+    }
+
+    .favorite-filter-button {
+        white-space: nowrap;
+    }
+
+    .favorite-search {
+        max-width: none;
+    }
+
+    .favorite-view-count {
+        margin-left: 0;
+    }
+
+    .favorite-modal-body {
+        padding: 1rem;
     }
 
     .calendar-overview-heading {

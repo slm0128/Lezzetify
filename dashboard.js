@@ -17,6 +17,12 @@ if (!token) {
     const dashboardToastMessage = document.querySelector('#dashboard-toast-message');
     const dashboardToastProgress = document.querySelector('.dashboard-toast-progress');
     const userName = document.querySelector('#user-name');
+    const openFavoritesButton = document.querySelector('#open-favorites-button');
+    const favoriteCollection = document.querySelector('#favorite-collection');
+    const favoriteRecipeList = document.querySelector('#favorite-recipe-list');
+    const favoriteSearch = document.querySelector('#favorite-search');
+    const favoriteEmptyState = document.querySelector('#favorite-empty-state');
+    const favoriteNoResults = document.querySelector('#favorite-no-results');
     const planForm = document.querySelector('#plan-form');
     const planRecipe = document.querySelector('#plan-recipe');
     const planDate = document.querySelector('#plan-date');
@@ -43,6 +49,7 @@ if (!token) {
     const recipes = [];
     let communityRecipes = [];
     let mealPlans = [];
+    let activeFavoriteFilter = 'all';
     let activeCommunityRecipe = null;
     let favorites = { recipes: [], community: [] };
     let recipeImageData = null;
@@ -132,6 +139,7 @@ if (!token) {
 
     function updateFavoriteCount() {
         document.querySelector('#favorite-count').textContent = String(favorites.recipes.length + favorites.community.length);
+        renderFavoriteRecipes();
     }
 
     function getLocalDateString(date = new Date()) {
@@ -238,6 +246,7 @@ if (!token) {
     function refreshRecipeNutritionDisplays() {
         renderRecipeList();
         renderCommunityRecipes();
+        renderFavoriteRecipes();
         refreshRecipeDetailNutrition(communityRecipeDetails, activeCommunityRecipe);
         const activeRecipe = recipes.find((recipe) => recipe.id === recipeDetailsContent.dataset.recipeId);
         refreshRecipeDetailNutrition(recipeDetailsContent, activeRecipe);
@@ -462,7 +471,13 @@ if (!token) {
         editIcon.className = 'fas fa-pen';
         editIcon.setAttribute('aria-hidden', 'true');
         editButton.append(editIcon);
-        editButton.addEventListener('click', () => editRecipe(recipe));
+        editButton.addEventListener('click', () => {
+            if (favoriteCollection.classList.contains('show')) {
+                hideFavoritesView(() => editRecipe(recipe));
+                return;
+            }
+            editRecipe(recipe);
+        });
         actions.append(detailsButton, editButton);
 
         const deleteButton = document.createElement('button');
@@ -474,7 +489,15 @@ if (!token) {
         deleteIcon.className = 'fas fa-trash-alt';
         deleteIcon.setAttribute('aria-hidden', 'true');
         deleteButton.append(deleteIcon);
-        deleteButton.addEventListener('click', () => deleteRecipe(recipe, deleteButton));
+        deleteButton.addEventListener('click', () => {
+            if (favoriteCollection.classList.contains('show')) {
+                hideFavoritesView(() => {
+                    void deleteRecipe(recipe, deleteButton);
+                });
+                return;
+            }
+            void deleteRecipe(recipe, deleteButton);
+        });
         actions.append(deleteButton);
         body.append(actions);
 
@@ -861,6 +884,50 @@ if (!token) {
         ));
         communityRecipeList.replaceChildren(...filteredRecipes.map(createCommunityRecipeCard));
         communityEmptyState.hidden = filteredRecipes.length > 0;
+        renderFavoriteRecipes();
+    }
+
+    function renderFavoriteRecipes() {
+        const searchTerm = favoriteSearch.value.trim().toLocaleLowerCase('de-DE');
+        const allFavorites = [
+            ...recipes
+                .filter((recipe) => favorites.recipes.includes(recipe.id))
+                .map((recipe) => ({ recipe, type: 'recipes' })),
+            ...communityRecipes
+                .filter((recipe) => favorites.community.includes(recipe.id))
+                .map((recipe) => ({ recipe, type: 'community' }))
+        ];
+        const visibleFavorites = allFavorites.filter(({ recipe, type }) => {
+            const matchesFilter = activeFavoriteFilter === 'all' || activeFavoriteFilter === type;
+            const searchableText = [
+                recipe.title,
+                recipe.description,
+                recipe.category,
+                recipe.addedByName,
+                ...(recipe.ingredients || [])
+            ].filter(Boolean).join(' ').toLocaleLowerCase('de-DE');
+            return matchesFilter && searchableText.includes(searchTerm);
+        });
+
+        favoriteRecipeList.replaceChildren(...visibleFavorites.map(({ recipe, type }) => (
+            type === 'recipes' ? createRecipeCard(recipe) : createCommunityRecipeCard(recipe)
+        )));
+
+        const countLabel = document.querySelector('#favorite-view-count');
+        countLabel.textContent = `${visibleFavorites.length} ${visibleFavorites.length === 1 ? 'Rezept' : 'Rezepte'}`;
+        const hasSavedFavorites = favorites.recipes.length + favorites.community.length > 0;
+        favoriteEmptyState.hidden = hasSavedFavorites;
+        favoriteNoResults.hidden = visibleFavorites.length > 0 || !hasSavedFavorites;
+    }
+
+    function openFavoritesView() {
+        renderFavoriteRecipes();
+        bootstrap.Modal.getOrCreateInstance(favoriteCollection).show();
+    }
+
+    function hideFavoritesView(onHidden) {
+        favoriteCollection.addEventListener('hidden.bs.modal', onHidden, { once: true });
+        bootstrap.Modal.getOrCreateInstance(favoriteCollection).hide();
     }
 
     async function loadCommunityRecipes() {
@@ -1150,6 +1217,7 @@ if (!token) {
             const data = await readResponse(response, 'Rezepte konnten nicht geladen werden.');
             recipes.splice(0, recipes.length, ...data);
             renderRecipeList();
+            renderFavoriteRecipes();
             recipeCount.textContent = `${data.length} ${data.length === 1 ? 'Rezept' : 'Rezepte'}`;
             updateRecipeOptions();
             renderPlanView();
@@ -1471,6 +1539,63 @@ if (!token) {
     });
 
     document.querySelector('#collection-new-recipe-button').addEventListener('click', openNewRecipeModal);
+
+    openFavoritesButton.addEventListener('click', openFavoritesView);
+    favoriteCollection.addEventListener('shown.bs.modal', () => {
+        openFavoritesButton.setAttribute('aria-expanded', 'true');
+        favoriteSearch.focus();
+    });
+    favoriteCollection.addEventListener('hidden.bs.modal', () => {
+        openFavoritesButton.setAttribute('aria-expanded', 'false');
+    });
+    document.querySelector('#favorite-discover-link').addEventListener('click', (event) => {
+        event.preventDefault();
+        hideFavoritesView(() => {
+            document.querySelector('#community-collection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+    favoriteSearch.addEventListener('input', renderFavoriteRecipes);
+    document.querySelector('.favorite-filter-group').addEventListener('click', (event) => {
+        const filterButton = event.target.closest('[data-favorite-filter]');
+        if (!filterButton) {
+            return;
+        }
+        activeFavoriteFilter = filterButton.dataset.favoriteFilter;
+        document.querySelectorAll('[data-favorite-filter]').forEach((button) => {
+            const isActive = button === filterButton;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+        renderFavoriteRecipes();
+    });
+    favoriteRecipeList.addEventListener('click', (event) => {
+        const favoriteButton = event.target.closest('[data-favorite-type]');
+        if (favoriteButton) {
+            toggleFavorite(favoriteButton.dataset.favoriteType, favoriteButton.dataset.favoriteId, favoriteButton);
+            return;
+        }
+        const saveButton = event.target.closest('[data-save-community-recipe-id]');
+        if (saveButton) {
+            saveCommunityRecipe(saveButton.dataset.saveCommunityRecipeId, saveButton);
+            return;
+        }
+        const communityButton = event.target.closest('[data-community-recipe-id]');
+        if (communityButton) {
+            hideFavoritesView(() => {
+                void openCommunityRecipe(communityButton.dataset.communityRecipeId);
+            });
+            return;
+        }
+        const detailsButton = event.target.closest('[data-recipe-details-id]');
+        if (detailsButton) {
+            const recipe = recipes.find((entry) => entry.id === detailsButton.dataset.recipeDetailsId);
+            if (recipe) {
+                hideFavoritesView(() => {
+                    void openRecipeDetails(recipe);
+                });
+            }
+        }
+    });
 
     recipeSearch.addEventListener('input', renderRecipeList);
     recipeSort.addEventListener('change', renderRecipeList);
