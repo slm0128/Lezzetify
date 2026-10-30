@@ -276,7 +276,7 @@ if (!token) {
             const kcal = getRecipeCalories(recipe);
             calories.textContent = kcal === null
                 ? 'Wird berechnet'
-                : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal`;
+                : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal / Portion`;
         }
     }
 
@@ -453,7 +453,7 @@ if (!token) {
         const kcal = getRecipeCalories(recipe);
         calories.append(caloriesIcon, kcal === null
             ? 'Nährwerte folgen'
-            : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal`);
+            : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal / Portion`);
         metadata.append(time, calories);
         body.append(metadata);
 
@@ -835,7 +835,7 @@ if (!token) {
         const kcal = getRecipeCalories(recipe);
         calories.append(caloriesIcon, kcal === null
             ? 'Nährwerte folgen'
-            : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal`);
+            : `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(kcal)} kcal / Portion`);
         metadata.append(time, calories);
 
         const author = document.createElement('p');
