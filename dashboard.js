@@ -11,7 +11,6 @@ if (!token) {
     const recipeSort = document.querySelector('#recipe-sort');
     const recipeNoResults = document.querySelector('#recipe-no-results');
     const recipeCount = document.querySelector('#recipe-count');
-    const dashboardMessage = document.querySelector('#dashboard-message');
     const dashboardToast = document.querySelector('#dashboard-toast');
     const dashboardToastIcon = document.querySelector('#dashboard-toast-icon');
     const dashboardToastTitle = document.querySelector('#dashboard-toast-title');
@@ -65,8 +64,9 @@ if (!token) {
     userName.textContent = savedUser.name || emailName || 'Chefkoch';
 
     function showMessage(message, isSuccess = false) {
-        dashboardMessage.textContent = message;
-        dashboardMessage.className = `alert ${isSuccess ? 'alert-success' : 'alert-danger'}`;
+        showToast(message, isSuccess
+            ? { title: 'Erfolgreich' }
+            : { title: 'Fehler', icon: 'fa-exclamation-circle', variant: 'error' });
     }
 
     function dismissDashboardToast() {
@@ -78,9 +78,12 @@ if (!token) {
         }, 220);
     }
 
-    function showToast(message, { title = 'Gespeichert', icon = 'fa-check' } = {}) {
+    function showToast(message, { title = 'Gespeichert', icon = 'fa-check', variant = 'success' } = {}) {
         window.clearTimeout(dashboardToastTimeout);
         window.clearTimeout(dashboardToastHideTimeout);
+        dashboardToast.classList.toggle('is-error', variant === 'error');
+        dashboardToast.setAttribute('role', variant === 'error' ? 'alert' : 'status');
+        dashboardToast.setAttribute('aria-live', variant === 'error' ? 'assertive' : 'polite');
         dashboardToastTitle.textContent = title;
         dashboardToastMessage.textContent = message;
         dashboardToastIcon.querySelector('i').className = `fas ${icon}`;
@@ -1123,10 +1126,7 @@ if (!token) {
         } catch (error) {
             communityRecipeTitle.textContent = 'Community-Rezept';
             communityRecipeDetails.replaceChildren();
-            const message = document.createElement('p');
-            message.className = 'alert alert-danger';
-            message.textContent = error.message || 'Community-Rezept konnte nicht geladen werden.';
-            communityRecipeDetails.append(message);
+            showMessage(error.message || 'Community-Rezept konnte nicht geladen werden.');
         }
     }
 
@@ -1399,8 +1399,7 @@ if (!token) {
             shoppingWeekday.value = String(settings.shoppingWeekday);
             showCalendarFeedUrl(settings.feedUrl);
         } catch (error) {
-            calendarSettingsStatus.textContent = error.message || 'Kalender-Einstellungen konnten nicht geladen werden.';
-            calendarSettingsStatus.className = 'small text-danger';
+            showMessage(error.message || 'Kalender-Einstellungen konnten nicht geladen werden.');
         }
     }
 
@@ -1416,11 +1415,13 @@ if (!token) {
                 body: JSON.stringify({ shoppingWeekday: Number(shoppingWeekday.value) })
             });
             const data = await readResponse(response, 'Einkaufstag konnte nicht gespeichert werden.');
-            calendarSettingsStatus.textContent = data.message;
-            calendarSettingsStatus.className = 'small text-success';
+            calendarSettingsStatus.textContent = '';
+            calendarSettingsStatus.className = 'small';
+            showToast(data.message, { title: 'Einkaufstag gespeichert', icon: 'fa-calendar-check' });
         } catch (error) {
-            calendarSettingsStatus.textContent = error.message || 'Einkaufstag konnte nicht gespeichert werden.';
-            calendarSettingsStatus.className = 'small text-danger';
+            calendarSettingsStatus.textContent = '';
+            calendarSettingsStatus.className = 'small';
+            showMessage(error.message || 'Einkaufstag konnte nicht gespeichert werden.');
         } finally {
             saveButton.disabled = false;
         }
@@ -1429,11 +1430,13 @@ if (!token) {
     document.querySelector('#copy-calendar-link').addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(calendarFeedUrl.value);
-            calendarSettingsStatus.textContent = 'iCal-Link wurde kopiert.';
-            calendarSettingsStatus.className = 'small text-success';
+            calendarSettingsStatus.textContent = '';
+            calendarSettingsStatus.className = 'small';
+            showToast('iCal-Link wurde kopiert.', { title: 'Link kopiert', icon: 'fa-link' });
         } catch (error) {
-            calendarSettingsStatus.textContent = 'Der Link konnte nicht kopiert werden. Markiere ihn und kopiere ihn manuell.';
-            calendarSettingsStatus.className = 'small text-danger';
+            calendarSettingsStatus.textContent = '';
+            calendarSettingsStatus.className = 'small';
+            showMessage('Der Link konnte nicht kopiert werden. Markiere ihn und kopiere ihn manuell.');
         }
     });
 
@@ -1455,11 +1458,13 @@ if (!token) {
             const response = await apiRequest('/api/calendar/settings/rotate-link', { method: 'POST' });
             const settings = await readResponse(response, 'Kalender-Link konnte nicht erneuert werden.');
             showCalendarFeedUrl(settings.feedUrl);
-            calendarSettingsStatus.textContent = settings.message;
-            calendarSettingsStatus.className = 'small text-success';
+            calendarSettingsStatus.textContent = '';
+            calendarSettingsStatus.className = 'small';
+            showToast(settings.message, { title: 'Kalender-Link erneuert', icon: 'fa-calendar-check' });
         } catch (error) {
-            calendarSettingsStatus.textContent = error.message || 'Kalender-Link konnte nicht erneuert werden.';
-            calendarSettingsStatus.className = 'small text-danger';
+            calendarSettingsStatus.textContent = '';
+            calendarSettingsStatus.className = 'small';
+            showMessage(error.message || 'Kalender-Link konnte nicht erneuert werden.');
         } finally {
             button.disabled = false;
         }

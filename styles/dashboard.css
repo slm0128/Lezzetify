@@ -1260,6 +1260,23 @@
     font-size: 1rem;
 }
 
+.dashboard-toast.is-error {
+    border-color: #f0d7d4;
+}
+
+.dashboard-toast.is-error .dashboard-toast-icon {
+    background: #fff0ee;
+    color: #b94a48;
+}
+
+.dashboard-toast.is-error .dashboard-toast-copy strong {
+    color: #6f302d;
+}
+
+.dashboard-toast.is-error .dashboard-toast-progress {
+    background: linear-gradient(90deg, #c6534e, #e99a83);
+}
+
 .dashboard-toast-copy {
     display: grid;
     min-width: 0;
