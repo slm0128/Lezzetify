@@ -740,10 +740,6 @@ app.get('/api/calendar/:token.ics', async (req, res) => {
     res.send(feed);
 });
 
-app.get('/api/logintest', (req, res) => {
-    res.json({ message: 'Backend erreichbar.' });
-});
-
 app.use((req, res) => {
     res.status(404).json({ error: 'Endpunkt wurde nicht gefunden.' });
 });
