@@ -863,7 +863,7 @@ if (!token) {
         saveIcon.className = alreadySaved ? 'fas fa-check' : 'far fa-bookmark';
         saveIcon.setAttribute('aria-hidden', 'true');
         saveButton.append(saveIcon, document.createTextNode(
-            alreadySaved ? ' In deiner Sammlung' : ' Merken'
+            alreadySaved ? ' In deiner Sammlung' : ' Zur Sammlung hinzufügen'
         ));
         saveButton.disabled = alreadySaved;
         const actions = document.createElement('div');
@@ -1147,7 +1147,7 @@ if (!token) {
             saveIcon.className = alreadySaved ? 'fas fa-check' : 'far fa-bookmark';
             saveIcon.setAttribute('aria-hidden', 'true');
             saveButton.append(saveIcon, document.createTextNode(
-                alreadySaved ? ' Bereits in deiner Sammlung' : ' Zu meinen Rezepten'
+                alreadySaved ? ' Bereits in deiner Sammlung' : ' Zur Sammlung hinzufügen'
             ));
             saveButton.disabled = alreadySaved;
             actionBar.append(favoriteButton, saveButton);
