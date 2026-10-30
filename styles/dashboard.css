@@ -137,6 +137,71 @@
     min-width: 9.5rem;
 }
 
+.calendar-overview-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.calendar-overview-range {
+    color: var(--dashboard-muted);
+    font-size: 0.88rem;
+}
+
+.calendar-overview-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.calendar-overview-count {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--dashboard-line);
+    border-radius: 999px;
+    background: #f7f6f4;
+    color: #777e79;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.calendar-overview-count.has-plans {
+    border-color: #efddcf;
+    background: #fff5ee;
+    color: #975739;
+}
+
+.calendar-overview-count i {
+    color: var(--primary-color);
+}
+
+.calendar-calorie-total {
+    border-color: #f0dfc8;
+    background: #fff8ed;
+    color: #875b2b;
+}
+
+.calendar-calorie-total i {
+    color: #e48a35;
+}
+
+.calendar-calorie-total.is-unavailable {
+    border-color: #eee5df;
+    background: #f7f6f4;
+    color: #777e79;
+}
+
+.calendar-calorie-total.is-unavailable i {
+    color: #999e99;
+}
+
 .planner-form-panel {
     padding: 1.15rem;
     border: 1px solid #f0e5df;
@@ -769,7 +834,7 @@
 /* Wochenkalender und private iCal-Verknuepfung. */
 .meal-plan-calendar {
     display: grid;
-    gap: 0.6rem;
+    gap: 0.7rem;
     padding-bottom: 0.25rem;
 }
 
@@ -782,117 +847,233 @@
 }
 
 .meal-calendar-day {
-    min-height: 10rem;
-    padding: 0.75rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.9rem;
+    min-width: 0;
+    min-height: 10.5rem;
+    padding: 0.8rem;
+    border: 1px solid var(--dashboard-line);
+    border-radius: 1rem;
     background: #fff;
+    box-shadow: 0 3px 12px rgba(45, 52, 54, 0.025);
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.meal-calendar-day.has-meals {
+    border-color: #f0dfd5;
 }
 
 .meal-calendar-day.is-today {
-    border-color: var(--primary-color);
-    box-shadow: inset 0 0 0 1px var(--primary-color);
+    border-color: rgba(231, 111, 81, 0.65);
+    background: #fffaf7;
+    box-shadow: inset 0 0 0 1px rgba(231, 111, 81, 0.35), 0 4px 14px rgba(45, 52, 54, 0.04);
 }
 
 .meal-calendar-heading {
     display: flex;
     width: 100%;
-    flex-direction: column;
-    gap: 0.15rem;
-    margin: 0 0 0.75rem;
-    padding-bottom: 0.5rem;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.3rem 0.5rem;
+    margin: 0 0 0.65rem;
+    padding: 0 0 0.6rem;
     border: 0;
-    border-bottom: 1px solid #ececec;
+    border-bottom: 1px solid #f0eae5;
     background: transparent;
-    color: inherit;
-    font-size: 0.95rem;
-    font-weight: 700;
+    color: var(--dashboard-ink);
     text-align: left;
-    text-transform: capitalize;
     cursor: pointer;
 }
 
-.meal-calendar-heading:hover {
+.meal-calendar-heading:not(:disabled):hover .meal-calendar-weekday,
+.meal-calendar-heading:not(:disabled):hover time {
     color: var(--primary-color);
 }
 
+.meal-calendar-heading:disabled {
+    cursor: default;
+}
+
 .meal-calendar-heading:focus-visible {
-    border-radius: 0.25rem;
     outline: 2px solid var(--primary-color);
-    outline-offset: 3px;
+    outline-offset: 2px;
+}
+
+.meal-calendar-weekday {
+    min-width: 0;
+    overflow: hidden;
+    color: #39433d;
+    font-size: 0.88rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    white-space: nowrap;
 }
 
 .meal-calendar-heading time {
-    color: #6c757d;
-    font-size: 0.8rem;
-    font-weight: 400;
+    color: #858b86;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.meal-calendar-details {
-    margin-top: 0.25rem;
-}
-
-.meal-calendar-summary {
-    display: flex;
-    min-height: 2.5rem;
+.meal-calendar-day-count {
+    display: inline-flex;
+    min-height: 1.45rem;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.55rem 0.7rem;
-    border: 1px solid #f0dfd5;
-    border-radius: 0.7rem;
-    background: #fffaf7;
-    color: #704b3c;
-    cursor: pointer;
-    list-style: none;
-    transition: border-color 160ms ease, background-color 160ms ease;
-}
-
-.meal-calendar-summary::-webkit-details-marker {
-    display: none;
-}
-
-.meal-calendar-summary:hover,
-.meal-calendar-details[open] .meal-calendar-summary {
-    border-color: #e9c2ad;
-    background: #fff3ec;
-}
-
-.meal-calendar-count {
-    font-size: 0.78rem;
+    padding: 0.2rem 0.48rem;
+    border-radius: 999px;
+    background: #f4f4f2;
+    color: #7a807b;
+    font-size: 0.66rem;
     font-weight: 700;
+    white-space: nowrap;
 }
 
-.meal-calendar-chevron {
-    font-size: 0.7rem;
-    transition: transform 160ms ease;
-}
-
-.meal-calendar-details[open] .meal-calendar-chevron {
-    transform: rotate(180deg);
+.meal-calendar-day-count.has-meals {
+    background: #fff0e8;
+    color: #9b5535;
 }
 
 .meal-calendar-meal-list {
-    padding-top: 0.55rem;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-meal-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
 }
 
 .meal-calendar-event {
-    margin-bottom: 0.6rem;
-    padding: 0.65rem;
+    display: flex;
+    min-width: 0;
+    min-height: 2.45rem;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.4rem 0.35rem 0.6rem;
+    border: 1px solid #f1e7df;
     border-left: 3px solid var(--primary-color);
-    border-radius: 0.4rem;
-    background: #fff5f2;
-    overflow-wrap: anywhere;
+    border-radius: 0.7rem;
+    background: #fffaf7;
+    transition: border-color 150ms ease, background 150ms ease;
 }
 
-.meal-calendar-event .recipe-nutrition {
-    padding: 0;
+.meal-calendar-event:hover {
+    border-color: #e8cbbb;
+    background: #fff5ef;
+}
+
+.meal-calendar-event-title {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    color: #555e58;
+    font-size: 0.73rem;
+    font-weight: 650;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.meal-calendar-remove {
+    display: grid;
+    width: 1.7rem;
+    height: 1.7rem;
+    flex: 0 0 1.7rem;
+    place-items: center;
+    border: 0;
+    border-radius: 0.5rem;
     background: transparent;
+    color: #9b8580;
+    font-size: 0.75rem;
+    opacity: 0.7;
+    transition: background 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+.meal-calendar-remove:hover,
+.meal-calendar-remove:focus-visible {
+    background: #fae8e4;
+    color: #a94442;
+    opacity: 1;
+}
+
+.meal-calendar-remove:focus-visible {
+    outline: 2px solid #b64c52;
+    outline-offset: 1px;
+}
+
+.meal-calendar-more {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+    padding: 0.35rem 0.2rem;
+    border: 0;
+    background: transparent;
+    color: #a25436;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.meal-calendar-more:hover {
+    color: #7e3d27;
+    text-decoration: underline;
+    text-underline-offset: 0.15rem;
+}
+
+.meal-calendar-more:focus-visible {
+    border-radius: 0.25rem;
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .meal-calendar-empty {
-    color: #9aa0a6;
-    font-size: 0.8rem;
+    margin: 0.25rem 0 0;
+    color: #a3a8a4;
+    font-size: 0.75rem;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-day {
+    min-height: 0;
+    padding: 1rem;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-heading {
+    justify-content: flex-start;
+    gap: 0.55rem;
+    margin-bottom: 0.85rem;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-weekday {
+    font-size: 1rem;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-heading time {
+    margin-right: auto;
+    font-size: 0.86rem;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-event {
+    min-height: 3rem;
+    padding: 0.55rem 0.65rem 0.55rem 0.85rem;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-event-title {
+    font-size: 0.88rem;
+    white-space: normal;
+}
+
+.meal-plan-calendar.is-day .meal-calendar-remove {
+    width: 2rem;
+    height: 2rem;
+    flex-basis: 2rem;
+    background: #fff;
+    opacity: 1;
 }
 
 .meal-planner {
@@ -933,6 +1114,18 @@
 @media (max-width: 767.98px) {
     .dashboard-main {
         padding-top: 1.25rem !important;
+    }
+
+    .calendar-overview-heading {
+        align-items: flex-start;
+    }
+
+    .calendar-overview-metrics {
+        justify-content: flex-start;
+    }
+
+    .meal-plan-calendar.is-day .meal-calendar-meal-list {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .dashboard-hero {
@@ -993,6 +1186,11 @@
 @media (max-width: 419.98px) {
     .meal-plan-calendar.is-week {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .calendar-overview-heading {
+        flex-direction: column;
+        gap: 0.6rem;
     }
 
     .dashboard-stat-icon {

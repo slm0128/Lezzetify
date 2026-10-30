@@ -173,8 +173,23 @@
                                 </form>
                             </div>
 
-                            <h3 class="h5 fw-bold mb-3">Geplante Gerichte <span class="text-muted fw-normal"
-                                    id="plan-range-label"></span></h3>
+                            <div class="calendar-overview-heading">
+                                <div>
+                                    <h3 class="h5 fw-bold mb-1">Geplante Gerichte</h3>
+                                    <p class="calendar-overview-range mb-0" id="plan-range-label"></p>
+                                </div>
+                                <div class="calendar-overview-metrics">
+                                    <span class="calendar-overview-count" id="plan-visible-count" aria-live="polite">
+                                        <i class="fas fa-utensils" aria-hidden="true"></i>
+                                        <span>0 Gerichte</span>
+                                    </span>
+                                    <span class="calendar-overview-count calendar-calorie-total" id="plan-calorie-total"
+                                        aria-live="polite">
+                                        <i class="fas fa-fire" aria-hidden="true"></i>
+                                        <span>Kalorien werden berechnet …</span>
+                                    </span>
+                                </div>
+                            </div>
                             <div class="meal-plan-calendar is-week" id="meal-plan-calendar" role="list"
                                 aria-live="polite"></div>
                             <p class="text-muted small mb-0 mt-2" id="plan-empty-state">Für diesen Zeitraum ist noch

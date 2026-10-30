@@ -238,6 +238,7 @@ if (!token) {
         refreshRecipeDetailNutrition(communityRecipeDetails, activeCommunityRecipe);
         const activeRecipe = recipes.find((recipe) => recipe.id === recipeDetailsContent.dataset.recipeId);
         refreshRecipeDetailNutrition(recipeDetailsContent, activeRecipe);
+        updateCalendarNutritionTotal();
     }
 
     function refreshRecipeDetailNutrition(container, recipe) {
@@ -1173,6 +1174,54 @@ if (!token) {
         return { start: getLocalDateString(start), end: getLocalDateString(end) };
     }
 
+    function updateCalendarNutritionTotal() {
+        const calorieTotal = document.querySelector('#plan-calorie-total');
+        if (!calorieTotal) {
+            return;
+        }
+
+        const selectedDate = planViewDate.value || getLocalDateString();
+        const selectedDayPlans = mealPlans.filter((plan) => plan.date === selectedDate);
+        const label = calorieTotal.querySelector('span');
+        let totalCalories = 0;
+        let unavailableCount = 0;
+        let pendingCount = 0;
+        selectedDayPlans.forEach((plan) => {
+            const recipe = recipes.find((entry) => entry.id === plan.recipeId);
+            if (!recipe) {
+                unavailableCount += 1;
+                return;
+            }
+
+            const caloriesPerServing = getRecipeCalories(recipe);
+            if (caloriesPerServing === null) {
+                const key = getNutritionEstimateKey(recipe);
+                if (pendingNutritionEstimates.has(key) || !nutritionEstimates.has(key)) {
+                    pendingCount += 1;
+                } else {
+                    unavailableCount += 1;
+                }
+                return;
+            }
+            totalCalories += caloriesPerServing * (Number(recipe.servings) || 1);
+        });
+
+        const numberFormatter = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
+        calorieTotal.classList.toggle('is-unavailable', unavailableCount > 0 && pendingCount === 0);
+        if (pendingCount > 0) {
+            label.textContent = 'Kalorien werden berechnet …';
+        } else if (unavailableCount > 0) {
+            label.textContent = totalCalories > 0
+                ? `Kalorien am Tag: mind. ${numberFormatter.format(totalCalories)} kcal`
+                : 'Kalorien nicht verfügbar';
+        } else {
+            label.textContent = `Kalorien am Tag: ${numberFormatter.format(totalCalories)} kcal`;
+        }
+        calorieTotal.title = unavailableCount > 0
+            ? 'Für mindestens ein Gericht ist keine Nährwertschätzung verfügbar.'
+            : 'Geschätzte Gesamtkalorien für alle Portionen am ausgewählten Tag.';
+    }
+
     function renderPlanView() {
         const range = getSelectedRange();
         const selectedPlans = mealPlans
@@ -1183,15 +1232,22 @@ if (!token) {
         const rangeLabel = range.start === range.end
             ? dateFormatter.format(new Date(`${range.start}T00:00:00`))
             : `${dateFormatter.format(new Date(`${range.start}T00:00:00`))} – ${dateFormatter.format(new Date(`${range.end}T00:00:00`))}`;
-        document.querySelector('#plan-range-label').textContent = `(${rangeLabel})`;
+        document.querySelector('#plan-range-label').textContent = rangeLabel;
+        const visibleCount = document.querySelector('#plan-visible-count');
+        const visibleCountLabel = visibleCount.querySelector('span');
+        visibleCountLabel.textContent = `${selectedPlans.length} ${selectedPlans.length === 1 ? 'Gericht' : 'Gerichte'}`;
+        visibleCount.classList.toggle('has-plans', selectedPlans.length > 0);
+        updateCalendarNutritionTotal();
 
         const calendarDays = [];
         const currentDate = new Date(`${range.start}T00:00:00`);
         const endDate = new Date(`${range.end}T00:00:00`);
         while (currentDate <= endDate) {
             const dateString = getLocalDateString(currentDate);
+            const dayPlans = selectedPlans.filter((plan) => plan.date === dateString);
             const day = document.createElement('section');
-            day.className = `meal-calendar-day${dateString === getLocalDateString() ? ' is-today' : ''}`;
+            day.className = `meal-calendar-day${dateString === getLocalDateString() ? ' is-today' : ''}${dayPlans.length ? ' has-meals' : ''}`;
+            day.dataset.mealCount = String(dayPlans.length);
             day.setAttribute('role', 'listitem');
 
             const heading = document.createElement('button');
@@ -1200,64 +1256,52 @@ if (!token) {
             heading.dataset.calendarDate = dateString;
             heading.setAttribute(
                 'aria-label',
-                `Tagesansicht für ${weekdayFormatter.format(currentDate)}, ${dateFormatter.format(currentDate)} anzeigen`
+                planPeriod.value === 'week'
+                    ? `Tagesansicht für ${weekdayFormatter.format(currentDate)}, ${dateFormatter.format(currentDate)} mit ${dayPlans.length} geplanten ${dayPlans.length === 1 ? 'Gericht' : 'Gerichten'} anzeigen`
+                    : `${weekdayFormatter.format(currentDate)}, ${dateFormatter.format(currentDate)}`
             );
+            heading.disabled = planPeriod.value === 'day';
             const weekday = document.createElement('span');
+            weekday.className = 'meal-calendar-weekday';
             weekday.textContent = weekdayFormatter.format(currentDate);
             const date = document.createElement('time');
             date.dateTime = dateString;
             date.textContent = dateFormatter.format(currentDate);
             heading.append(weekday, date);
+            const dayCount = document.createElement('span');
+            dayCount.className = `meal-calendar-day-count${dayPlans.length ? ' has-meals' : ''}`;
+            dayCount.textContent = dayPlans.length
+                ? `${dayPlans.length} ${dayPlans.length === 1 ? 'Gericht' : 'Gerichte'}`
+                : 'Frei';
+            heading.append(dayCount);
 
-            const dayPlans = selectedPlans.filter((plan) => plan.date === dateString);
-            const meals = dayPlans.map((plan) => {
-                const recipe = recipes.find((entry) => entry.id === plan.recipeId);
-                const meal = document.createElement('article');
-                meal.className = 'meal-calendar-event';
-                const title = document.createElement('strong');
-                title.className = 'd-block';
-                title.textContent = recipe ? recipe.title : 'Rezept nicht mehr verfügbar';
-                meal.append(title);
+            const mealList = document.createElement('div');
+            mealList.className = 'meal-calendar-meal-list';
+            const visiblePlans = planPeriod.value === 'week' ? dayPlans.slice(0, 2) : dayPlans;
+            mealList.append(...visiblePlans.map(createMealPlanEvent));
+            day.append(heading);
 
-                if (recipe) {
-                    meal.append(createRecipeNutritionDisplay(recipe));
-                }
-
-                const removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'btn btn-sm btn-outline-danger mt-2';
-                removeButton.dataset.planId = plan.id;
-                removeButton.setAttribute('aria-label', `${recipe ? recipe.title : 'Gericht'} aus dem Plan entfernen`);
-                removeButton.textContent = 'Entfernen';
-                meal.append(removeButton);
-                return meal;
-            });
-
-            if (meals.length === 0) {
+            if (dayPlans.length === 0) {
                 const emptyDay = document.createElement('p');
                 emptyDay.className = 'meal-calendar-empty';
-                emptyDay.textContent = 'Kein Gericht geplant';
-                day.append(heading, emptyDay);
-            } else if (meals.length > 1) {
-                const details = document.createElement('details');
-                details.className = 'meal-calendar-details';
-                const summary = document.createElement('summary');
-                summary.className = 'meal-calendar-summary';
-                const count = document.createElement('span');
-                count.className = 'meal-calendar-count';
-                count.innerHTML = '<i class="fas fa-utensils me-2" aria-hidden="true"></i>';
-                count.append(`${meals.length} Gerichte geplant`);
-                const chevron = document.createElement('i');
-                chevron.className = 'fas fa-chevron-down meal-calendar-chevron';
-                chevron.setAttribute('aria-hidden', 'true');
-                summary.append(count, chevron);
-                const mealList = document.createElement('div');
-                mealList.className = 'meal-calendar-meal-list';
-                mealList.append(...meals);
-                details.append(summary, mealList);
-                day.append(heading, details);
+                emptyDay.textContent = planPeriod.value === 'day'
+                    ? 'Für diesen Tag ist noch nichts geplant.'
+                    : 'Noch nichts geplant';
+                day.append(emptyDay);
             } else {
-                day.append(heading, meals[0]);
+                day.append(mealList);
+                if (planPeriod.value === 'week' && dayPlans.length > visiblePlans.length) {
+                    const moreButton = document.createElement('button');
+                    moreButton.type = 'button';
+                    moreButton.className = 'meal-calendar-more';
+                    moreButton.dataset.calendarDate = dateString;
+                    moreButton.textContent = `Alle ${dayPlans.length} Gerichte ansehen`;
+                    const arrow = document.createElement('i');
+                    arrow.className = 'fas fa-arrow-right';
+                    arrow.setAttribute('aria-hidden', 'true');
+                    moreButton.append(arrow);
+                    day.append(moreButton);
+                }
             }
             calendarDays.push(day);
             currentDate.setDate(currentDate.getDate() + 1);
@@ -1298,6 +1342,30 @@ if (!token) {
         document.querySelector('#planned-count').textContent = String(
             mealPlans.filter((plan) => plan.date >= currentWeekStart.start && plan.date <= currentWeekStart.end).length
         );
+    }
+
+    function createMealPlanEvent(plan) {
+        const recipe = recipes.find((entry) => entry.id === plan.recipeId);
+        const meal = document.createElement('article');
+        meal.className = 'meal-calendar-event';
+        const title = document.createElement('strong');
+        title.className = 'meal-calendar-event-title';
+        title.textContent = recipe ? recipe.title : 'Rezept nicht mehr verfügbar';
+        title.title = title.textContent;
+        meal.append(title);
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'meal-calendar-remove';
+        removeButton.dataset.planId = plan.id;
+        removeButton.setAttribute('aria-label', `${recipe ? recipe.title : 'Gericht'} aus dem Plan entfernen`);
+        removeButton.title = 'Aus dem Plan entfernen';
+        const removeIcon = document.createElement('i');
+        removeIcon.className = 'fas fa-times';
+        removeIcon.setAttribute('aria-hidden', 'true');
+        removeButton.append(removeIcon);
+        meal.append(removeButton);
+        return meal;
     }
 
     function getSelectedRangeForDate(date) {
