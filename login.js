@@ -1,4 +1,3 @@
-// Elemente aus dem HTML auswählen
 const API_BASE_URL = 'http://localhost:3000';
 const loginForm = document.querySelector('#login-form');
 const errorMessage = document.querySelector('#error-message');
@@ -12,16 +11,12 @@ document.querySelectorAll('#authTabs [data-bs-toggle="tab"]').forEach((tab) => {
 
 if (loginForm) {
     loginForm.addEventListener('submit', async (event) => {
-        // Standard-Neuladen der Seite durch das Formular verhindern
         event.preventDefault();
-        
-        // Alte Fehlermeldungen vor dem neuen Versuch ausblenden
         if (errorMessage) {
             errorMessage.style.display = 'none';
             errorMessage.textContent = '';
         }
 
-        // Eingabewerte über die exakten HTML-IDs auslesen
         const email = document.querySelector('#loginEmail').value;
         const password = document.querySelector('#loginPassword').value;
         const submitButton = loginForm.querySelector('button[type="submit"]');
@@ -29,7 +24,6 @@ if (loginForm) {
         submitButton.textContent = 'Wird angemeldet …';
 
         try {
-            // POST-Anfrage an unser Node.js-Backend senden
             const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -39,20 +33,17 @@ if (loginForm) {
             const data = await response.json();
 
             if (response.ok) {
-                // Bei Erfolg (Status 200): JWT-Token & User-Infos im Browser speichern
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 localStorage.setItem('email', data.user.email);
                 window.location.href = 'dashboard.html';
             } else {
-                // Bei Fehler (z. B. 401 Unauthorized): Fehlermeldung anzeigen
                 if (errorMessage) {
                     errorMessage.textContent = data.error || 'Login fehlgeschlagen';
                     errorMessage.style.display = 'block';
                 }
             }
         } catch {
-            // Falls der Backend-Server gar nicht läuft oder nicht erreichbar ist
             if (errorMessage) {
                 errorMessage.textContent = 'Verbindung zum Server fehlgeschlagen.';
                 errorMessage.style.display = 'block';
@@ -64,20 +55,19 @@ if (loginForm) {
     });
 }
 
-// Registrierungsformular und Statusmeldung auswählen
 const registerForm = document.getElementById('register-form');
 const registerMessage = document.getElementById('register-message');
 
 if (registerForm) {
-    registerForm.addEventListener('submit', async function(event) {
-    event.preventDefault();
+    registerForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
-    const nameInput = document.getElementById('registerName').value.trim();
-    const emailInput = document.getElementById('registerEmail').value;
-    const passwordInput = document.getElementById('registerPassword').value;
-    const submitButton = registerForm.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    submitButton.textContent = 'Konto wird erstellt …';
+        const nameInput = document.getElementById('registerName').value.trim();
+        const emailInput = document.getElementById('registerEmail').value;
+        const passwordInput = document.getElementById('registerPassword').value;
+        const submitButton = registerForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Konto wird erstellt …';
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/register`, {
@@ -103,7 +93,7 @@ if (registerForm) {
             submitButton.disabled = false;
             submitButton.textContent = 'Konto erstellen';
         }
-  });
+    });
 }
 
 document.querySelectorAll('[data-password-toggle]').forEach((button) => {
