@@ -680,7 +680,7 @@ if (!token) {
         container.append(nutrition);
     }
 
-    function createRecipeDetailIntro(recipe, { community = false } = {}) {
+    function createRecipeDetailIntro(recipe) {
         const intro = document.createElement('div');
         intro.className = 'community-detail-intro';
         const title = document.createElement('h2');
@@ -691,12 +691,7 @@ if (!token) {
         const authorIcon = document.createElement('i');
         authorIcon.className = 'fas fa-user-circle';
         authorIcon.setAttribute('aria-hidden', 'true');
-        const authorLabel = community
-            ? recipe.creatorType === 'user'
-                ? ` Geteilt von ${recipe.addedByName}`
-                : ` Von ${recipe.addedByName || 'Lezzetify'}`
-            : ' Dein Rezept';
-        author.append(authorIcon, document.createTextNode(authorLabel));
+        author.append(authorIcon, document.createTextNode(' Dein Rezept'));
         intro.append(title, author);
 
         if (recipe.description) {
