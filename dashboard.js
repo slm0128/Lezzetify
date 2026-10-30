@@ -1356,31 +1356,23 @@ if (!token) {
 
         const numberFormatter = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
         calorieTotal.classList.toggle('is-unavailable', unavailableCount > 0 && pendingCount === 0);
-        calorieTotal.classList.remove('is-deficit', 'is-surplus', 'is-on-target');
+        calorieTotal.classList.remove('has-goal-comparison');
+        calorieTotal.style.removeProperty('--calorie-status-hue');
         if (pendingCount > 0) {
             label.textContent = 'Kalorien werden berechnet …';
         } else if (unavailableCount > 0) {
             label.textContent = totalCalories > 0
-                ? `Geplant: mindestens ${numberFormatter.format(totalCalories)} kcal · Vergleich unvollständig`
+                ? `≥ ${numberFormatter.format(totalCalories)} kcal`
                 : 'Kalorien nicht verfügbar';
         } else {
             const roundedTotal = Math.round(totalCalories);
+            label.textContent = `${numberFormatter.format(roundedTotal)} kcal`;
             if (calorieGoal) {
-                const difference = roundedTotal - calorieGoal.targetCalories;
-                const absoluteDifference = numberFormatter.format(Math.abs(difference));
-                const target = numberFormatter.format(calorieGoal.targetCalories);
-                if (difference > 0) {
-                    label.textContent = `Geplant: ${numberFormatter.format(roundedTotal)} kcal · ${absoluteDifference} kcal über deinem Tagesziel (${target} kcal)`;
-                    calorieTotal.classList.add('is-surplus');
-                } else if (difference < 0) {
-                    label.textContent = `Geplant: ${numberFormatter.format(roundedTotal)} kcal · ${absoluteDifference} kcal unter deinem Tagesziel (${target} kcal)`;
-                    calorieTotal.classList.add('is-deficit');
-                } else {
-                    label.textContent = `Geplant: ${numberFormatter.format(roundedTotal)} kcal · Tagesziel erreicht (${target} kcal)`;
-                    calorieTotal.classList.add('is-on-target');
-                }
-            } else {
-                label.textContent = `Kalorien am Tag: ${numberFormatter.format(roundedTotal)} kcal`;
+                const progressToLimit = (roundedTotal / calorieGoal.targetCalories - 0.75) / 0.5;
+                const redIntensity = Math.min(1, Math.max(0, progressToLimit));
+                const statusHue = Math.round(145 * (1 - redIntensity));
+                calorieTotal.style.setProperty('--calorie-status-hue', statusHue);
+                calorieTotal.classList.add('has-goal-comparison');
             }
         }
         calorieTotal.title = unavailableCount > 0

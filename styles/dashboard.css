@@ -384,34 +384,16 @@
     color: #999e99;
 }
 
-.calendar-calorie-total.is-deficit {
-    border-color: #b9d8c4;
-    background: #edf7f0;
-    color: #286344;
+.calendar-calorie-total.has-goal-comparison {
+    border-color: hsl(var(--calorie-status-hue) 36% 77%);
+    background: hsl(var(--calorie-status-hue) 45% 95%);
+    color: hsl(var(--calorie-status-hue) 52% 30%);
+    transition: border-color 300ms ease, background-color 300ms ease, color 300ms ease;
 }
 
-.calendar-calorie-total.is-deficit i {
-    color: #39815a;
-}
-
-.calendar-calorie-total.is-surplus {
-    border-color: #efc7bd;
-    background: #fff0ec;
-    color: #9c3d30;
-}
-
-.calendar-calorie-total.is-surplus i {
-    color: #c64f3d;
-}
-
-.calendar-calorie-total.is-on-target {
-    border-color: #d3caed;
-    background: #f4f1fb;
-    color: #54427d;
-}
-
-.calendar-calorie-total.is-on-target i {
-    color: #735eaa;
+.calendar-calorie-total.has-goal-comparison i {
+    color: hsl(var(--calorie-status-hue) 58% 38%);
+    transition: color 300ms ease;
 }
 
 .planner-form-panel {
