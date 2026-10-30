@@ -51,11 +51,6 @@
     max-width: 42rem;
 }
 
-.dashboard-calorie-goal-button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-}
-
 .dashboard-eyebrow {
     display: inline-flex;
     align-items: center;
@@ -282,6 +277,55 @@
     color: var(--dashboard-ink);
     font-size: 1.65rem;
     line-height: 1.15;
+}
+
+.dashboard-calorie-summary {
+    cursor: pointer;
+}
+
+.dashboard-calorie-summary-copy {
+    min-width: 0;
+}
+
+.dashboard-calorie-summary-copy h2 {
+    color: #777e79;
+    font-weight: 650;
+    text-transform: capitalize;
+}
+
+.dashboard-calorie-summary-copy .dashboard-stat-value {
+    color: var(--primary-color);
+    font-size: 1.45rem;
+}
+
+.dashboard-calorie-balance {
+    display: block;
+    color: #72787c;
+    font-size: 0.76rem;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+.dashboard-calorie-summary.has-goal-comparison {
+    border-color: hsl(var(--calorie-status-hue) 36% 77%) !important;
+    background: hsl(var(--calorie-status-hue) 45% 97%);
+    transition: border-color 300ms ease, background-color 300ms ease;
+}
+
+.dashboard-calorie-summary.has-goal-comparison .dashboard-stat-icon {
+    background: hsl(var(--calorie-status-hue) 48% 91%);
+    color: hsl(var(--calorie-status-hue) 58% 38%);
+    transition: background-color 300ms ease, color 300ms ease;
+}
+
+.dashboard-calorie-summary.has-goal-comparison .dashboard-stat-value,
+.dashboard-calorie-summary.has-goal-comparison .dashboard-calorie-balance {
+    color: hsl(var(--calorie-status-hue) 52% 30%);
+    transition: color 300ms ease;
+}
+
+.dashboard-calorie-summary.is-unavailable .dashboard-calorie-balance {
+    color: #777e79;
 }
 
 .dashboard-stats h2 {
@@ -1734,10 +1778,6 @@
     .dashboard-hero {
         align-items: stretch !important;
         border-radius: 1.1rem;
-    }
-
-    .dashboard-calorie-goal-button {
-        align-self: flex-start;
     }
 
     .calendar-toolbar {

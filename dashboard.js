@@ -34,6 +34,10 @@ if (!token) {
     const calorieGoalPreview = document.querySelector('#calorie-goal-preview');
     const calorieGoalResetButton = document.querySelector('#reset-calorie-goal-button');
     const calorieGoalModal = document.querySelector('#calorieGoalModal');
+    const dashboardCalorieSummary = document.querySelector('#open-calorie-summary-button');
+    const dashboardCalorieDate = document.querySelector('#dashboard-calorie-date');
+    const dashboardCalorieTarget = document.querySelector('#dashboard-calorie-target');
+    const dashboardCalorieBalance = document.querySelector('#dashboard-calorie-balance');
     const calendarSettingsForm = document.querySelector('#calendar-settings-form');
     const shoppingWeekday = document.querySelector('#shopping-weekday');
     const calendarFeedUrl = document.querySelector('#calendar-feed-url');
@@ -1322,15 +1326,54 @@ if (!token) {
         return { maintenanceCalories, targetCalories };
     }
 
+    function getCalorieStatusHue(consumedCalories, targetCalories) {
+        const progressToLimit = targetCalories > 0
+            ? (consumedCalories / targetCalories - 0.75) / 0.5
+            : consumedCalories > 0 ? 1 : 0;
+        const redIntensity = Math.min(1, Math.max(0, progressToLimit));
+        return Math.round(145 * (1 - redIntensity));
+    }
+
     function updateCalendarNutritionTotal() {
         const calorieTotal = document.querySelector('#plan-calorie-total');
+        const selectedDate = planViewDate.value || getLocalDateString();
+        const { totalCalories, unavailableCount, pendingCount } = getDayNutrition(selectedDate);
+        updateDashboardCalorieSummary(selectedDate, totalCalories, unavailableCount, pendingCount);
         if (!calorieTotal) {
             return;
         }
 
-        const selectedDate = planViewDate.value || getLocalDateString();
-        const selectedDayPlans = mealPlans.filter((plan) => plan.date === selectedDate);
         const label = calorieTotal.querySelector('span');
+        const numberFormatter = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
+        calorieTotal.classList.toggle('is-unavailable', unavailableCount > 0 && pendingCount === 0);
+        calorieTotal.classList.remove('has-goal-comparison');
+        calorieTotal.style.removeProperty('--calorie-status-hue');
+        if (pendingCount > 0) {
+            label.textContent = 'Kalorien werden berechnet …';
+        } else if (unavailableCount > 0) {
+            label.textContent = totalCalories > 0
+                ? `≥ ${numberFormatter.format(totalCalories)} kcal`
+                : 'Kalorien nicht verfügbar';
+        } else {
+            const roundedTotal = Math.round(totalCalories);
+            label.textContent = `${numberFormatter.format(roundedTotal)} kcal`;
+            if (calorieGoal) {
+                calorieTotal.style.setProperty(
+                    '--calorie-status-hue',
+                    getCalorieStatusHue(roundedTotal, calorieGoal.targetCalories)
+                );
+                calorieTotal.classList.add('has-goal-comparison');
+            }
+        }
+        calorieTotal.title = unavailableCount > 0
+            ? 'Für mindestens ein Gericht ist keine Nährwertschätzung verfügbar.'
+            : calorieGoal
+                ? 'Vergleich der geschätzten Kalorien aus den geplanten Gerichten am ausgewählten Tag mit deinem persönlichen Tagesziel.'
+                : 'Geschätzte Gesamtkalorien für alle Portionen am ausgewählten Tag.';
+    }
+
+    function getDayNutrition(selectedDate) {
+        const selectedDayPlans = mealPlans.filter((plan) => plan.date === selectedDate);
         let totalCalories = 0;
         let unavailableCount = 0;
         let pendingCount = 0;
@@ -1354,32 +1397,59 @@ if (!token) {
             totalCalories += caloriesPerServing * (Number(recipe.servings) || 1);
         });
 
+        return { totalCalories, unavailableCount, pendingCount };
+    }
+
+    function updateDashboardCalorieSummary(selectedDate, totalCalories, unavailableCount, pendingCount) {
+        if (!dashboardCalorieTarget || !dashboardCalorieBalance) {
+            return;
+        }
+
+        const date = new Date(`${selectedDate}T00:00:00`);
+        dashboardCalorieDate.textContent = new Intl.DateTimeFormat('de-DE', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+        }).format(date);
+        dashboardCalorieSummary.classList.remove('has-goal-comparison', 'is-unavailable');
+        dashboardCalorieSummary.style.removeProperty('--calorie-status-hue');
+        dashboardCalorieBalance.classList.remove('is-deficit', 'is-surplus', 'is-unavailable');
+        dashboardCalorieTarget.textContent = calorieGoal
+            ? `${new Intl.NumberFormat('de-DE').format(calorieGoal.targetCalories)} kcal`
+            : 'Ziel einrichten';
+        if (!calorieGoal) {
+            dashboardCalorieBalance.textContent = 'Persönliches Tagesziel festlegen';
+            return;
+        }
+
         const numberFormatter = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
-        calorieTotal.classList.toggle('is-unavailable', unavailableCount > 0 && pendingCount === 0);
-        calorieTotal.classList.remove('has-goal-comparison');
-        calorieTotal.style.removeProperty('--calorie-status-hue');
         if (pendingCount > 0) {
-            label.textContent = 'Kalorien werden berechnet …';
+            dashboardCalorieBalance.textContent = 'Tagesverbrauch wird berechnet …';
+            dashboardCalorieBalance.classList.add('is-unavailable');
         } else if (unavailableCount > 0) {
-            label.textContent = totalCalories > 0
-                ? `≥ ${numberFormatter.format(totalCalories)} kcal`
-                : 'Kalorien nicht verfügbar';
+            dashboardCalorieBalance.textContent = totalCalories > 0
+                ? `Mindestens ${numberFormatter.format(totalCalories)} kcal · Bilanz unvollständig`
+                : 'Tagesverbrauch nicht verfügbar';
+            dashboardCalorieBalance.classList.add('is-unavailable');
+            dashboardCalorieSummary.classList.add('is-unavailable');
         } else {
             const roundedTotal = Math.round(totalCalories);
-            label.textContent = `${numberFormatter.format(roundedTotal)} kcal`;
-            if (calorieGoal) {
-                const progressToLimit = (roundedTotal / calorieGoal.targetCalories - 0.75) / 0.5;
-                const redIntensity = Math.min(1, Math.max(0, progressToLimit));
-                const statusHue = Math.round(145 * (1 - redIntensity));
-                calorieTotal.style.setProperty('--calorie-status-hue', statusHue);
-                calorieTotal.classList.add('has-goal-comparison');
+            dashboardCalorieSummary.style.setProperty(
+                '--calorie-status-hue',
+                getCalorieStatusHue(roundedTotal, calorieGoal.targetCalories)
+            );
+            dashboardCalorieSummary.classList.add('has-goal-comparison');
+            const difference = calorieGoal.targetCalories - roundedTotal;
+            if (difference > 0) {
+                dashboardCalorieBalance.textContent = `${numberFormatter.format(roundedTotal)} kcal eingeplant · ${numberFormatter.format(difference)} kcal übrig`;
+                dashboardCalorieBalance.classList.add('is-deficit');
+            } else if (difference < 0) {
+                dashboardCalorieBalance.textContent = `${numberFormatter.format(roundedTotal)} kcal eingeplant · ${numberFormatter.format(Math.abs(difference))} kcal Überschuss`;
+                dashboardCalorieBalance.classList.add('is-surplus');
+            } else {
+                dashboardCalorieBalance.textContent = `${numberFormatter.format(roundedTotal)} kcal eingeplant · Tagesziel erreicht`;
             }
         }
-        calorieTotal.title = unavailableCount > 0
-            ? 'Für mindestens ein Gericht ist keine Nährwertschätzung verfügbar.'
-            : calorieGoal
-                ? 'Vergleich der geschätzten Kalorien aus den geplanten Gerichten am ausgewählten Tag mit deinem persönlichen Tagesziel.'
-                : 'Geschätzte Gesamtkalorien für alle Portionen am ausgewählten Tag.';
     }
 
     function populateCalorieGoalForm(goal) {
@@ -1646,10 +1716,6 @@ if (!token) {
         }));
         shoppingEmptyState.hidden = shoppingItems.length > 0;
 
-        const currentWeekStart = getSelectedRangeForDate(new Date());
-        document.querySelector('#planned-count').textContent = String(
-            mealPlans.filter((plan) => plan.date >= currentWeekStart.start && plan.date <= currentWeekStart.end).length
-        );
     }
 
     function createMealPlanEvent(plan) {
@@ -1674,15 +1740,6 @@ if (!token) {
         removeButton.append(removeIcon);
         meal.append(removeButton);
         return meal;
-    }
-
-    function getSelectedRangeForDate(date) {
-        const start = new Date(date);
-        start.setHours(0, 0, 0, 0);
-        start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
-        const end = new Date(start);
-        end.setDate(end.getDate() + 6);
-        return { start: getLocalDateString(start), end: getLocalDateString(end) };
     }
 
     async function loadPlans() {
